@@ -73,3 +73,25 @@ export interface TextChatService {
   deleteMessage(params: DeleteMessageParams): Promise<boolean>;
   onNewMessage(channelId: string, callback: (msg: Message) => void): () => void;
 }
+
+export interface FriendshipService {
+  sendFriendRequest(requesterId: string, targetUserId: string): Promise<Friendship>;
+  acceptFriendRequest(userId: string, friendId: string): Promise<Friendship>;
+  removeFriendship(userA: string, userB: string): Promise<boolean>;
+  getFriends(userId: string): Promise<{ friendId: string; status: FriendshipStatus }[]>;
+  blockUser(blockerId: string, blockedId: string): Promise<Block>;
+  unblockUser(blockerId: string, blockedId: string): Promise<boolean>;
+  isBlocked(userA: string, userB: string): Promise<boolean>;
+  getOrCreateDmChannel(userA: string, userB: string): Promise<DmChannel>;
+  getDmChannel(dmChannelId: string, requesterId: string): Promise<DmChannel | null>;
+  getUserDms(userId: string): Promise<DmChannel[]>;
+  sendDmMessage(params: SendDmParams): Promise<DmMessage>;
+  getDmMessages(dmChannelId: string, requesterId: string, pagination?: PaginationParams): Promise<DmMessage[]>;
+}
+
+export interface PresenceService {
+  setPresence(userId: string, status: PresenceStatus): void;
+  heartbeat(userId: string): void;
+  getPresence(userId: string): PresenceStatus;
+  onPresenceUpdate(callback: (presence: UserPresence) => void): () => void;
+}

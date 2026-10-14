@@ -5,7 +5,6 @@ describe('InMemoryFriendshipService - Amizades e Bloqueios', () => {
   let service: InMemoryFriendshipService;
   const userA = 'user-alice';
   const userB = 'user-bob';
-  const userC = 'user-charlie';
 
   beforeEach(() => {
     service = new InMemoryFriendshipService();

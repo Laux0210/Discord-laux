@@ -4,7 +4,6 @@ import { InMemoryPresenceService, PRESENCE_TTL_MS } from '../../src/renderer/src
 describe('InMemoryPresenceService - Presença Efêmera e Expiração', () => {
   let service: InMemoryPresenceService;
   const userId = 'user-alice';
-  const otherUserId = 'user-bob';
 
   beforeEach(() => {
     service = new InMemoryPresenceService();
