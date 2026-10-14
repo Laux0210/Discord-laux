@@ -23,3 +23,8 @@ Data de consolidação: 2026-10-14. Fonte: último plano final da conversa e aut
 D-15 acrescenta a frente REA-REF à referência Discord e mantém REA-APP para o instalador próprio. A reprodução prioriza os fluxos do MVP; funções adicionais observadas são registradas separadamente. E0/E1/E2, capacidade, retenção, privacidade e distribuição continuam vinculantes.
 
 Números publicados de provedores exigem verificação atual pelo E0. Metas p95 e arquitetura permanecem critérios/candidatas até evidência real. DOC-02 não aprova gate, não publica memória e não declara implantação.
+
+## D-16 — Continuidade local e aceite delimitado
+
+Data: 2026-10-14. Fonte: autorização do usuário “pode seguir” e verificações BASE-LOCAL-02/REA-REF-02A. O principal ratifica a continuidade da base mock e da investigação estática da referência, preservando E0/E1/E2 para serviços reais/mídia. Aceites locais não concluem etapas integrais, não comprovam integração em nuvem e não ampliam o MVP. Ver [registro do lote](../execucao/base-local-02-resumo.md) e [validação](../validacao/base-local-02.md).
+

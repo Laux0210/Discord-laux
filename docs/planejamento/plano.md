@@ -39,9 +39,9 @@ Responsáveis: `producao_rea` na investigação, `ux_ui` e `arquiteto` nos contr
 - [ ] REA-REF-03: produzir matriz função/estado/interface → evidência → requisito → contrato → teste; registrar diferenças em relação ao MVP e especificar telas, medidas e interações para reprodução.
 - [ ] REA-REF-04: `construcao_rea` reproduz os módulos atribuídos a partir do contrato aceito, após as dependências técnicas; QA compara comportamento e composição visual com a versão de referência registrada.
 
-Identificação, leitura estática e documentação da referência podem avançar em paralelo com E0, sem ativar a mídia do projeto. Operações no Discord que enviem mensagens, modifiquem comunidades ou iniciem chamadas requerem cenário de teste autorizado. A implementação correspondente continua após E0/E1/E2, DESIGN e BASE. A referência não altera automaticamente limites de capacidade, retenção, privacidade, custos ou itens excluídos do MVP. Funções adicionais observadas entram em backlog separado. Esta preparação não está concluída nem é prova de engenharia reversa já executada.
+Identificação, leitura estática e documentação da referência podem avançar em paralelo com E0, sem ativar a mídia do projeto. Operações no Discord que enviem mensagens, modifiquem comunidades ou iniciem chamadas requerem cenário de teste autorizado. A implementação correspondente continua após E0/E1/E2, DESIGN e BASE. A referência não altera automaticamente limites de capacidade, retenção, privacidade, custos ou itens excluídos do MVP. Funções adicionais observadas entram em backlog separado. A preparação integral permanece pendente; as entregas estáticas parciais e seus limites estão identificados abaixo.
 
-Estado verificado desta preparação: [REA-REF-01A](../rea/discord/identidade.md) identificou a instalação local Stable 1.0.9261 e executou análise estática mínima com cobertura parcial. Não houve observação da interface ou execução do Discord. O checklist integral e os contratos de reprodução permanecem pendentes.
+Estado verificado desta preparação: [REA-REF-01A](../rea/discord/identidade.md) identificou a instalação local Stable 1.0.9261. [REA-REF-02A](../rea/discord/catalogo.md) e a [matriz inicial RF-01–17](../rea/discord/matriz-reproducao.md) passaram em REA-REV-02A, com leitura estática limitada a bootstrap/splash. O checklist integral, a UI/runtime e os contratos finais permanecem pendentes.
 
 ### 1. Consolidar contexto, decisões e documentos — DOC
 
@@ -172,3 +172,10 @@ Máximo três especialistas simultâneos além do principal. Frontend possui int
 O orquestrador publicará em E:/Memoria/Discord as notas 04-CONTEXTO-MESTRE, 05-PLANO-DE-EXECUCAO, 06-REQUISITOS-E-ACEITE, 07-ARQUITETURA-E-CONTRATOS, 08-BACKLOG-E-DEPENDENCIAS e 09-VALIDACAO-E-CUSTOS; atualizará 00-INDICE, 01-ESTADO e 03-DECISOES preservando histórico. Cada registro inclui data, fonte, estado e limitações; leitura, busca e links devem ser verificados. Contratos técnicos e validação financeira pendentes devem continuar identificados como pendentes.
 
 Estado de execução: fase DOC/E0. Nenhuma etapa técnica 2–12 está concluída por este documento; nenhum portão foi aprovado por DOC-02. Próximo responsável: orquestrador para revisão documental e aceite explícito do E0.
+
+## Atualização de execução local — 2026-10-14
+
+BASE-LOCAL-02 foi aceito para a base mock no Windows 10 após build/smoke reais e revisão BASE-REV-02C. Consulte [evidências e limites](../validacao/base-local-02.md). O aceite integral BASE e as integrações permanecem condicionados aos contratos e portões do plano.
+
+REA-REF-02A entregou catálogo estático e matriz inicial RF-01–17, aprovados em REA-REV-02A com cobertura parcial. Produção REA e UX/arquiteto devem completar observação/medidas e contratos; construção REA recebe apenas módulos liberados pelo principal. E0 continua BLOQUEADO; E1/E2 e reprodução integral não foram aprovados.
+

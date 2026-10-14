@@ -1,0 +1,151 @@
+{
+  "task": "BASE-LOCAL-02-REA-PUBLICACAO",
+  "date": "2026-10-14",
+  "responsible": "orquestrador principal",
+  "new_notes": [
+    {
+      "path": "Discord/16-REA-DISCORD-CATALOGO.md",
+      "source": "docs/rea/discord/catalogo.md",
+      "source_sha256": "54c8aa3df6d613e4fa68b777d0c728d998f124862efd28df2b7db8866076d523",
+      "review": "REA-REV-02A: aprovado para catálogo estático parcial"
+    },
+    {
+      "path": "Discord/17-MATRIZ-REPRODUCAO.md",
+      "source": "docs/rea/discord/matriz-reproducao.md",
+      "source_sha256": "81d9b93000a155ab346d8cb676794ed41665b4806e3cbb30b86b8b96803a0338",
+      "review": "REA-REV-02A: matriz inicial aprovada; contratos finais pendentes"
+    },
+    {
+      "path": "Discord/18-BASE-DESKTOP-LOCAL.md",
+      "source": "docs/validacao/base-local-02.md",
+      "source_sha256": "4495fd0b1179ff5c213ad9b55f9cd353c16e44e8d6277aa736c60b8df7348f56",
+      "review": "BASE-REV-02C: desktop/CSP aprovados; aceite integral BASE pendente"
+    }
+  ],
+  "append_paths": [
+    "Discord/00-INDICE.md",
+    "Discord/01-ESTADO.md",
+    "Discord/03-DECISOES.md",
+    "Discord/05-PLANO-DE-EXECUCAO.md",
+    "Discord/08-BACKLOG-E-DEPENDENCIAS.md",
+    "Discord/10-DECISOES-DO-APP.md",
+    "Discord/11-REGISTRO-DE-EXECUCAO.md",
+    "Discord/12-REA-DISCORD-REFERENCIA.md",
+    "Discord/14-REA-DISCORD-IDENTIDADE.md"
+  ],
+  "verification": [
+    {
+      "path": "Discord/16-REA-DISCORD-CATALOGO.md",
+      "content_matches": true
+    },
+    {
+      "path": "Discord/17-MATRIZ-REPRODUCAO.md",
+      "content_matches": true
+    },
+    {
+      "path": "Discord/18-BASE-DESKTOP-LOCAL.md",
+      "content_matches": true
+    },
+    {
+      "path": "Discord/00-INDICE.md",
+      "historical_prefix_preserved": true,
+      "append_present": true
+    },
+    {
+      "path": "Discord/01-ESTADO.md",
+      "historical_prefix_preserved": true,
+      "append_present": true
+    },
+    {
+      "path": "Discord/03-DECISOES.md",
+      "historical_prefix_preserved": true,
+      "append_present": true
+    },
+    {
+      "path": "Discord/05-PLANO-DE-EXECUCAO.md",
+      "historical_prefix_preserved": true,
+      "append_present": true
+    },
+    {
+      "path": "Discord/08-BACKLOG-E-DEPENDENCIAS.md",
+      "historical_prefix_preserved": true,
+      "append_present": true
+    },
+    {
+      "path": "Discord/10-DECISOES-DO-APP.md",
+      "historical_prefix_preserved": true,
+      "append_present": true
+    },
+    {
+      "path": "Discord/11-REGISTRO-DE-EXECUCAO.md",
+      "historical_prefix_preserved": true,
+      "append_present": true
+    },
+    {
+      "path": "Discord/12-REA-DISCORD-REFERENCIA.md",
+      "historical_prefix_preserved": true,
+      "append_present": true
+    },
+    {
+      "path": "Discord/14-REA-DISCORD-IDENTIDADE.md",
+      "historical_prefix_preserved": true,
+      "append_present": true
+    },
+    {
+      "search": 0,
+      "paths": [
+        "Discord/16-REA-DISCORD-CATALOGO.md",
+        "Discord/17-MATRIZ-REPRODUCAO.md",
+        "Discord/00-INDICE.md",
+        "Discord/14-REA-DISCORD-IDENTIDADE.md",
+        "Discord/12-REA-DISCORD-REFERENCIA.md"
+      ]
+    },
+    {
+      "search": 1,
+      "paths": [
+        "Discord/00-INDICE.md",
+        "Discord/17-MATRIZ-REPRODUCAO.md",
+        "Discord/12-REA-DISCORD-REFERENCIA.md",
+        "Discord/10-DECISOES-DO-APP.md",
+        "Discord/08-BACKLOG-E-DEPENDENCIAS.md"
+      ]
+    },
+    {
+      "search": 2,
+      "paths": [
+        "Discord/18-BASE-DESKTOP-LOCAL.md",
+        "Discord/01-ESTADO.md",
+        "Discord/11-REGISTRO-DE-EXECUCAO.md",
+        "Discord/13-E0-VERIFICACAO-LOCAL.md",
+        "Discord/07-ARQUITETURA-E-CONTRATOS.md"
+      ]
+    }
+  ],
+  "backups": ".codex/backups/base-local-02-20261014/obsidian",
+  "ai_memory": {
+    "workspace": "discord",
+    "project": "discord",
+    "path": "notes/base-local-02-rea-catalogo.md",
+    "read_verified": true,
+    "search_found": true
+  },
+  "independent_reviews": [
+    "REA-REV-02A",
+    "BASE-REV-02C",
+    "DOC-REV-BASE-02"
+  ],
+  "final_source_check": {
+    "files": 14,
+    "changed": [],
+    "agents_preserved": true,
+    "original_discord_asar_unchanged": true
+  },
+  "limitations": [
+    "Publicação manual; sem sincronização bidirecional e sem comprovação de cobertura dos hooks",
+    "Snapshot de checks globais13:36; alterações paralelas posteriores precisam de verificação própria",
+    "Aceite local mock; BASE/DATA/IDENTITY integrais e E0/E1/E2 não aprovados",
+    "REA estática parcial; UI/runtime/fidelidade da referência pendentes"
+  ]
+}
+

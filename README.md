@@ -8,7 +8,7 @@ Esta pasta contém 15 perfis especializados e os documentos do aplicativo deskto
 
 ## Execução do aplicativo
 
-Existe uma base local com código Electron, React 19, TypeScript e serviços mock. Foram verificados 23 testes unitários, tipagem e build do renderer. O build atual ainda não gera `dist-electron/main/index.js`, declarado como entrada desktop; a execução Electron e o aceite integral da etapa BASE permanecem pendentes. E0/E1/E2 continuam condicionando integrações e mídia reais.
+Existe uma base local executável com Electron, React 19, TypeScript e serviços mock. O build gera renderer, main ESM e preload CJS; o teste em Electron real confirmou interface, IPC, sandbox, isolamento e CSP. Veja [a validação BASE-LOCAL-02](docs/validacao/base-local-02.md), com checks e limites. Autenticação e mídia reais, instalador e aceite integral BASE continuam sujeitos aos contratos e portões E0/E1/E2.
 
 - [Contexto mestre preservado](docs/contexto/contexto-mestre.md) e [proveniência da fonte](docs/contexto/fonte.json).
 - [Plano de doze etapas](docs/planejamento/plano.md), [backlog](docs/planejamento/backlog.md) e [decisões](docs/planejamento/decisoes.md).
@@ -31,29 +31,29 @@ O exemplo contém dados não verificados e deve retornar `BLOQUEADO`, com códig
 
 Veja [a retomada de E0](docs/validacao/e0-retomada.md) e o esquema de entrada em [e0-evidencias.exemplo.json](docs/validacao/e0-evidencias.exemplo.json). Para usar evidências reais, prepare um arquivo separado com referências locais relativas à sua pasta, sem tokens, senhas ou conteúdo privado; o exemplo não deve ser apresentado como prova real.
 
-Resultados atuais: [E0-02 passou em 35 testes e revisão independente](docs/validacao/e0-02-verificacao-local.md); o gate financeiro continua bloqueado. A [análise REA inicial do Discord](docs/rea/discord/identidade.md) identificou a instalação e examinou o ASAR com cobertura parcial; interface e comportamento ainda não foram observados.
+Resultados atuais: [E0-02 passou em 35 testes e revisão independente](docs/validacao/e0-02-verificacao-local.md); o gate financeiro continua bloqueado. A [identidade do Discord](docs/rea/discord/identidade.md), o [catálogo estático](docs/rea/discord/catalogo.md) e a [matriz RF-01–17](docs/rea/discord/matriz-reproducao.md) foram registrados. Catálogo e matriz iniciais passaram em revisão documental; interface principal, comportamento e fidelidade visual permanecem pendentes.
 
 ### Comandos de Desenvolvimento e Testes
 
 Ambiente verificado nesta rodada: Node.js 26.9.0, npm 11.19.1 e Python 3.14.7.
 
 ```powershell
-# Executar suíte de testes unitários automatizados (67 testes Vitest cobrindo App, Auth, Comunidades, Convites, Cargos, Schemas, RLS, Retenção e Desktop Build)
+# Executar bateria completa de testes unitários locais com Vitest (92 testes em 20 arquivos)
 npm test
 
 # Verificação TypeScript, build do frontend com Vite e compilação desktop (main ESM + preload CJS)
 npm run build
 
-# Teste de fumaça automatizado do Electron (verifica isolamento, ausência de Node no renderer e segurança IPC)
+# Build e smoke em Electron real: interface, IPC, isolamento, CSP e recusa de captura
 npm run test:desktop
 
-# Iniciar aplicação desktop completa localmente
+# Abrir a base desktop local com mocks
 npm run desktop
 
 # Verificação estática de tipos
 npm run lint
 
-# Iniciar servidor de desenvolvimento do frontend
+# Iniciar somente o frontend no Vite; não abre Electron
 npm run dev
 
 # Executar bateria completa de testes Python (39 testes: E0 e backup seguro)
@@ -74,6 +74,9 @@ python scripts/converter_contexto.py --source docs/contexto/fontes/contexto-mest
 - `.codex/agents/`: 15 perfis TOML com missão, entradas, entregas, limites e skills.
 - `.codex/config.toml`: habilita agentes e limita a três subagentes simultâneos, além do principal.
 - `.agents/skills/reverse-engineer-anything/`: cópia local da skill REA e suas referências.
+- `src/main/`, `src/preload/`, `src/renderer/` e `src/common/`: processos Electron, interface React e contratos compartilhados.
+- `tests/unit/`: testes Vitest; `tests/test_*.py`: verificações Python.
+- `dist/` e `dist-electron/`: saídas geradas pelo build.
 - `docs/agentes/catalogo.md`: responsabilidades, fluxo e contrato de delegação.
 - `docs/agentes/manifesto.json`: inventário verificável e hash do AGENTS.md preservado.
 - `scripts/validar_agentes.py`: verificação local de consistência.

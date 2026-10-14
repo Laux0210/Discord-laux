@@ -1,0 +1,45 @@
+{
+  "task": "BASE-LOCAL-02-RECHECAGEM",
+  "date": "2026-10-14",
+  "timestamp_local": "13:57:10",
+  "reason": "Interface e módulos locais alterados por trabalho paralelo após o snapshot13:36",
+  "checks": [
+    {
+      "command": "npm run test:desktop",
+      "result": {
+        "chunk_id": "bf070d",
+        "wall_time_seconds": 5.2971707,
+        "exit_code": 0,
+        "original_token_count": 217,
+        "output": "\n> discord-desktop@0.1.0 test:desktop\n> npm run build && node scripts/smoke-desktop.mjs\n\n\n> discord-desktop@0.1.0 build\n> tsc && vite build && node scripts/build-desktop.mjs\n\nvite v6.4.4 building for production...\ntransforming...\n✓ 40 modules transformed.\nrendering chunks...\ncomputing gzip size...\n../../dist/index.html                   0.67 kB │ gzip:  0.39 kB\n../../dist/assets/index-IoGesX1R.css    0.27 kB │ gzip:  0.22 kB\n../../dist/assets/index-tmuiYC41.js   248.08 kB │ gzip: 75.83 kB\n✓ built in 1.03s\nDesktop: main ESM e preload CJS compilados.\n{\n  \"ok\": true,\n  \"electron\": \"35.7.5\",\n  \"version\": \"0.1.0\",\n  \"captureBlocked\": true,\n  \"cspConnectBlocked\": true,\n  \"bridgeIsolation\": {\n    \"contextIsolated\": true,\n    \"sandboxed\": true\n  },\n  \"rendererLoaded\": true,\n  \"nodeUnavailable\": true,\n  \"isolation\": true,\n  \"probeReachedNetwork\": false\n}\n"
+      }
+    },
+    {
+      "command": "npm test",
+      "tests": 92,
+      "files": 20,
+      "result": {
+        "chunk_id": "d6758f",
+        "wall_time_seconds": 3.8609779,
+        "exit_code": 0,
+        "original_token_count": 328,
+        "output": "\n> discord-desktop@0.1.0 test\n> vitest run\n\n\n RUN  v3.2.7 C:/Users/jv883/Documents/Codex/Discord\n\n ✓ tests/unit/direct-messages.test.ts (5 tests) 7ms\n ✓ tests/unit/presence.test.ts (5 tests) 9ms\n ✓ tests/unit/preload-api.test.ts (3 tests) 8ms\n ✓ tests/unit/guild-service.test.ts (5 tests) 7ms\n ✓ tests/unit/role-hierarchy.test.ts (5 tests) 8ms\n ✓ tests/unit/invites.test.ts (7 tests) 8ms\n ✓ tests/unit/auth-session.test.ts (9 tests) 11ms\n ✓ tests/unit/desktop-build.test.ts (4 tests) 544ms\n ✓ tests/unit/data-rls.test.ts (4 tests) 4ms\n ✓ tests/unit/app-identity.test.tsx (2 tests) 15ms\n ✓ tests/unit/app-layout.test.tsx (1 test) 15ms\n ✓ tests/unit/app-text.test.tsx (2 tests) 17ms\n ✓ tests/unit/permissions.test.ts (7 tests) 4ms\n ✓ tests/unit/ipc-contracts.test.ts (4 tests) 3ms\n ✓ tests/unit/friendships.test.ts (8 tests) 8ms\n ✓ tests/unit/mock-services.test.ts (6 tests) 6ms\n ✓ tests/unit/data-retention.test.ts (5 tests) 5ms\n ✓ tests/unit/chat-pagination-idempotency.test.ts (5 tests) 6ms\n ✓ tests/unit/setup.test.ts (2 tests) 3ms\n ✓ tests/unit/data-schema.test.ts (3 tests) 4ms\n\n Test Files  20 passed (20)\n      Tests  92 passed (92)\n   Start at  13:57:02\n   Duration  2.14s (transform 2.49s, setup 0ms, collect 5.30s, tests 693ms, environment 7ms, prepare 5.00s)\n\n"
+      }
+    },
+    {
+      "command": "npm run lint",
+      "result": {
+        "chunk_id": "6542b9",
+        "wall_time_seconds": 2.8887532,
+        "exit_code": 0,
+        "original_token_count": 12,
+        "output": "\n> discord-desktop@0.1.0 lint\n> tsc --noEmit\n\n"
+      }
+    }
+  ],
+  "accepted_scope_unchanged": "Inicialização desktop local/CSP/IPC; revisões anteriores dos fontes desktop permanecem aplicáveis se hashes inalterados",
+  "limitations": [
+    "As alterações paralelas de texto/amigos/DM/presença passaram em checks locais, mas não receberam auditoria independente neste lote",
+    "Checks são snapshot13:57; nenhuma integração real ou portão E0/E1/E2 aprovado"
+  ]
+}

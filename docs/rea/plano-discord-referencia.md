@@ -1,6 +1,6 @@
 # REA — Discord como referência funcional e visual
 
-Estado: planejado. Fonte: pedido do usuário em 2026-10-14 para acrescentar engenharia reversa do aplicativo Discord e reproduzir suas funções, modos e interface. Não há investigação, captura ou reprodução declarada como concluída.
+Estado: investigação estática inicial parcial, revisada em REA-REV-02A. Fonte: pedido do usuário em 2026-10-14 para acrescentar engenharia reversa do aplicativo Discord e reproduzir suas funções, modos e interface. Consulte [identidade](discord/identidade.md), [catálogo](discord/catalogo.md) e [matriz inicial](discord/matriz-reproducao.md). Observação de runtime/interface e reprodução integral permanecem pendentes.
 
 ## Alvo e skill
 

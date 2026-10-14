@@ -132,7 +132,7 @@ A infraestrutura de testes utilizará **Vitest**:
 - **Frontend:** React 19, Vite 6.x.
 - **Testes:** Vitest.
 - **Scripts em `package.json`:**
-  - `npm run dev`: Inicia o Vite dev server e o Electron em modo hot-reload.
+  - `npm run dev`: Inicia somente o frontend no Vite; `npm run desktop` abre a base Electron compilada.
   - `npm run build`: Compila TypeScript (main, preload, renderer) e empacota artefato estático via Vite.
   - `npm test`: Executa a suíte de testes Vitest no console (CI-ready).
   - `npm run lint`: Executa TypeScript typecheck (`tsc --noEmit`).

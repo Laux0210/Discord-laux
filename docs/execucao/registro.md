@@ -95,3 +95,32 @@ O estado reconciliado é base local parcial com mocks e checks de frontend aprov
 - **Suíte de Testes**: Suíte Vitest expandida para 67 testes em 15 arquivos (100% verde), teste de fumaça desktop Electron validado (`npm run test:desktop`), tipagem TypeScript estrita sem erros (`npm run lint`), 39 testes unitários Python preservados e integridade do [AGENTS.md](../../AGENTS.md) intacta.
 
 
+## Retomada de 2026-10-14 — BASE-LOCAL-02 e REA-REF-02A
+
+O usuário autorizou continuar. O principal retomou a correção do desktop local; serviços reais e mídia continuam dependentes de E0/E1/E2. Produção REA examinou a referência em leitura estática, sem iniciar ou alterar o Discord.
+
+- **BASE-LOCAL-02 aceito no escopo mock:** build main ESM/preload CJS e renderer, IPC com verificação de emissor/frame/documento, recusa de captura e CSP local. BASE-REV-02 encontrou meta ampla; a correção passou em BASE-REV-02C.
+- **Checks do principal:** npm test com 60 testes/13 arquivos às 13:36:26; npm run lint e npm run test:desktop completos passaram. O Electron 35.7.5 montou a UI e confirmou isolamento/sandbox, ponte de versão, Node indisponível, captura recusada e connect-src bloqueado sem requisição à sentinela. Brave confirmou o frontend com CSP antes dos scripts e sem erros observados.
+- **REA-REF-02A aceito como parcial:** catálogo de bootstrap/splash e matriz RF-01–17 aprovados em REA-REV-02A. A ledger REA anterior não estava retida; fontes estáticas locais foram explicitadas, sem inventar novos Evidence IDs. UI principal, runtime, medidas e fidelidade permanecem pendentes.
+- **Trabalho paralelo preservado:** novos módulos/testes de autenticação, comunidades e convites apareceram durante a validação. O principal corrigiu somente a importação de User no teste de sessão; a segurança/integridade desses módulos exige revisão própria. Novas mudanças podem invalidar o snapshot global.
+- **Limites:** instalação limpa, Windows 11, banco/RLS/restauração reais, OAuth real, mídia, instalador e piloto não foram aceitos. O histórico anterior permanece; a base local aprovada não significa aceite integral BASE ou DATA.
+
+Evidências: [validação desktop](../validacao/base-local-02.md), [logs e hashes](../validacao/base-local-02-evidencias.json), [catálogo REA](../rea/discord/catalogo.md) e [matriz](../rea/discord/matriz-reproducao.md). AGENTS.md preservado com seu SHA-256 original. Somente o principal consolida estas entregas na memória do projeto.
+
+
+
+
+### Publicação do lote verificada
+
+Notas Obsidian16/17/18 publicadas e comparadas; nove notas existentes receberam apêndices com prefixos históricos preservados. Busca com pathPrefix Discord confirmou as notas; ai-memory discord/discord respondeu à leitura e busca da nova página. Manifesto: [publicacao-base-local-rea-02.json](publicacao-base-local-rea-02.json). Código/configuração avaliados mantiveram14hashes; AGENTS.md e o ASAR de referência permaneceram intactos.
+
+### Conclusão da Etapa 9 — Texto, Amizades, DMs e Presença (TEXT)
+
+- **Mensagens em Canais com Idempotência e Paginação (RF-06)**: Implementado [`DesktopChatService`](../renderer/src/services/desktop-chat-service.ts) com deduplicação por chave única (`nonce`), validação de conteúdo (1 a 2000 caracteres, rejeitando mensagens vazias), paginação por cursor (`before` e `limit`) e janela estrita de retenção de 10 dias. Exclusão autorizada pelo autor ou detentor de `MANAGE_MESSAGES`.
+- **Amizades e Bloqueios Mútuos (RF-07)**: Implementado [`InMemoryFriendshipService`](../renderer/src/services/friendship-service.ts) com ciclo completo de pedidos (`pending` -> `accepted`), reciprocidade com auto-aceite, remoção de amizade e bloqueio mútuo que cancela amizades preexistentes e impede novas interações.
+- **Mensagens Diretas Individuais e Isolamento Estrito (RF-07 / AC-07)**: Canais de DM permitidos unicamente entre amigos aceitos e sem bloqueio. Isolamento rigoroso garantido contra acesso ou leitura por terceiros (`ACESSO_NEGADO_DM`), com suporte a envio idempotente e expiração de 10 dias.
+- **Presença Efêmera por Heartbeat (RF-08 / AC-08)**: Implementado [`InMemoryPresenceService`](../renderer/src/services/presence-service.ts) com estados `online`/`idle`/`offline` e TTL de 30 segundos. Expiração automática para `offline` em caso de interrupção do heartbeat, sem retenção de histórico.
+- **Integração na Interface**: Componente [`FriendsArea.tsx`](../renderer/src/components/FriendsArea.tsx) integrado na aplicação com abas de amigos, pedidos pendentes, envio de solicitações e indicadores de presença visual.
+- **Suíte de Testes Expandida**: 92 testes unitários Vitest aprovados em 20 arquivos (100% verde), teste de fumaça desktop Electron validado (`npm run test:desktop`), tipagem TypeScript estrita sem erros (`npm run lint`), 39 testes unitários Python preservados e integridade do [AGENTS.md](../../AGENTS.md) intacta.
+
+
