@@ -18,5 +18,8 @@ Data de consolidação: 2026-10-14. Fonte: último plano final da conversa e aut
 | D-12 | E1 de até15min com Win10/11; E2 de60min com10 pessoas; piloto30dias | Sequência de validação autorizada; pendente |
 | D-13 | Máximo3 especialistas além do principal; donos exclusivos; sem redelegação; revisão independente em estado estável | Contrato operacional vigente |
 | D-14 | Obsidian E:/Memoria/Discord; só orquestrador publica e verifica; ai-memory complementa sem sincronização bidirecional | Publicação verificada: oito notas, leitura/busca e preservação do histórico |
+| D-15 | Usar REA no aplicativo Discord para documentar e reproduzir funções, modos e interface; produção REA gera evidências/contrato e construção REA implementa os módulos atribuídos | Autorizada por pedido posterior em 2026-10-14; investigação e reprodução ainda não executadas |
+
+D-15 acrescenta a frente REA-REF à referência Discord e mantém REA-APP para o instalador próprio. A reprodução prioriza os fluxos do MVP; funções adicionais observadas são registradas separadamente. E0/E1/E2, capacidade, retenção, privacidade e distribuição continuam vinculantes.
 
 Números publicados de provedores exigem verificação atual pelo E0. Metas p95 e arquitetura permanecem critérios/candidatas até evidência real. DOC-02 não aprova gate, não publica memória e não declara implantação.

@@ -4,7 +4,7 @@ Data: 2026-10-14. Autorização: “utilizando do plano presente no obsdian, com
 
 ## Fonte e limite de avanço
 
-O plano lido por MCP em `Discord/05-PLANO-DE-EXECUCAO.md` corresponde ao documento local `docs/planejamento/plano.md`, SHA-256 `084473814c01626ee7f6c8fe068a1ca18e7fbec567be1fd436653590d7f490d5`. Decisões D-08/D-10/D-12 e backlog preservam E0 → E1 → E2 → DESIGN → BASE.
+Na retomada inicial, o plano lido por MCP em `Discord/05-PLANO-DE-EXECUCAO.md` correspondia ao documento local `docs/planejamento/plano.md`, SHA-256 `084473814c01626ee7f6c8fe068a1ca18e7fbec567be1fd436653590d7f490d5`. A atualização posterior solicitada pelo usuário acrescenta REA-REF; a cópia da versão anterior está em `.codex/backups/plano-rea-discord-20261014/`. Decisões D-08/D-10/D-12 e backlog preservam E0 → E1 → E2 → DESIGN → BASE.
 
 Avanço desta rodada: inspeção de leitura das contas acessíveis e ferramenta offline de apoio a E0. O utilitário não é a aplicação, não configura provedores, não transmite mídia e não aprova o gate. E1/E2 e a implementação completa permanecem dependentes das provas reais.
 

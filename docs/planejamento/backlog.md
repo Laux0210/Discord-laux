@@ -8,6 +8,11 @@ Data: 2026-10-14. Fonte: plano final autorizado na conversa. Estados abaixo são
 | DOC-02 / 1 | Plano, backlog, requisitos e decisões — planejador | Plano final da conversa | 12 etapas e RF/AC rastreáveis, sem decisões novas | Concluído; revisão QA-DOC-01 aprovada |
 | DOC-03 / 1 | Publicação Obsidian — orquestrador | DOC-01 e DOC-02 revisados | Notas, índice, leitura, busca e links verificados | Concluído; oito notas lidas/comparadas e encontradas na busca; histórico preservado |
 | E0 / 2 | Relatório de gratuidade — devops + arquiteto | Decisões finais | Contas/consumo/pagamento/ciclo/suspensão provados; prioridade R$0 preservada | Relatório concluído e revisado; gate BLOQUEADO, ver e0-financeiro.md |
+| E0-02 / 2 | Ferramenta offline de evidências/orçamento — devops; QA revisa | E0-01; sem ativação externa | Diagnóstico explícito, cálculo reproduzível, testes; nenhum GO automático | Em implementação; gate E0 permanece BLOQUEADO |
+| REA-REF-01 / preparação | Identidade/pacote do Discord — producao_rea | Atualização autorizada; artefato real identificado | Versão/caminho/hash e inventário estático, sem alterar original | Planejado |
+| REA-REF-02 / preparação | Funções, modos e interface — producao_rea | REA-REF-01; runtime/cenários autorizados quando necessários | Evidências por fluxo/estado, observação distinguida de inferência | Planejado |
+| REA-REF-03 / DESIGN | Matriz de reprodução — producao_rea + ux_ui + arquiteto | REA-REF-02 | Função/estado/tela ligados a RF/AC, contrato e teste; diferenças do MVP explícitas | Planejado; insumos documentais podem avançar |
+| REA-REF-04 / implementação | Reprodução funcional e visual — construcao_rea; QA compara | REA-REF-03, E0/E1/E2, DESIGN e BASE aceitos | Módulos com propriedade exclusiva; testes e comparação com referência registrada | Pendente dos portões técnicos |
 | E1 / 3 | Prova 2 PCs, até 15 min — backend + devops + qa | E0 aprovado | Win10/11, captura/áudio/reconexão; expulsão remota em até 5s | Pendente |
 | E2 / 4 | Ensaio 10 participantes, 60 min — backend + devops + qa | E1 aprovado | 9 espectadores, métricas e corte simulado; projeção segura | Pendente |
 | DESIGN / 5 | UX e contratos — ux_ui + arquiteto + produto | DOC revisado; candidata validada por E0/E1/E2 | Fluxos completos, contratos consistentes e autorização exemplificada | Pendente |
@@ -17,7 +22,7 @@ Data: 2026-10-14. Fonte: plano final autorizado na conversa. Estados abaixo são
 | TEXT / 9 | Texto/amizade/DM/presença — backend + frontend + qa | IDENTITY e DATA | Idempotência, revogação, privacidade, bloqueio e presença expirada | Pendente |
 | MEDIA / 10 | Voz/tela/som — backend + frontend + devops | E2, DATA, IDENTITY e contratos | Uma chamada/10/uma tela, corte remoto, dispositivos e reservas | Pendente |
 | RELEASE / 11 | Revisões e instalador — qa + seguranca + revisor; devops empacota | BASE/DATA/IDENTITY/TEXT/MEDIA completos | Sem bloqueadores, Win10/11 instalação/update/desinstalação/rollback | Pendente |
-| REA / 11 | Inspeção do artefato — producao_rea; correção por construcao_rea | Instalador/ASAR próprio e pergunta concreta | Ferramentas comprovadas; achados rastreáveis e correções verificadas | Pendente; condicional ao alvo |
+| REA-APP / 11 | Inspeção do artefato — producao_rea; correção por construcao_rea | Instalador/ASAR próprio e pergunta concreta | Ferramentas comprovadas; achados rastreáveis e correções verificadas | Pendente; condicional ao alvo |
 | PILOT / 12 | Piloto privado 30 dias — orquestrador + devops + qa | RELEASE aprovado e E0 ainda válido | Uso representativo, consumo/falhas, recuperação, memória | Pendente |
 
 ## Rastreabilidade dos requisitos
@@ -32,6 +37,7 @@ Data: 2026-10-14. Fonte: plano final autorizado na conversa. Estados abaixo são
 | RF-12 orçamento e horas | E0, E1, E2, MEDIA, PILOT |
 | RF-13 retenção, RF-14 backup | DATA, TEXT, RELEASE |
 | RF-16 limites do MVP | DESIGN, DATA, TEXT, MEDIA, RELEASE |
+| RF-17 reprodução baseada no Discord | REA-REF-01/02/03/04, DESIGN, RELEASE |
 
 ## Ciclo obrigatório de cada tarefa implementadora
 
@@ -43,3 +49,5 @@ Data: 2026-10-14. Fonte: plano final autorizado na conversa. Estados abaixo são
 6. Achados retornam ao dono; correções exigem nova verificação dos trechos afetados. Somente principal aceita e libera dependentes.
 
 DOC e E0 podem avançar em paralelo com arquivos disjuntos. No máximo três especialistas além do principal; lista com múltiplos responsáveis não autoriza iniciá-los todos juntos nem redelegar. Se E0/E1/E2 reprovar, dependentes permanecem suspensos até decisão do principal, sem alterar silenciosamente o produto.
+
+REA-REF foi acrescentada por pedido posterior do usuário em 2026-10-14. A análise estática/documentação da referência pode avançar sem mídia do projeto; sua implementação respeita os mesmos portões. Consulte [o contrato REA](../rea/plano-discord-referencia.md). A tarefa REA já existente na etapa 11 refere-se ao instalador/ASAR do próprio projeto.

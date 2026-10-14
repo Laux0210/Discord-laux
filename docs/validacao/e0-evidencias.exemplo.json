@@ -1,0 +1,147 @@
+{
+  "_instrucoes": [
+    "EXEMPLO NÃO VERIFICADO. Nenhuma conta, serviço, proteção ou quota é comprovada por este arquivo.",
+    "Use: python -B scripts/verificar_e0.py docs/validacao/e0-evidencias.exemplo.json. Resultado esperado: BLOQUEADO, código 1.",
+    "Códigos: 0 candidato a revisão independente; 1 bloqueado; 2 entrada inválida. Código 0 nunca significa GO nem autoriza mídia.",
+    "Copie para um JSON local separado; preserve este exemplo. Preencha somente dados sanitizados, rótulos ou identificadores não secretos. Nunca inclua tokens, senhas, números de cartão ou dados pessoais desnecessários.",
+    "Em evidencias, adicione objetos no formato de _modelo_evidencia e use suas chaves nas referências evidencia/evidencia_condicao/comprovacoes. Os arquivos devem estar na pasta do JSON ou em subpastas; URLs, caminhos absolutos, UNC e escape por ../ são rejeitados.",
+    "Declare origem distinta: documentacao_publica, observacao_autenticada, analise_local ou teste_real. Documentação, análise e simulação não substituem observação autenticada das contas ou teste real de proteção.",
+    "Estado evidencias_para_revisao e verificado=true só devem ser declarados após inspeção real das fontes. Existência do arquivo, SHA-256 e flags não comprovam autenticidade, configuração ou eficácia; o principal precisa revisar o conteúdo e aprovar E0 com revisão independente.",
+    "Use timestamps ISO 8601 com timezone e ciclo real de cada produto, fim exclusivo. Coleta global, observado_em de cada serviço e evidências autenticadas/testes referenciados: no máximo 24 horas antes do instante avaliado, fronteira inclusiva. Exige observado_em <= coletado_em da evidência vinculada <= coleta global <= instante avaliado. Contas devem ter evidência no ciclo; consumo diário de Workers/DO deve corresponder ao dia UTC avaliado.",
+    "Quotas usam as unidades dos nomes: GB decimal, requests, GB-s, linhas, ms, MAU, conexões, mensagens e minutos. Limite/consumo são números, não strings ou booleanos. Identifique o período e a fonte autoritativa dentro da evidência sanitizada.",
+    "Workers, DO SQLite e Supabase exigem plano Free. SFU/TURN precisa elegibilidade e egress agregado do ciclo. Para GitHub, identifique proprietário e recurso; modo build_local dispensa comprovar quotas de Actions, sem autorizar CI. modo actions exige quotas e suspensão sem cobrança comprovadas.",
+    "Orçamento: saldo=min(operacional,franquia,limite_de_corte)-consumo_agregado-outros_consumos_previstos-reserva_seguranca. Necessidade=706.3524+reserva_da_prova. Fronteira exata também bloqueia. Teto operacional candidato: 800 GB; reservas exigem justificativa real na evidência.",
+    "1000 GB de franquia, 800 GB de orçamento e 30% de margem são hipóteses herdadas do plano, não limites validados da conta, medições ou hard cap. Não infira R$0 a partir da projeção aritmética.",
+    "hard_cap_provedor exige evidência da configuração autenticada e condição pública aplicável que cubra SFU e TURN sem excedente pago. Não há afirmação de disponibilidade desse mecanismo em Cloudflare.",
+    "controlador_aplicacao exige cada comprovação com origem teste_real, incluindo término remoto, cliente que ignora expulsão e fechamento quando o controlador está indisponível/sem quota. Flags, alertas, contadores e estimativa de bitrate não resolvem E0; este utilitário não implementa nem ensaia o corte.",
+    "Não use mídia, piloto, serviços pagos ou excedentes reais para preencher esta coleta. Evidências pendentes mantêm o gate bloqueado. --agora é apenas replay com timezone; uma avaliação histórica não confirma o estado atual."
+  ],
+  "_modelo_evidencia": {
+    "arquivo": "evidencias/inspecao-sanitizada.md",
+    "sha256": "PREENCHER_COM_SHA256_REAL_DE_64_CARACTERES_HEXADECIMAIS",
+    "origem": "observacao_autenticada",
+    "coletado_em": null,
+    "sem_segredos": false
+  },
+  "versao": 1,
+  "estado": "exemplo_nao_verificado",
+  "coletado_em": null,
+  "evidencias": {},
+  "servicos": {
+    "sfu_turn": {
+      "conta": null,
+      "recurso": null,
+      "plano": null,
+      "verificado": false,
+      "elegivel": false,
+      "evidencia": "cloudflare_conta",
+      "pagamento": null,
+      "itens_pagos_necessarios": null,
+      "ciclo": {"inicio": null, "fim": null},
+      "observado_em": null,
+      "quotas": {"egress_gb": {"limite": null, "consumo": null}}
+    },
+    "workers": {
+      "conta": null,
+      "recurso": null,
+      "plano": null,
+      "verificado": false,
+      "evidencia": "cloudflare_conta",
+      "pagamento": null,
+      "itens_pagos_necessarios": null,
+      "ciclo": {"inicio": null, "fim": null},
+      "observado_em": null,
+      "suspensao_comprovada": false,
+      "quotas": {
+        "requests_dia": {"limite": null, "consumo": null},
+        "cpu_ms_por_invocacao": {"limite": null, "consumo": null}
+      }
+    },
+    "durable_objects": {
+      "conta": null,
+      "recurso": null,
+      "plano": null,
+      "armazenamento": null,
+      "verificado": false,
+      "evidencia": "cloudflare_conta",
+      "pagamento": null,
+      "itens_pagos_necessarios": null,
+      "ciclo": {"inicio": null, "fim": null},
+      "observado_em": null,
+      "suspensao_comprovada": false,
+      "quotas": {
+        "requests_dia": {"limite": null, "consumo": null},
+        "gb_s_dia": {"limite": null, "consumo": null},
+        "linhas_lidas_dia": {"limite": null, "consumo": null},
+        "linhas_escritas_dia": {"limite": null, "consumo": null},
+        "armazenamento_gb": {"limite": null, "consumo": null}
+      }
+    },
+    "supabase": {
+      "conta": null,
+      "recurso": null,
+      "plano": null,
+      "verificado": false,
+      "evidencia": "supabase_conta",
+      "pagamento": null,
+      "itens_pagos_necessarios": null,
+      "ciclo": {"inicio": null, "fim": null},
+      "observado_em": null,
+      "suspensao_comprovada": false,
+      "quotas": {
+        "db_gb": {"limite": null, "consumo": null},
+        "egress_gb": {"limite": null, "consumo": null},
+        "cached_egress_gb": {"limite": null, "consumo": null},
+        "storage_gb": {"limite": null, "consumo": null},
+        "mau": {"limite": null, "consumo": null},
+        "realtime_conexoes": {"limite": null, "consumo": null},
+        "realtime_mensagens": {"limite": null, "consumo": null}
+      }
+    },
+    "github": {
+      "conta": null,
+      "recurso": null,
+      "plano": null,
+      "verificado": false,
+      "modo": "build_local",
+      "evidencia": "github_conta",
+      "pagamento": null,
+      "itens_pagos_necessarios": null,
+      "ciclo": {"inicio": null, "fim": null},
+      "observado_em": null,
+      "suspensao_comprovada": false,
+      "quotas": {}
+    }
+  },
+  "orcamento": {
+    "franquia_sfu_turn_gb": null,
+    "operacional_gb": 800,
+    "consumo_agregado_sfu_turn_gb": null,
+    "outros_consumos_previstos_gb": null,
+    "reserva_seguranca_gb": null,
+    "evidencia": "cloudflare_conta"
+  },
+  "protecao_sfu_turn": {
+    "mecanismo": "nao_comprovado",
+    "cobre_sfu_e_turn": false,
+    "nao_cobra_excedente": false,
+    "limite_gb": null,
+    "evidencia": "protecao_autenticada",
+    "evidencia_condicao": "condicoes_publicas",
+    "comprovacoes": {
+      "admissao_fechada_em_falha": null,
+      "reserva_conservadora_bytes": null,
+      "termino_remoto": null,
+      "falha_controlador": null,
+      "cliente_ignora_expulsao": null,
+      "reconciliacao_autoritativa": null,
+      "fechamento_sem_quota_controlador": null
+    }
+  },
+  "prova": {
+    "duracao_minutos": 15,
+    "reserva_gb": null,
+    "cancelamento": null,
+    "evidencia": "reserva_e_cancelamento_da_prova"
+  }
+}

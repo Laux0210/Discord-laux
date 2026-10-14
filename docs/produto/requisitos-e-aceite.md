@@ -20,6 +20,9 @@ Data: 2026-10-14. Fonte normativa: plano final da conversa, autorizado por “Im
 | RF-14 | Backup de contas, comunidades e permissões sem texto | AC-14: lista explícita de tabelas permitidas exclui mensagens; restauração recupera configuração/acessos e não contém nem recupera texto |
 | RF-15 | Código/releases privados, atualização manual | AC-15: instalador privado; instalação, atualização manual, desinstalação e retorno à versão anterior testados; nenhum segredo no cliente |
 | RF-16 | MVP sem edição, anexos, webcam, gravação e voz por DM | AC-16: fluxos e serviços da versão não oferecem essas capacidades; não ampliar escopo para satisfazer uma limitação técnica |
+| RF-17 | Reproduzir funções, modos e interface do Discord a partir de engenharia reversa com REA | AC-17: registrar versão/hash da referência, evidência por função/estado/tela e matriz de rastreabilidade; implementar os fluxos selecionados do MVP com testes e comparação visual/comportamental independente; documentar diferenças e manter funções adicionais em backlog separado |
+
+RF-17 foi acrescentado em 2026-10-14 pelo pedido posterior de usar REA no aplicativo Discord. O pacote DOC-02 anterior continha 16 requisitos; seu aceite histórico não valida este acréscimo nem a engenharia reversa. Consulte [o plano de referência REA](../rea/plano-discord-referencia.md).
 
 ## Critérios técnicos transversais
 

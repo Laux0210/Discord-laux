@@ -8,6 +8,8 @@ Data: 2026-10-14. Fonte: plano final da conversa, autorizado pelo pedido “Impl
 
 **Especificação:** [requisitos e aceite](../produto/requisitos-e-aceite.md). **Execução rastreável:** [backlog](backlog.md). **Decisões:** [registro](decisoes.md).
 
+**Atualização autorizada em 2026-10-14:** utilizar a skill REA para fazer engenharia reversa do aplicativo Discord e reproduzir funções, modos de uso e interface no aplicativo próprio. O contrato de investigação e reprodução está em [REA — Discord de referência](../rea/plano-discord-referencia.md). A análise de referência alimenta DESIGN e a implementação; a inspeção do nosso instalador continua na etapa 11.
+
 ## Restrições globais
 
 - Windows 10/11 x64, português do Brasil, login Google integrado ao Supabase Auth.
@@ -27,6 +29,17 @@ O segundo portão é a prova pequena; o terceiro é o ensaio de dez participante
 Fontes publicadas citadas no plano aprovado, sem revalidação por esta tarefa documental: [Cloudflare Durable Objects](https://developers.cloudflare.com/durable-objects/platform/pricing/), [SFU](https://developers.cloudflare.com/realtime/sfu/platform/pricing/), [alertas](https://developers.cloudflare.com/billing/manage/budget-alerts/), [permissões Discord](https://docs.discord.com/developers/topics/permissions), [captura Electron](https://www.electronjs.org/docs/latest/api/session#sessetdisplaymediarequesthandlerhandler-opts), [Realtime Supabase](https://supabase.com/docs/guides/realtime/authorization), [GitHub Actions](https://docs.github.com/en/billing/concepts/product-billing/github-actions).
 
 ## Etapas ordenadas
+
+### Preparação transversal — engenharia reversa do Discord de referência (REA-REF)
+
+Responsáveis: `producao_rea` na investigação, `ux_ui` e `arquiteto` nos contratos derivados, `construcao_rea` na reprodução atribuída e `qa` na comparação independente. Todos leem `.agents/skills/reverse-engineer-anything/SKILL.md` quando atuarem com REA.
+
+- [ ] REA-REF-01: identificar a instalação/versão do Discord desktop, caminhos e hashes; inventariar o pacote Electron/ASAR com ferramentas efetivamente disponíveis, preservando o original.
+- [ ] REA-REF-02: documentar funções, modos e estados da interface com evidências estáticas e observação autorizada do aplicativo; mapear comunidades, canais, texto, amigos/DMs, presença, controles de voz/tela e configurações.
+- [ ] REA-REF-03: produzir matriz função/estado/interface → evidência → requisito → contrato → teste; registrar diferenças em relação ao MVP e especificar telas, medidas e interações para reprodução.
+- [ ] REA-REF-04: `construcao_rea` reproduz os módulos atribuídos a partir do contrato aceito, após as dependências técnicas; QA compara comportamento e composição visual com a versão de referência registrada.
+
+Identificação, leitura estática e documentação da referência podem avançar em paralelo com E0, sem ativar a mídia do projeto. Operações no Discord que enviem mensagens, modifiquem comunidades ou iniciem chamadas requerem cenário de teste autorizado. A implementação correspondente continua após E0/E1/E2, DESIGN e BASE. A referência não altera automaticamente limites de capacidade, retenção, privacidade, custos ou itens excluídos do MVP. Funções adicionais observadas entram em backlog separado. Esta preparação não está concluída nem é prova de engenharia reversa já executada.
 
 ### 1. Consolidar contexto, decisões e documentos — DOC
 
@@ -71,6 +84,7 @@ Responsáveis: ux_ui, arquiteto e produto; consolidação do planejador.
 
 - [ ] Especificar comunidades, canais, DMs, controles de voz, captura, administração, erros e indisponibilidade.
 - [ ] Formalizar contratos compartilhados de capacidades, operações autorizadas, entrada/publicação/assinatura/negociação/saída de mídia, reserva exclusiva, orçamento e IPC restrito.
+- [ ] Incorporar o contrato REA-REF-03: funções e modos selecionados, telas/estados e critérios de fidelidade ao Discord, com referências verificáveis e diferenças documentadas para o MVP.
 
 Aceite: frontend, backend e dados recebem interfaces consistentes, fluxos completos e exemplos de autorização. Não inventar contratos de API nesta fase documental.
 
@@ -129,6 +143,7 @@ Responsáveis: qa, seguranca e revisor; empacotamento: devops.
 
 - [ ] Testar integração e revisar IPC, RLS, permissões, limpeza de mídia e distribuição; devolver correções aos donos dos módulos.
 - [ ] Após existir instalador/ASAR próprio, producao_rea investiga pergunta concreta; construcao_rea corrige achados rastreáveis, com ferramentas comprovadamente disponíveis.
+- [ ] Conferir os módulos reproduzidos contra a matriz REA-REF; registrar evidências visuais e testes dos mesmos fluxos/estados. REA-APP inspeciona nosso instalador; REA-REF investiga o Discord usado como referência.
 
 Aceite: nenhum achado bloqueador; instalação, atualização manual, desinstalação e rollback testados nos dois Windows. REA não inicia antes de existir alvo autorizado.
 

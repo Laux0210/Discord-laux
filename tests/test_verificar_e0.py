@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 import hashlib
 import importlib.util
 import json
+import math
 from pathlib import Path
 import subprocess
 import sys
@@ -50,7 +51,7 @@ def fixture_completa():
     servicos["sfu_turn"]["quotas"]["egress_gb"] = {"limite": 1000, "consumo": 0}
     servicos["durable_objects"]["armazenamento"] = "sqlite"
     servicos["github"]["modo"] = "build_local"
-    return {
+    dados = {
         "versao": 1,
         "estado": "evidencias_para_revisao",
         "coletado_em": COLETA,
@@ -71,7 +72,6 @@ def fixture_completa():
             "outros_consumos_previstos_gb": 0,
             "reserva_seguranca_gb": 20,
             "evidencia": "teste",
-            "evidencia_condicao": "documentacao",
         },
         "protecao_sfu_turn": {
             "mecanismo": "hard_cap_provedor",
@@ -87,6 +87,7 @@ def fixture_completa():
             "evidencia": "teste",
         },
     }
+    return adicionar_proveniencia(dados)
 
 
 def adicionar_proveniencia(dados):
@@ -153,7 +154,7 @@ class VerificacaoE0Tests(unittest.TestCase):
         protecao = dados["protecao_sfu_turn"]
         protecao["mecanismo"] = "controlador_aplicacao"
         protecao["comprovacoes"] = {
-            chave: "teste" for chave in (
+            chave: "ensaio" for chave in (
                 "admissao_fechada_em_falha", "reserva_conservadora_bytes",
                 "termino_remoto", "falha_controlador", "cliente_ignora_expulsao",
                 "reconciliacao_autoritativa", "fechamento_sem_quota_controlador",
@@ -190,8 +191,127 @@ class VerificacaoE0Tests(unittest.TestCase):
                 dados[grupo][campo] = valor
                 self.assert_bloqueado(dados, f"{grupo}.{campo}")
         dados = fixture_completa()
-        dados["servicos"]["workers"]["quotas"]["quota-ficticia"]["consumo"] = True
+        dados["servicos"]["workers"]["quotas"]["requests_dia"]["consumo"] = True
         self.assert_bloqueado(dados, "servicos.workers.quotas")
+
+    def test_quota_relevante_ausente_bloqueia(self):
+        dados = fixture_completa()
+        del dados["servicos"]["durable_objects"]["quotas"]["gb_s_dia"]
+        self.assert_bloqueado(dados, "servicos.durable_objects.quotas.gb_s_dia")
+
+    def test_limite_e_consumo_do_orcamento_precisam_conferir_com_a_conta(self):
+        dados = fixture_completa()
+        dados["orcamento"]["franquia_sfu_turn_gb"] = 2000
+        self.assert_bloqueado(dados, "orcamento.franquia_sfu_turn_gb")
+
+    def test_documentacao_publica_ou_simulacao_nao_substituem_observacao_da_conta(self):
+        for origem in ("documentacao_publica", "simulacao", "analise_local"):
+            with self.subTest(origem=origem):
+                dados = fixture_completa()
+                dados["evidencias"]["teste"]["origem"] = origem
+                self.assert_bloqueado(dados, "servicos.sfu_turn.evidencia")
+
+    def test_protecao_nativa_exige_condicao_publica_e_configuracao_da_conta(self):
+        dados = fixture_completa()
+        del dados["protecao_sfu_turn"]["evidencia_condicao"]
+        self.assert_bloqueado(dados, "protecao_sfu_turn.evidencia_condicao")
+
+    def test_evidencia_da_conta_precisa_pertencer_ao_ciclo_atual(self):
+        dados = fixture_completa()
+        dados["servicos"]["sfu_turn"]["ciclo"]["inicio"] = "2026-10-14T11:30:00Z"
+        dados["servicos"]["sfu_turn"]["observado_em"] = "2026-10-14T11:45:00Z"
+        dados["coletado_em"] = "2026-10-14T11:45:00Z"
+        self.assert_bloqueado(dados, "servicos.sfu_turn.evidencia")
+
+    def test_coleta_antiga_de_conta_bloqueia(self):
+        dados = fixture_completa()
+        dados["evidencias"]["teste"]["coletado_em"] = "2026-10-13T11:00:00Z"
+        self.assert_bloqueado(dados, "servicos.sfu_turn.evidencia")
+
+    def test_observacao_antiga_bloqueia_mesmo_com_evidencia_recente(self):
+        for nome in ("sfu_turn", "supabase", "github"):
+            with self.subTest(servico=nome):
+                dados = fixture_completa()
+                dados["servicos"][nome]["observado_em"] = "2026-10-02T11:00:00Z"
+                self.assert_bloqueado(dados, f"servicos.{nome}.observado_em")
+
+    def test_fronteira_de_24h_da_observacao_e_inclusiva_com_timezone(self):
+        casos = (
+            ("2026-10-13T12:00:00Z", "CANDIDATO_A_REVISAO"),
+            ("2026-10-13T09:00:00-03:00", "CANDIDATO_A_REVISAO"),
+            ("2026-10-13T11:59:59Z", "BLOQUEADO"),
+            ("2026-10-13T08:59:59-03:00", "BLOQUEADO"),
+        )
+        for nome in ("sfu_turn", "supabase", "github"):
+            for instante, esperado in casos:
+                with self.subTest(servico=nome, observado_em=instante):
+                    dados = fixture_completa()
+                    dados["servicos"][nome]["observado_em"] = instante
+                    resultado = self.avaliar(dados)
+                    self.assertEqual(resultado["status"], esperado, resultado)
+                    self.assertFalse(resultado["gate_aprovado"])
+                    self.assertFalse(resultado["pode_iniciar_midia"])
+
+    def test_observacao_posterior_a_evidencia_vinculada_bloqueia(self):
+        for nome in ("sfu_turn", "workers", "durable_objects", "supabase", "github"):
+            with self.subTest(servico=nome):
+                dados = fixture_completa()
+                dados["coletado_em"] = "2026-10-14T11:45:00Z"
+                dados["servicos"][nome]["observado_em"] = "2026-10-14T11:15:00Z"
+                self.assert_bloqueado(dados, f"servicos.{nome}.observado_em")
+
+    def test_observacao_igual_a_evidencia_em_outro_timezone_e_consistente(self):
+        dados = fixture_completa()
+        for servico in dados["servicos"].values():
+            servico["observado_em"] = "2026-10-14T08:00:00-03:00"
+        resultado = self.avaliar(dados)
+        self.assertEqual(resultado["status"], "CANDIDATO_A_REVISAO", resultado)
+        self.assertEqual(resultado["pendencias"], [])
+        self.assertFalse(resultado["gate_aprovado"])
+        self.assertFalse(resultado["pode_iniciar_midia"])
+
+    def test_observacao_sem_timezone_bloqueia_em_todos_os_servicos(self):
+        for nome in ("sfu_turn", "workers", "durable_objects", "supabase", "github"):
+            with self.subTest(servico=nome):
+                dados = fixture_completa()
+                dados["servicos"][nome]["observado_em"] = "2026-10-14T11:00:00"
+                self.assert_bloqueado(dados, f"servicos.{nome}.observado_em")
+
+    def test_protecao_de_controlador_com_simulacao_continua_bloqueada(self):
+        dados = fixture_completa()
+        dados["protecao_sfu_turn"]["mecanismo"] = "controlador_aplicacao"
+        dados["protecao_sfu_turn"]["comprovacoes"] = {
+            chave: "documentacao" for chave in (
+                "admissao_fechada_em_falha", "reserva_conservadora_bytes",
+                "termino_remoto", "falha_controlador", "cliente_ignora_expulsao",
+                "reconciliacao_autoritativa", "fechamento_sem_quota_controlador",
+            )
+        }
+        self.assert_bloqueado(dados, "protecao_sfu_turn.comprovacoes")
+
+    def test_soma_extrema_finita_nao_deve_gerar_json_infinito_ou_crash(self):
+        dados = fixture_completa()
+        dados["orcamento"]["consumo_agregado_sfu_turn_gb"] = 1e308
+        dados["orcamento"]["outros_consumos_previstos_gb"] = 1e308
+        resultado = self.avaliar(dados)
+        self.assertEqual(resultado["status"], "BLOQUEADO")
+        self.assertTrue(all(math.isfinite(valor)
+                            for valor in resultado.get("orcamento", {}).values()), resultado)
+        json.dumps(resultado, allow_nan=False)
+
+    def test_fixture_distribuida_fica_bloqueada_e_reproduz_projecao(self):
+        exemplo = ROOT / "docs" / "validacao" / "e0-evidencias.exemplo.json"
+        self.assertTrue(exemplo.is_file(), "fixture não verificada ainda não criada")
+        processo = subprocess.run(
+            [sys.executable, "-B", str(SCRIPT), str(exemplo)],
+            cwd=ROOT, capture_output=True, text=True, encoding="utf-8", check=False,
+        )
+        self.assertEqual(processo.returncode, 1, processo.stderr)
+        resultado = json.loads(processo.stdout)
+        self.assertEqual(resultado["status"], "BLOQUEADO")
+        self.assertFalse(resultado["gate_aprovado"])
+        self.assertEqual(resultado["projecao_gb"]["payload_gb"], 543.348)
+        self.assertEqual(resultado["projecao_gb"]["com_margem_gb"], 706.3524)
 
     def test_timestamp_sem_timezone_e_ciclo_expirado_bloqueiam(self):
         dados = fixture_completa()
