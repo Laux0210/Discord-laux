@@ -13,6 +13,7 @@ import { VoiceRoomArea } from './components/VoiceRoomArea';
 import { VoiceControls } from './components/VoiceControls';
 import { LoginModal } from './components/LoginModal';
 import { FriendsArea, type FriendEntry } from './components/FriendsArea';
+import { DirectMessageArea } from './components/DirectMessageArea';
 
 export interface AppProps {
   authService: LegacyAuthService | ModernAuthService;
@@ -62,6 +63,12 @@ export const App: React.FC<AppProps> = ({
 }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(authService.getCurrentUser());
   const [activeView, setActiveView] = useState<'guild' | 'dm'>('guild');
+  const [selectedDm, setSelectedDm] = useState<{
+    userId: string;
+    friendId: string;
+    friendName: string;
+    service: FriendshipService;
+  } | null>(null);
   const [guilds, setGuilds] = useState<Guild[]>([]);
   const [selectedGuildId, setSelectedGuildId] = useState<string | null>(null);
   const [channels, setChannels] = useState<Channel[]>(DEFAULT_CHANNELS);
@@ -75,6 +82,10 @@ export const App: React.FC<AppProps> = ({
   const [isScreenSharing, setIsScreenSharing] = useState(false);
   const [isInVoiceCall, setIsInVoiceCall] = useState(initialIsInVoiceCall ?? false);
   const [authError, setAuthError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setSelectedDm(null);
+  }, [currentUser?.id, friendshipService, authService]);
 
   const [callState, setCallState] = useState<CallState>(() => {
     if (callController) {
@@ -209,6 +220,7 @@ export const App: React.FC<AppProps> = ({
   };
 
   const handleLogout = async () => {
+    setSelectedDm(null);
     await authService.logout();
     setCurrentUser(null);
     setGuilds([]);
@@ -356,10 +368,12 @@ export const App: React.FC<AppProps> = ({
         guilds={guilds}
         selectedGuildId={activeView === 'guild' ? selectedGuildId : null}
         onSelectGuild={(id) => {
+          setSelectedDm(null);
           setSelectedGuildId(id);
           setActiveView('guild');
         }}
         onSelectDmHome={() => {
+          setSelectedDm(null);
           setActiveView('dm');
         }}
       />
@@ -367,14 +381,26 @@ export const App: React.FC<AppProps> = ({
       {/* 2. Área Central (Comunidade ou Amigos/DMs) */}
       {activeView === 'dm' ? (
         <div style={{ flex: 1, display: 'flex' }}>
-          <FriendsArea
+          {selectedDm?.userId === currentUser.id && selectedDm.service === friendshipService ? (
+            <DirectMessageArea
+              key={JSON.stringify([currentUser.id, selectedDm.friendId])}
+              service={selectedDm.service}
+              user={currentUser}
+              friendId={selectedDm.friendId}
+              friendName={selectedDm.friendName}
+              onBack={() => setSelectedDm(null)}
+            />
+          ) : <FriendsArea
             friends={friends}
             currentUserId={currentUser.id}
             onSendFriendRequest={handleSendFriendRequest}
             onAcceptFriendRequest={handleAcceptFriendRequest}
-            onOpenDm={(_friendId) => {}}
+            onOpenDm={(friendId) => {
+              if (!friendshipService) return;
+              setSelectedDm({ userId: currentUser.id, friendId, friendName: friends.find((friend) => friend.friendId === friendId)?.displayName ?? friendId, service: friendshipService });
+            }}
             presenceService={presenceService}
-          />
+          />}
         </div>
       ) : (
         <>

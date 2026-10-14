@@ -37,7 +37,7 @@ Resultados atuais: [E0-02 passou em 35 testes e revisão independente](docs/vali
 
 Ambiente verificado nesta rodada: Node.js 26.9.0, npm 11.19.1 e Python 3.14.7.
 
-# Executar bateria completa de testes unitários locais com Vitest (135 testes em 29 arquivos)
+# Executar bateria completa de testes unitários locais com Vitest (167 testes em 32 arquivos)
 npm test
 
 # Gerar pacote de release e manifesto auditado de distribuição (RF-15)

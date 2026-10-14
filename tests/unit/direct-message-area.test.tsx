@@ -130,6 +130,45 @@ describe('conversa direta local com efeitos React reais', () => {
     expect(host.querySelector('textarea')!.value).toBe('');
   });
 
+  it.each(['usuário', 'destinatário', 'serviço'] as const)('envio pendente não altera a conversa após troca de %s', async (change) => {
+    const service = await acceptedService();
+    const sent = deferred<DmMessage>();
+    vi.spyOn(service, 'sendDmMessage').mockReturnValueOnce(sent.promise);
+    await renderConversation(service);
+    await draft('Envio antigo');
+    await submit();
+    const replacement = change === 'serviço' ? await acceptedService() : service;
+    await renderConversation(replacement, change === 'usuário' ? charlie : alice, change === 'destinatário' ? 'user-3' : 'user-2');
+    await draft('Rascunho da nova conversa');
+    await act(async () => sent.resolve({
+      id: 'late-send', dmChannelId: 'old-channel', authorId: alice.id, authorName: 'Alice', content: 'Envio antigo', createdAt: Date.now()
+    }));
+    expect(host.querySelector('textarea')!.value).toBe('Rascunho da nova conversa');
+    expect(host.textContent).not.toContain('Envio antigo');
+    expect(host.querySelector('textarea')!.disabled).toBe(false);
+  });
+
+  it('logout pela UI descarta a seleção e a leitura pendente antes de outra sessão', async () => {
+    const services = await createLocalAppServices();
+    const reading = deferred<DmMessage[]>();
+    vi.spyOn(services.friendshipService, 'getDmMessages').mockReturnValueOnce(reading.promise);
+    await act(async () => root.render(<App {...services} />));
+    await click(host.querySelector('[data-testid="btn-dm-home"]'));
+    await click(host.querySelector('[data-testid="btn-open-dm-user-2"]'));
+    expect(host.textContent).toContain('Carregando');
+    await click(host.querySelector('[data-testid^="guild-item-"]'));
+    await click(host.querySelector('[data-testid="btn-logout"]'));
+    expect(host.querySelector('[data-testid="login-modal"]')).not.toBeNull();
+    await act(async () => reading.resolve([{
+      id: 'old-logout', dmChannelId: 'old-channel', authorId: alice.id, authorName: 'Alice', content: 'SEGREDO SESSÃO ENCERRADA', createdAt: Date.now()
+    }]));
+    await click(host.querySelector('[data-testid="btn-login-amigo-2"]'));
+    await click(host.querySelector('[data-testid="btn-dm-home"]'));
+    expect(host.querySelector('[data-testid="direct-message-area"]')).toBeNull();
+    expect(host.querySelector('[data-testid="friends-area"]')).not.toBeNull();
+    expect(host.textContent).not.toContain('SEGREDO SESSÃO ENCERRADA');
+  });
+
   it('não reaproveita rascunho ou histórico no primeiro render de um novo serviço', async () => {
     const service = await acceptedService();
     const channel = await service.getOrCreateDmChannel(alice.id, 'user-2');
@@ -193,5 +232,20 @@ describe('conversa direta local com efeitos React reais', () => {
     expect(host.textContent).not.toContain('Recebida sem evento');
     await click(Array.from(host.querySelectorAll('button')).find((b) => b.textContent === 'Atualizar')!);
     expect(host.textContent).toContain('Recebida sem evento');
+  });
+
+  it('recusa envio após amizade removida mesmo sem subscription, limpa histórico e preserva rascunho', async () => {
+    const service = await acceptedService();
+    Object.defineProperty(service, 'onDmUpdated', { value: undefined });
+    const channel = await service.getOrCreateDmChannel(alice.id, 'user-2');
+    await service.sendDmMessage({ dmChannelId: channel.id, authorId: 'user-2', authorName: 'Bob', content: 'Histórico autorizado antes' });
+    await renderConversation(service);
+    await draft('Não deve ser enviada');
+    await service.removeFriendship(alice.id, 'user-2');
+    await submit();
+    expect(host.textContent).not.toContain('Histórico autorizado antes');
+    expect(host.querySelector('[role="alert"]')?.textContent).toContain('AMIZADE_NECESSARIA_PARA_DM');
+    expect(host.querySelector('textarea')!.value).toBe('Não deve ser enviada');
+    expect(host.querySelector('textarea')!.disabled).toBe(true);
   });
 });

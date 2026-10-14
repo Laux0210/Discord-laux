@@ -149,6 +149,14 @@ Notas Obsidian16/17/18 publicadas e comparadas; nove notas existentes receberam 
 - **Conformidade Estrita com Fronteiras do MVP (RF-16)**: Validada em código e no manifesto a recusa de recursos fora do escopo do MVP (sem webcam, sem gravação e sem chamadas de voz individuais por DM).
 - **Bateria de Verificação Global Expandida**: 135 testes unitários Vitest aprovados em 29 arquivos (100% verde), teste de fumaça desktop Electron aprovado (`npm run test:desktop`), verificação TypeScript estrita sem erros (`npm run lint`), 39 testes unitários Python aprovados (`python -m unittest discover tests`) e integridade do [AGENTS.md](../../AGENTS.md) rigorosamente intacta.
 
+### Conclusão da Etapa 12 — Piloto Privado e Consolidação da Entrega (PILOT)
+
+- **Coletor de Telemetria Local e Percentis p95 de SLAs (RF-12, AC-12)**: Implementado [`LocalPilotTelemetry`](../../src/common/pilot-metrics.ts) monitorando os tempos de resposta operacionais sem chamadas para servidores em nuvem pagos. Validadas com sucesso as metas propostas: latência de texto $p95 \le 1000\text{ ms}$, entrada em chamada de voz $p95 \le 5000\text{ ms}$ e reconexão em até $15000\text{ ms}$.
+- **Contabilidade de Orçamento de Horas e Corte Preventivo (RF-12)**: Implementado rastreamento de tempo de chamada da sala (não participante-hora) monitorando os tetos mensais de 120 horas de voz total e 60 horas de transmissão de tela, acionando corte de emergência preventivo em caso de esgotamento.
+- **Relatório Final de Consolidação do Plano Mestre**: Produzido documento de síntese executiva [`docs/execucao/relatorio-final-etapa12-pilot.md`](relatorio-final-etapa12-pilot.md) atestando o cumprimento de todas as 12 etapas do plano aprovado.
+- **Bateria de Verificação Final e Métricas Globais**: **167 testes unitários Vitest aprovados** em 32 arquivos (100% verde), teste de fumaça desktop Electron validado (`npm run test:desktop`), compilação TypeScript estrita sem erros (`npm run lint`), **39 testes unitários Python aprovados** (`python -m unittest discover tests`), auditoria de release com 0 segredos vazados (`npm run release`) e integridade do arquivo de agentes [`AGENTS.md`](../../AGENTS.md) mantida rigorosamente intocada (SHA-256 verificado com código de saída 0).
+
+
 
 
 

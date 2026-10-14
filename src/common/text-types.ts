@@ -87,6 +87,8 @@ export interface FriendshipService {
   getUserDms(userId: string): Promise<DmChannel[]>;
   sendDmMessage(params: SendDmParams): Promise<DmMessage>;
   getDmMessages(dmChannelId: string, requesterId: string, pagination?: PaginationParams): Promise<DmMessage[]>;
+  /** Invalida a leitura sem payload; a revogação emite uma última invalidação e encerra a assinatura. */
+  onDmUpdated?(dmChannelId: string, requesterId: string, callback: () => void): () => void;
 }
 
 export interface PresenceService {
