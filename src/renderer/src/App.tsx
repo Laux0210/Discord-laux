@@ -14,6 +14,7 @@ import { VoiceControls } from './components/VoiceControls';
 import { LoginModal } from './components/LoginModal';
 import { FriendsArea, type FriendEntry } from './components/FriendsArea';
 import { DirectMessageArea } from './components/DirectMessageArea';
+import { soundEffects } from './services/sound-effects';
 
 export interface AppProps {
   authService: LegacyAuthService | ModernAuthService;
@@ -253,6 +254,11 @@ export const App: React.FC<AppProps> = ({
     if (!currentUser) return;
     const next = !isMuted;
     setIsMuted(next);
+    if (next) {
+      soundEffects.playMute();
+    } else {
+      soundEffects.playUnmute();
+    }
     try {
       if (isInVoiceCall) {
         if (callController) {
@@ -270,7 +276,12 @@ export const App: React.FC<AppProps> = ({
     if (!currentUser) return;
     const next = !isDeafened;
     setIsDeafened(next);
-    if (next) setIsMuted(true);
+    if (next) {
+      setIsMuted(true);
+      soundEffects.playDeafen();
+    } else {
+      soundEffects.playUndeafen();
+    }
     try {
       if (isInVoiceCall) {
         if (callController) {
@@ -287,6 +298,7 @@ export const App: React.FC<AppProps> = ({
   const handleToggleScreenShare = async () => {
     if (!currentUser) return;
     if (isScreenSharing) {
+      soundEffects.playScreenShareStop();
       if (callController) {
         await callController.stopScreenShare(currentUser.id);
       } else {
@@ -301,6 +313,7 @@ export const App: React.FC<AppProps> = ({
 
       if (!isInVoiceCall) {
         setSelectedChannelId(targetChannelId);
+        soundEffects.playVoiceConnect();
         if (callController) {
           await callController.joinCall(
             targetChannelId,
@@ -325,6 +338,7 @@ export const App: React.FC<AppProps> = ({
       }
       if (ok) {
         setIsScreenSharing(true);
+        soundEffects.playScreenShareStart();
       }
     }
   };
@@ -357,6 +371,7 @@ export const App: React.FC<AppProps> = ({
 
   const handleDisconnectVoice = async () => {
     if (!currentUser) return;
+    soundEffects.playVoiceDisconnect();
     if (callController) {
       await callController.leaveCall(currentUser.id);
     } else {
@@ -493,6 +508,9 @@ export const App: React.FC<AppProps> = ({
                 setSelectedChannelId(id);
                 const targetChannel = channels.find((channel) => channel.id === id);
                 if (targetChannel?.type === 'voice' && currentUser) {
+                  if (!isInVoiceCall || callState.channelId !== id) {
+                    soundEffects.playVoiceConnect();
+                  }
                   if (callController) {
                     callController
                       .joinCall(
