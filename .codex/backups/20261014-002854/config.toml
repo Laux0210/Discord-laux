@@ -1,0 +1,4 @@
+[agents]
+enabled = true
+# Três subagentes além da sessão principal; ajuste somente conforme capacidade real.
+max_concurrent_threads_per_session = 3

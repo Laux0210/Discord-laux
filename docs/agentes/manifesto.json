@@ -1,0 +1,129 @@
+{
+  "agents": [
+    {
+      "name": "orquestrador",
+      "file": ".codex/agents/orquestrador.toml",
+      "skills": [
+        "C:/Users/jv883/.agents/skills/bmad-help/SKILL.md",
+        "C:/Users/jv883/.agents/skills/superpowers/dispatching-parallel-agents/SKILL.md",
+        "C:/Users/jv883/.agents/skills/superpowers/verification-before-completion/SKILL.md"
+      ]
+    },
+    {
+      "name": "planejador",
+      "file": ".codex/agents/planejador.toml",
+      "skills": [
+        "C:/Users/jv883/.agents/skills/bmad-create-epics-and-stories/SKILL.md",
+        "C:/Users/jv883/.agents/skills/superpowers/writing-plans/SKILL.md"
+      ]
+    },
+    {
+      "name": "analista",
+      "file": ".codex/agents/analista.toml",
+      "skills": [
+        "C:/Users/jv883/.agents/skills/bmad-agent-analyst/SKILL.md"
+      ]
+    },
+    {
+      "name": "produto",
+      "file": ".codex/agents/produto.toml",
+      "skills": [
+        "C:/Users/jv883/.agents/skills/bmad-agent-pm/SKILL.md",
+        "C:/Users/jv883/.agents/skills/bmad-prd/SKILL.md"
+      ]
+    },
+    {
+      "name": "arquiteto",
+      "file": ".codex/agents/arquiteto.toml",
+      "skills": [
+        "C:/Users/jv883/.agents/skills/bmad-agent-architect/SKILL.md",
+        "C:/Users/jv883/.agents/skills/bmad-architecture/SKILL.md"
+      ]
+    },
+    {
+      "name": "ux_ui",
+      "file": ".codex/agents/ux_ui.toml",
+      "skills": [
+        "C:/Users/jv883/.agents/skills/bmad-agent-ux-designer/SKILL.md",
+        "C:/Users/jv883/.agents/skills/bmad-ux/SKILL.md"
+      ]
+    },
+    {
+      "name": "frontend",
+      "file": ".codex/agents/frontend.toml",
+      "skills": [
+        "C:/Users/jv883/.agents/skills/bmad-agent-dev/SKILL.md",
+        "C:/Users/jv883/.agents/skills/superpowers/test-driven-development/SKILL.md",
+        "C:/Users/jv883/.agents/skills/superpowers/verification-before-completion/SKILL.md"
+      ]
+    },
+    {
+      "name": "backend",
+      "file": ".codex/agents/backend.toml",
+      "skills": [
+        "C:/Users/jv883/.agents/skills/bmad-agent-dev/SKILL.md",
+        "C:/Users/jv883/.agents/skills/superpowers/test-driven-development/SKILL.md",
+        "C:/Users/jv883/.agents/skills/superpowers/systematic-debugging/SKILL.md"
+      ]
+    },
+    {
+      "name": "dados",
+      "file": ".codex/agents/dados.toml",
+      "skills": [
+        "C:/Users/jv883/.agents/skills/bmad-architecture/SKILL.md",
+        "C:/Users/jv883/.agents/skills/superpowers/verification-before-completion/SKILL.md"
+      ]
+    },
+    {
+      "name": "qa",
+      "file": ".codex/agents/qa.toml",
+      "skills": [
+        "C:/Users/jv883/.agents/skills/bmad-qa-generate-e2e-tests/SKILL.md",
+        "C:/Users/jv883/.agents/skills/superpowers/systematic-debugging/SKILL.md",
+        "C:/Users/jv883/.agents/skills/superpowers/verification-before-completion/SKILL.md"
+      ]
+    },
+    {
+      "name": "seguranca",
+      "file": ".codex/agents/seguranca.toml",
+      "skills": [
+        "C:/Users/jv883/.agents/skills/bmad-code-review/SKILL.md"
+      ]
+    },
+    {
+      "name": "devops",
+      "file": ".codex/agents/devops.toml",
+      "skills": [
+        "C:/Users/jv883/.agents/skills/superpowers/systematic-debugging/SKILL.md",
+        "C:/Users/jv883/.agents/skills/superpowers/verification-before-completion/SKILL.md"
+      ]
+    },
+    {
+      "name": "revisor",
+      "file": ".codex/agents/revisor.toml",
+      "skills": [
+        "C:/Users/jv883/.agents/skills/bmad-code-review/SKILL.md",
+        "C:/Users/jv883/.agents/skills/superpowers/receiving-code-review/SKILL.md"
+      ]
+    },
+    {
+      "name": "producao_rea",
+      "file": ".codex/agents/producao_rea.toml",
+      "skills": [
+        ".agents/skills/reverse-engineer-anything/SKILL.md",
+        "C:/Users/jv883/.agents/skills/bmad-spec/SKILL.md"
+      ]
+    },
+    {
+      "name": "construcao_rea",
+      "file": ".codex/agents/construcao_rea.toml",
+      "skills": [
+        ".agents/skills/reverse-engineer-anything/SKILL.md",
+        "C:/Users/jv883/.agents/skills/bmad-build/SKILL.md",
+        "C:/Users/jv883/.agents/skills/superpowers/test-driven-development/SKILL.md",
+        "C:/Users/jv883/.agents/skills/superpowers/verification-before-completion/SKILL.md"
+      ]
+    }
+  ],
+  "original_agents_md_sha256": "dad02adfe188a9345e59ba80039d96f4ec30fe7791c5f0173414d6852ed1a9d1"
+}

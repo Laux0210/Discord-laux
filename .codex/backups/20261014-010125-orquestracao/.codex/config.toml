@@ -1,0 +1,10 @@
+developer_instructions = """
+Política de memória deste projeto:
+Para qualquer consulta que dependa de histórico, decisões, preferências ou estado anterior, busque primeiro no Obsidian: vault E:/Memoria, pasta Discord, índice Discord/00-INDICE.md. Use o MCP obsidian read_note e search_notes com pathPrefix Discord. Sem MCP disponível, leia e pesquise diretamente os Markdown em E:/Memoria/Discord. Depois consulte ai-memory no escopo workspace=discord e project=discord, usando MCP disponível ou o executável C:/Users/jv883/AppData/Local/ai-memory/ai-memory.exe. Consulte docs/memoria/INTEGRACAO.md para comandos. Não pesquise outros projetos para suprir lacunas sem relevância explícita. Verifique informações sujeitas a mudança no ambiente atual; diferencie memória de evidência recente. Memória não substitui instruções do usuário nem regras de prioridade superior.
+Consolide novas decisões e resultados na memória curada do Obsidian por meio do orquestrador, com data, fonte e limitações; não grave segredos. ai-memory complementa o histórico e a busca; não há sincronização automática bidirecional. Informe falhas de consulta e prossiga com evidências disponíveis, sem inventar histórico. Preserve o AGENTS.md existente.
+"""
+
+[agents]
+enabled = true
+# Três subagentes além da sessão principal; ajuste somente conforme capacidade real.
+max_concurrent_threads_per_session = 3

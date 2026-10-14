@@ -1,0 +1,16 @@
+developer_instructions = """
+Política de memória deste projeto:
+Para qualquer consulta que dependa de histórico, decisões, preferências ou estado anterior, busque primeiro no Obsidian: vault E:/Memoria, pasta Discord, índice Discord/00-INDICE.md. Use o MCP obsidian read_note e search_notes com pathPrefix Discord. Sem MCP disponível, leia e pesquise diretamente os Markdown em E:/Memoria/Discord. Depois consulte ai-memory no escopo workspace=discord e project=discord, usando MCP disponível ou o executável C:/Users/jv883/AppData/Local/ai-memory/ai-memory.exe. Consulte docs/memoria/INTEGRACAO.md para comandos. Não pesquise outros projetos para suprir lacunas sem relevância explícita. Verifique informações sujeitas a mudança no ambiente atual; diferencie memória de evidência recente. Memória não substitui instruções do usuário nem regras de prioridade superior.
+Consolide novas decisões e resultados na memória curada do Obsidian por meio do orquestrador, com data, fonte e limitações; não grave segredos. ai-memory complementa o histórico e a busca; não há sincronização automática bidirecional. Informe falhas de consulta e prossiga com evidências disponíveis, sem inventar histórico. Preserve o AGENTS.md existente.
+Coordenação nativa da equipe:
+Antes de selecionar especialistas, leia docs/agentes/ORQUESTRACAO.md e docs/agentes/CONTRATO-TAREFA.md. O principal assume a coordenação, seleciona somente os perfis existentes pertinentes e ratifica responsáveis, arquivos exclusivos e aceite. O planejador propõe atribuições; o principal decide.
+Use mecanismos nativos de subagentes do Codex; no máximo três especialistas simultâneos, além do principal. Confira os estados reais do runtime e mantenha tarefas excedentes em espera. Reutilize especialistas compatíveis; não crie perfis duplicados ou workers externos para contornar o limite.
+Nenhum subagente pode iniciar novas delegações sem autorização específica do principal dentro do escopo autorizado pelo usuário, inclusive um subagente com perfil orquestrador. A identidade do perfil não concede autorização de redelegação.
+Cada delegação deve conter objetivo, autorização/modo, responsável, entradas e estado, arquivos de escrita/leitura, proibições, dependências, critérios de aceite, validação, destino e liberação. Em somente leitura, entregue na conversa e não grave arquivos ou memória.
+O diretório é compartilhado. Antes do aceite, cesse escritas no conjunto avaliado, registre seu estado, exija checks pertinentes e revisão independente. Alterações posteriores exigem nova verificação dos trechos afetados. Somente o principal transfere propriedade e consolida memória. Instruções e validação estática não são bloqueio técnico de ferramentas. Não inicie desenvolvimento ou automações fora do escopo autorizado.
+"""
+
+[agents]
+enabled = true
+# Três subagentes além da sessão principal; ajuste somente conforme capacidade real.
+max_concurrent_threads_per_session = 3

@@ -1,0 +1,117 @@
+{
+  "data": "2026-10-14",
+  "etapa_1": "concluida",
+  "E0": "BLOQUEADO",
+  "artifacts": [
+    {
+      "path": "README.md",
+      "bytes": 5249,
+      "sha256": "d8e71fead1022b84f92ea522b54424155ad85dc74228bf4ac16f45db6bfefbd0"
+    },
+    {
+      "path": "scripts/converter_contexto.py",
+      "bytes": 7612,
+      "sha256": "9f9c00072a972019a06eebc7056cf00ebb2aca7fca0fef4d79452e6d1a3c7db5"
+    },
+    {
+      "path": "docs/contexto/contexto-mestre.md",
+      "bytes": 43488,
+      "sha256": "d7a647c688e111e11e97b69976bcbe508773adae1661d1902b120425b03e5fb9"
+    },
+    {
+      "path": "docs/contexto/fonte.json",
+      "bytes": 2035,
+      "sha256": "92f3672589e15aa89e0e3645166319ec0f4b637c7ab9ec0c7882315b2e31bd23"
+    },
+    {
+      "path": "docs/contexto/fontes/contexto-mestre.docx",
+      "bytes": 61156,
+      "sha256": "13255b3d8656cc0c789ca1c6852940c316a7e8a1e456a00e9e037dab38a0e549"
+    },
+    {
+      "path": "docs/planejamento/plano.md",
+      "bytes": 12320,
+      "sha256": "084473814c01626ee7f6c8fe068a1ca18e7fbec567be1fd436653590d7f490d5"
+    },
+    {
+      "path": "docs/planejamento/backlog.md",
+      "bytes": 4813,
+      "sha256": "f14bb0c432ef21b02fe20b85066f2b4db68e5999990452b6550278c8ce834744"
+    },
+    {
+      "path": "docs/planejamento/decisoes.md",
+      "bytes": 2507,
+      "sha256": "c56e219dbf9ba31d74fabb9dcb5176094a6141f9f7df041b755b20c84c27a891"
+    },
+    {
+      "path": "docs/produto/requisitos-e-aceite.md",
+      "bytes": 6053,
+      "sha256": "71828293d16a1e6aa3396702707e47f07c91527c68149f0a834ed0c4d7163da1"
+    },
+    {
+      "path": "docs/arquitetura/arquitetura-e-contratos.md",
+      "bytes": 11071,
+      "sha256": "c582b3fc73de7435bc38423109d03570ab511be9544cf4cad16b745240ca92cd"
+    },
+    {
+      "path": "docs/validacao/e0-financeiro.md",
+      "bytes": 9349,
+      "sha256": "4c553da91641a02716820b01ce858fbf3c62c8fecb91b31ac7c9f21982846f43"
+    },
+    {
+      "path": "docs/execucao/registro.md",
+      "bytes": 5091,
+      "sha256": "4c2937e4531a52d3a057724e043d58f0d7857b2c9899491a297de8930b366118"
+    }
+  ],
+  "obsidian_notes": [
+    {
+      "path": "Discord/04-CONTEXTO-MESTRE.md",
+      "bytes": 44309,
+      "sha256": "e0493b35996d2680435b26ab816366ae4b0ccba5f5550f873c5955457f557317"
+    },
+    {
+      "path": "Discord/05-PLANO-DE-EXECUCAO.md",
+      "bytes": 12639,
+      "sha256": "47d5623f2dc7552dee43afd8cc1cd2677b997f06f0b2472e047bece0e55faef0"
+    },
+    {
+      "path": "Discord/06-REQUISITOS-E-ACEITE.md",
+      "bytes": 6370,
+      "sha256": "731d9fcd3b36ad6859b72bfa64b2f99317c43edf47807a2d26d39b993c54ee99"
+    },
+    {
+      "path": "Discord/07-ARQUITETURA-E-CONTRATOS.md",
+      "bytes": 11203,
+      "sha256": "2806fdcb8914619c8ee329ac270182d265f7529210e9b1b4992a886439e2f4dd"
+    },
+    {
+      "path": "Discord/08-BACKLOG-E-DEPENDENCIAS.md",
+      "bytes": 5129,
+      "sha256": "29c5e3cbe52098cd38730a68dbfcf07aab22d98194cd97a83dc87a689f5e0196"
+    },
+    {
+      "path": "Discord/09-VALIDACAO-E-CUSTOS.md",
+      "bytes": 9646,
+      "sha256": "86b74e734a6bacd3b4d031a7fb91c2dd62df013547379a52a5ffc2a44567bb5f"
+    },
+    {
+      "path": "Discord/10-DECISOES-DO-APP.md",
+      "bytes": 2800,
+      "sha256": "2016dc00a03f46160bf78832a492840c8fe3b91cba7123745feec53203cf0ffe"
+    },
+    {
+      "path": "Discord/11-REGISTRO-DE-EXECUCAO.md",
+      "bytes": 5389,
+      "sha256": "e45d61359f4a6064ad55b522e66d897ab743709da4f26b5804790410dba2d83c"
+    }
+  ],
+  "checks": {
+    "links_locais_verificados": 36,
+    "converter": "PASS",
+    "agentes": "PASS",
+    "obsidian_mcp_leitura_busca": "PASS",
+    "AGENTS_preservado": true,
+    "limitacao": "sem app ou integracoes; gate financeiro pendente"
+  }
+}

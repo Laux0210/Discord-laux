@@ -1,0 +1,47 @@
+{
+  "source_path": "C:\\Users\\jv883\\Downloads\\Contexto_Mestre_Aplicativo_Desktop_de_Comunicacao.docx",
+  "source_sha256": "13255b3d8656cc0c789ca1c6852940c316a7e8a1e456a00e9e037dab38a0e549",
+  "source_bytes": 61156,
+  "copied_source": "fontes/contexto-mestre.docx",
+  "converted_at_utc": "2026-10-14T04:09:57.622072+00:00",
+  "source_document_version": "1.0 — 14 de outubro de 2026",
+  "method": "Python stdlib; OOXML word/document.xml; ordem original do corpo",
+  "markdown_sha256": "d7a647c688e111e11e97b69976bcbe508773adae1661d1902b120425b03e5fb9",
+  "counts": {
+    "paragraphs": 517,
+    "tables": 11,
+    "table_rows": 107,
+    "table_cells": 321,
+    "title": 1,
+    "heading1": 18,
+    "heading2": 50,
+    "list_bullets": 15,
+    "urls": 9,
+    "external_hyperlinks": 0
+  },
+  "urls_in_body": [
+    "https://supabase.com/pricing",
+    "https://developers.cloudflare.com/workers/platform/limits/",
+    "https://developers.cloudflare.com/realtime/sfu/platform/pricing/",
+    "https://developers.cloudflare.com/realtime/sfu/platform/limits/",
+    "https://docs.github.com/en/billing/concepts/product-billing/github-actions",
+    "https://www.electronjs.org/docs/latest/tutorial/security",
+    "https://docs.livekit.io/transport/self-hosting/",
+    "https://mediasoup.org/documentation/",
+    "https://github.com/morluto/rea"
+  ],
+  "headers_and_footers": {
+    "word/header1.xml": [
+      "CONTEXTO MESTRE  |  APLICATIVO DESKTOP DE COMUNICAÇÃO"
+    ],
+    "word/footer1.xml": [
+      "Planejamento • versão 1.0 • 14/10/2026                                           "
+    ]
+  },
+  "limitations": [
+    "Markdown não preserva paginação, fontes, cores, dimensões ou layout visual do Word.",
+    "Cabeçalho e rodapé preservados neste JSON; campo PAGE dinâmico não é renderizado.",
+    "Heading1 vira H2 e Heading2 vira H3 abaixo do título H1; redação preservada.",
+    "Não houve renderização visual no Word nem incorporação de decisões posteriores."
+  ]
+}
