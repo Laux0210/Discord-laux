@@ -1,16 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import type { Channel, Message, User } from '../../common/types';
-import type { AuthService, ChatService, MediaService } from './services/types';
+import type { Channel, Guild, Message, User } from '../../common/types';
+import type { AuthService as LegacyAuthService, ChatService, MediaService } from './services/types';
+import type { AuthService as ModernAuthService } from '../../common/auth-types';
+import type { GuildService } from '../../common/guild-types';
 import { Sidebar } from './components/Sidebar';
 import { ChannelList } from './components/ChannelList';
 import { UserBar } from './components/UserBar';
 import { ChatArea } from './components/ChatArea';
 import { VoiceControls } from './components/VoiceControls';
+import { LoginModal } from './components/LoginModal';
 
 export interface AppProps {
-  authService: AuthService;
+  authService: LegacyAuthService | ModernAuthService;
   chatService: ChatService;
   mediaService: MediaService;
+  guildService?: GuildService;
 }
 
 const DEFAULT_CHANNELS: Channel[] = [
@@ -39,24 +43,60 @@ const DEFAULT_CHANNELS: Channel[] = [
 export const App: React.FC<AppProps> = ({
   authService,
   chatService,
-  mediaService
+  mediaService,
+  guildService
 }) => {
-  const [currentUser] = useState<User | null>(authService.getCurrentUser());
+  const [currentUser, setCurrentUser] = useState<User | null>(authService.getCurrentUser());
+  const [guilds, setGuilds] = useState<Guild[]>([]);
+  const [selectedGuildId, setSelectedGuildId] = useState<string | null>(null);
+  const [channels, setChannels] = useState<Channel[]>(DEFAULT_CHANNELS);
   const [selectedChannelId, setSelectedChannelId] = useState<string>('chan-general');
   const [messages, setMessages] = useState<Message[]>([]);
   const [isMuted, setIsMuted] = useState(false);
   const [isDeafened, setIsDeafened] = useState(false);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
   const [isInVoiceCall, setIsInVoiceCall] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
 
-  const currentChannel =
-    DEFAULT_CHANNELS.find((c) => c.id === selectedChannelId) ?? DEFAULT_CHANNELS[0];
-
+  // Escuta mudanças de sessão se for o ModernAuthService
   useEffect(() => {
-    // Carrega mensagens do canal ativo
+    if ('onAuthStateChanged' in authService) {
+      const unsub = authService.onAuthStateChanged((user) => {
+        setCurrentUser(user);
+      });
+      return () => unsub();
+    }
+  }, [authService]);
+
+  // Carrega comunidades do usuário autenticado
+  useEffect(() => {
+    if (!currentUser || !guildService) return;
+
+    guildService.getUserGuilds(currentUser.id).then((userGuilds) => {
+      setGuilds(userGuilds);
+      if (userGuilds.length > 0 && !selectedGuildId) {
+        setSelectedGuildId(userGuilds[0].id);
+      }
+    });
+  }, [currentUser, guildService, selectedGuildId]);
+
+  // Carrega canais da comunidade selecionada
+  useEffect(() => {
+    if (!currentUser || !guildService || !selectedGuildId) return;
+
+    guildService.getGuildChannels(selectedGuildId, currentUser.id).then((guildChannels) => {
+      setChannels(guildChannels);
+      if (guildChannels.length > 0) {
+        setSelectedChannelId(guildChannels[0].id);
+      }
+    });
+  }, [currentUser, guildService, selectedGuildId]);
+
+  // Carrega mensagens do canal ativo
+  useEffect(() => {
+    if (!selectedChannelId) return;
     chatService.getMessages(selectedChannelId).then(setMessages);
 
-    // Escuta novas mensagens em tempo real
     const unsubscribe = chatService.onNewMessage(selectedChannelId, (newMsg) => {
       setMessages((prev) => [...prev, newMsg]);
     });
@@ -65,6 +105,48 @@ export const App: React.FC<AppProps> = ({
       unsubscribe();
     };
   }, [chatService, selectedChannelId]);
+
+  const handleLoginGoogle = async () => {
+    try {
+      setAuthError(null);
+      if ('initiateLogin' in authService) {
+        const { authUrl } = authService.initiateLogin('google');
+        // Se houver API desktop, abre no navegador externo seguro
+        if (typeof window !== 'undefined' && window.electronAPI?.openExternalUrl) {
+          await window.electronAPI.openExternalUrl({ url: authUrl });
+        }
+      }
+      // Em simulação / mock, executa login
+      const user = await authService.login({ provider: 'mock', mockUsername: 'amigo-1' } as any);
+      if (user) setCurrentUser(user);
+    } catch (err: any) {
+      setAuthError(err?.message || 'Falha na autenticação Google');
+    }
+  };
+
+  const handleLoginMock = async (username: string) => {
+    try {
+      setAuthError(null);
+      let user: User | null = null;
+      if ('login' in authService) {
+        user = await (authService as any).login(
+          typeof (authService as any).login.length === 'number' && (authService as any).login.length === 1
+            ? username
+            : { provider: 'mock', mockUsername: username }
+        );
+      }
+      if (user) setCurrentUser(user);
+    } catch (err: any) {
+      setAuthError(err?.message || 'Falha ao autenticar usuário');
+    }
+  };
+
+  const handleLogout = async () => {
+    await authService.logout();
+    setCurrentUser(null);
+    setGuilds([]);
+    setSelectedGuildId(null);
+  };
 
   const handleSendMessage = async (content: string) => {
     if (!currentUser) return;
@@ -123,6 +205,22 @@ export const App: React.FC<AppProps> = ({
     setIsScreenSharing(false);
   };
 
+  // Se não estiver logado, exibe a tela de login
+  if (!currentUser) {
+    return (
+      <LoginModal
+        onLoginGoogle={handleLoginGoogle}
+        onLoginMock={handleLoginMock}
+        errorMessage={authError}
+      />
+    );
+  }
+
+  const currentGuildName =
+    guilds.find((g) => g.id === selectedGuildId)?.name ?? 'Comunidade dos Amigos';
+  const currentChannel =
+    channels.find((c) => c.id === selectedChannelId) ?? channels[0] ?? DEFAULT_CHANNELS[0];
+
   return (
     <div
       style={{
@@ -135,7 +233,12 @@ export const App: React.FC<AppProps> = ({
       }}
     >
       {/* 1. Barra Lateral de Comunidades */}
-      <Sidebar currentGuildName="Comunidade dos Amigos" />
+      <Sidebar
+        currentGuildName={currentGuildName}
+        guilds={guilds}
+        selectedGuildId={selectedGuildId}
+        onSelectGuild={(id) => setSelectedGuildId(id)}
+      />
 
       {/* 2. Coluna de Canais e Perfil */}
       <aside
@@ -157,11 +260,11 @@ export const App: React.FC<AppProps> = ({
             color: '#f2f3f5'
           }}
         >
-          Comunidade dos Amigos
+          {currentGuildName}
         </header>
 
         <ChannelList
-          channels={DEFAULT_CHANNELS}
+          channels={channels}
           selectedChannelId={selectedChannelId}
           onSelectChannel={(id) => {
             setSelectedChannelId(id);
@@ -184,7 +287,7 @@ export const App: React.FC<AppProps> = ({
           onDisconnect={handleDisconnectVoice}
         />
 
-        <UserBar user={currentUser} />
+        <UserBar user={currentUser} onLogout={handleLogout} />
       </aside>
 
       {/* 3. Área de Chat Principal */}

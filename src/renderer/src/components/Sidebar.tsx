@@ -1,10 +1,29 @@
 import React from 'react';
+import type { Guild } from '../../../common/types';
 
 export interface SidebarProps {
-  currentGuildName: string;
+  currentGuildName?: string;
+  guilds?: Guild[];
+  selectedGuildId?: string | null;
+  onSelectGuild?: (guildId: string) => void;
+  onOpenCreateGuild?: () => void;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ currentGuildName }) => {
+export const Sidebar: React.FC<SidebarProps> = ({
+  currentGuildName,
+  guilds = [],
+  selectedGuildId,
+  onSelectGuild,
+  onOpenCreateGuild
+}) => {
+  // Se guilds estiver vazio mas currentGuildName estiver fornecido, simula item para retrocompatibilidade
+  const displayGuilds: Guild[] =
+    guilds.length > 0
+      ? guilds
+      : currentGuildName
+        ? [{ id: 'guild-default', name: currentGuildName, ownerId: 'default' }]
+        : [];
+
   return (
     <aside
       data-testid="sidebar"
@@ -19,6 +38,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentGuildName }) => {
       }}
     >
       <div
+        data-testid="btn-dm-home"
         title="Mensagens Diretas"
         style={{
           width: '48px',
@@ -36,23 +56,61 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentGuildName }) => {
         DM
       </div>
       <div style={{ width: '32px', height: '2px', backgroundColor: '#35363c', margin: '4px 0' }} />
+
+      {displayGuilds.map((g) => {
+        const isSelected = selectedGuildId ? g.id === selectedGuildId : true;
+        const initials = g.name
+          .split(' ')
+          .map((n) => n[0])
+          .join('')
+          .substring(0, 2)
+          .toUpperCase();
+
+        return (
+          <div
+            key={g.id}
+            data-testid={`guild-item-${g.id}`}
+            title={g.name}
+            onClick={() => onSelectGuild?.(g.id)}
+            style={{
+              width: '48px',
+              height: '48px',
+              borderRadius: isSelected ? '16px' : '24px',
+              backgroundColor: isSelected ? '#5865f2' : '#2b2d31',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#ffffff',
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              border: isSelected ? '2px solid #5865f2' : 'none',
+              transition: 'all 0.15s ease'
+            }}
+          >
+            {initials || 'CD'}
+          </div>
+        );
+      })}
+
       <div
-        title={currentGuildName}
+        data-testid="btn-add-guild"
+        title="Adicionar ou entrar em comunidade"
+        onClick={onOpenCreateGuild}
         style={{
           width: '48px',
           height: '48px',
-          borderRadius: '16px',
-          backgroundColor: '#2b2d31',
+          borderRadius: '24px',
+          backgroundColor: '#313338',
+          color: '#23a55a',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          color: '#ffffff',
-          fontWeight: 'bold',
+          fontSize: '22px',
           cursor: 'pointer',
-          border: '2px solid #5865f2'
+          marginTop: '4px'
         }}
       >
-        CA
+        +
       </div>
     </aside>
   );

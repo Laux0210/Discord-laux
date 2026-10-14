@@ -3,9 +3,10 @@ import type { User } from '../../../common/types';
 
 export interface UserBarProps {
   user: User | null;
+  onLogout?: () => void;
 }
 
-export const UserBar: React.FC<UserBarProps> = ({ user }) => {
+export const UserBar: React.FC<UserBarProps> = ({ user, onLogout }) => {
   return (
     <div
       data-testid="user-bar"
@@ -64,6 +65,25 @@ export const UserBar: React.FC<UserBarProps> = ({ user }) => {
         </div>
         <div style={{ fontSize: '12px', color: '#949ba4' }}>Online</div>
       </div>
+
+      {onLogout && (
+        <button
+          data-testid="btn-logout"
+          onClick={onLogout}
+          title="Sair da conta"
+          style={{
+            backgroundColor: 'transparent',
+            border: 'none',
+            color: '#949ba4',
+            cursor: 'pointer',
+            padding: '4px 6px',
+            borderRadius: '4px',
+            fontSize: '12px'
+          }}
+        >
+          Sair
+        </button>
+      )}
     </div>
   );
 };
