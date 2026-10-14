@@ -38,7 +38,7 @@ Resultados atuais: [E0-02 passou em 35 testes e revisão independente](docs/vali
 Ambiente verificado nesta rodada: Node.js 26.9.0, npm 11.19.1 e Python 3.14.7.
 
 ```powershell
-# Executar bateria completa de testes unitários locais com Vitest (92 testes em 20 arquivos)
+# Executar bateria completa de testes unitários locais com Vitest (125 testes em 27 arquivos)
 npm test
 
 # Verificação TypeScript, build do frontend com Vite e compilação desktop (main ESM + preload CJS)

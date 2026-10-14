@@ -123,4 +123,15 @@ Notas Obsidian16/17/18 publicadas e comparadas; nove notas existentes receberam 
 - **Integração na Interface**: Componente [`FriendsArea.tsx`](../renderer/src/components/FriendsArea.tsx) integrado na aplicação com abas de amigos, pedidos pendentes, envio de solicitações e indicadores de presença visual.
 - **Suíte de Testes Expandida**: 92 testes unitários Vitest aprovados em 20 arquivos (100% verde), teste de fumaça desktop Electron validado (`npm run test:desktop`), tipagem TypeScript estrita sem erros (`npm run lint`), 39 testes unitários Python preservados e integridade do [AGENTS.md](../../AGENTS.md) intacta.
 
+### Conclusão da Etapa 10 — Voz, Tela, Som e Controle de Capacidade (MEDIA)
+
+- **Controlador Canônico e Limite de Chamada Global (RF-09 / AC-09)**: Implementado [`DesktopCallController`](../../src/renderer/src/services/desktop-call-controller.ts) gerenciando o ciclo de vida e estado das chamadas de voz. Garantido exatamente 1 chamada global ativa em andamento (tentativas de iniciar em canais concorrentes rejeitadas com `CHAMADA_GLOBAL_EM_ANDAMENTO`).
+- **Capacidade Estrita e Recusa do 11º Participante (RF-09)**: O sistema comporta até 10 participantes simultâneos. A tentativa de ingresso do 11º participante é estritamente rejeitada com erro `CAPACIDADE_CHAMADA_EXCEDIDA`. A saída de qualquer participante libera a vaga imediatamente para novos ingressos.
+- **Reserva Exclusiva de Transmissão de Tela e Suporte a Espectadores (RF-11 / AC-11)**: Implementado controle de concorrência com reserva de exatamente 1 transmissão de tela por chamada. Tentativas concorrentes de transmissão simultânea são rejeitadas com `TRANSMISSAO_JA_ATIVA`. Suporte a até 9 espectadores consumindo a transmissão com liberação automática da reserva em caso de parada voluntária ou desconexão do streamer.
+- **Controles de Áudio, Mute/Deafen em Cascata e Expulsão Remota (RF-10 / AC-10)**: Mute e modo surdo implementados com cascata automática (ativar `deafen` força `mute = true`; desativar preserva o mute até ação explícita). Expulsão remota por usuários autorizados (`KICK_MEMBERS` ou `ADMINISTRATOR`) remove o alvo e libera a vaga em tempo <= 5000 ms.
+- **Corte Preventivo por Orçamento (RF-12 / AC-12)**: Procedimento `triggerEmergencyBudgetCutoff` desconecta imediatamente todos os participantes e encerra streams sem deixar recursos ativos ou excedentes financeiros.
+- **Integração na Interface do Usuário**: Criado componente [`VoiceRoomArea.tsx`](../../src/renderer/src/components/VoiceRoomArea.tsx) integrado em [`App.tsx`](../../src/renderer/src/App.tsx), apresentando grid dinâmico de participantes com badges de status, banner de transmissão ativa e controles de tela/desconexão.
+- **Bateria de Verificação Completa**: 125 testes unitários Vitest aprovados em 27 arquivos (100% verde), teste de fumaça desktop Electron validado (`npm run test:desktop`), checagem TypeScript estrita sem erros (`npm run lint`), 39 testes unitários Python aprovados (`python -m unittest discover tests`) e integridade do [AGENTS.md](../../AGENTS.md) estritamente preservada.
+
+
 
