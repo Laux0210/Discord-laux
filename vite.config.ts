@@ -17,7 +17,7 @@ function developmentCsp(): Plugin {
           .map((match) => "'sha256-" + createHash('sha256').update(match[2]).digest('base64') + "'");
         const policy = meta
           .replace("script-src 'self'", "script-src 'self' " + hashes.join(' '))
-          .replace("connect-src 'self'", "connect-src 'self' ws://localhost:5173 ws://127.0.0.1:5173 ws://[::1]:5173");
+          .replace(/connect-src\s+'self'[^;]*/, "connect-src 'self' wss: https: ws://localhost:5173 ws://127.0.0.1:5173 ws://[::1]:5173");
         return html.replace(meta, '').replace('<head>', '<head>\n    ' + policy);
       }
     }

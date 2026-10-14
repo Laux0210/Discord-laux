@@ -17,6 +17,8 @@ import { DirectMessageArea } from './components/DirectMessageArea';
 import { UserSettingsModal } from './components/UserSettingsModal';
 import { soundEffects } from './services/sound-effects';
 import { voiceMediaService } from './services/voice-media-service';
+import { realtimeNetworkService } from './services/realtime-network-service';
+import { storageService } from './services/storage-service';
 
 
 
@@ -137,12 +139,39 @@ export const App: React.FC<AppProps> = ({
     }
   }, [callController, mediaService, currentUser]);
 
+  // Inicializa sincronização em tempo real multi-aparelho (MQTT WSS + PeerJS WebRTC)
+  useEffect(() => {
+    if (currentUser && chatService && callController && presenceService) {
+      realtimeNetworkService.init(
+        currentUser,
+        chatService as any,
+        callController,
+        presenceService as any
+      );
+    }
+  }, [currentUser?.id, chatService, callController, presenceService]);
+
+  // Escuta streams de tela remota vindas de outros aparelhos
+  useEffect(() => {
+    const unsub = realtimeNetworkService.onRemoteScreenStream((stream) => {
+      if (stream) {
+        setScreenStream(stream);
+        setIsScreenSharing(true);
+      } else {
+        setScreenStream(null);
+        setIsScreenSharing(false);
+      }
+    });
+    return unsub;
+  }, []);
+
   // Inicia ou encerra captura real do microfone e detecção de fala (VAD)
   useEffect(() => {
     if (isInVoiceCall && currentUser) {
       voiceMediaService
         .startMicrophone((speaking) => {
           setIsSpeaking(speaking);
+          realtimeNetworkService.broadcastSpeaking(callState.channelId || selectedChannelId, currentUser.id, speaking);
           if (callController?.setSpeaking) {
             callController.setSpeaking(currentUser.id, speaking);
           } else {
@@ -162,7 +191,7 @@ export const App: React.FC<AppProps> = ({
     return () => {
       voiceMediaService.stopMicrophone();
     };
-  }, [isInVoiceCall, currentUser?.id, callController]);
+  }, [isInVoiceCall, currentUser?.id, callController, callState.channelId, selectedChannelId]);
 
   // Escuta mudanças de sessão se for o ModernAuthService
 
@@ -267,12 +296,13 @@ export const App: React.FC<AppProps> = ({
 
   const handleSendMessage = async (content: string) => {
     if (!currentUser) return;
-    await chatService.sendMessage({
+    const msg = await chatService.sendMessage({
       channelId: selectedChannelId,
       authorId: currentUser.id,
       authorName: currentUser.displayName,
       content
     });
+    realtimeNetworkService.broadcastChatMessage(selectedChannelId, msg);
   };
 
   const handleDeleteMessage = async (messageId: string) => {
@@ -336,10 +366,12 @@ export const App: React.FC<AppProps> = ({
 
   const handleToggleScreenShare = async () => {
     if (!currentUser) return;
+    const currentChan = callState.channelId || selectedChannelId || 'chan-voice-main';
     if (isScreenSharing) {
       soundEffects.playScreenShareStop();
       voiceMediaService.stopScreenShare();
       setScreenStream(null);
+      realtimeNetworkService.broadcastScreenShareStop(currentChan, currentUser.id);
       if (callController) {
         await callController.stopScreenShare(currentUser.id);
       } else {
@@ -355,6 +387,7 @@ export const App: React.FC<AppProps> = ({
       if (!isInVoiceCall) {
         setSelectedChannelId(targetChannelId);
         soundEffects.playVoiceConnect();
+        realtimeNetworkService.joinVoiceChannel(targetChannelId, targetGuildId, currentUser);
         if (callController) {
           await callController.joinCall(
             targetChannelId,
@@ -373,12 +406,14 @@ export const App: React.FC<AppProps> = ({
           handleToggleScreenShare();
         })
         .then((stream) => {
-          if (stream) setScreenStream(stream);
+          if (stream) {
+            setScreenStream(stream);
+            realtimeNetworkService.broadcastScreenShareStart(targetChannelId, currentUser.id, stream);
+          }
         })
         .catch((err) => {
           console.warn('Captura de tela real via getDisplayMedia:', err);
         });
-
 
       if (callController) {
         try {
@@ -429,6 +464,7 @@ export const App: React.FC<AppProps> = ({
     voiceMediaService.stopScreenShare();
     setScreenStream(null);
     setIsSpeaking(false);
+    realtimeNetworkService.leaveVoiceChannel(callState.channelId || selectedChannelId, currentUser.id);
     if (callController) {
       await callController.leaveCall(currentUser.id);
     } else {
@@ -731,6 +767,7 @@ export const App: React.FC<AppProps> = ({
                   if (!isInVoiceCall || callState.channelId !== id) {
                     soundEffects.playVoiceConnect();
                   }
+                  realtimeNetworkService.joinVoiceChannel(id, selectedGuildId || 'guild-1', currentUser);
                   if (callController) {
                     callController
                       .joinCall(
@@ -808,7 +845,12 @@ export const App: React.FC<AppProps> = ({
         user={currentUser}
         onUpdateUser={(updated) => {
           if (currentUser) {
-            setCurrentUser({ ...currentUser, ...updated });
+            const updatedUser = { ...currentUser, ...updated };
+            setCurrentUser(updatedUser);
+            if ('updateProfile' in authService) {
+              (authService as any).updateProfile(updated);
+            }
+            storageService.saveCurrentUser(updatedUser);
           }
         }}
         onLogout={handleLogout}

@@ -27,16 +27,18 @@
   "license": "UNLICENSED",
   "private": true,
   "dependencies": {
+    "mqtt": "^5.16.1",
+    "peerjs": "^1.5.5",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
-    "esbuild": "0.25.12",
     "@types/node": "^22.13.9",
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
     "@vitejs/plugin-react": "^4.3.4",
     "electron": "^35.0.0",
+    "esbuild": "0.25.12",
     "happy-dom": "21.0.1",
     "typescript": "^5.8.2",
     "vite": "^6.2.1",

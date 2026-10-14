@@ -13,9 +13,22 @@ interface ExtendedMessage extends Message {
   nonce?: string;
 }
 
+import { storageService } from './storage-service';
+
 export class DesktopChatService implements TextChatService {
   private messages: ExtendedMessage[] = [];
   private listeners: Map<string, Set<(msg: Message) => void>> = new Map();
+
+  constructor(initialMessages?: ExtendedMessage[]) {
+    if (initialMessages) {
+      this.messages = [...initialMessages];
+    } else {
+      const allStored = storageService.getAllChannelMessages();
+      for (const channelId in allStored) {
+        this.messages.push(...allStored[channelId]);
+      }
+    }
+  }
 
   async sendMessage(params: SendChannelMessageParams): Promise<Message> {
     const trimmed = params.content ? params.content.trim() : '';
@@ -51,6 +64,7 @@ export class DesktopChatService implements TextChatService {
     };
 
     this.messages.push(message);
+    storageService.saveChannelMessage(params.channelId, message);
 
     const channelListeners = this.listeners.get(params.channelId);
     if (channelListeners) {
@@ -60,6 +74,27 @@ export class DesktopChatService implements TextChatService {
     }
 
     return message;
+  }
+
+  public receiveRemoteMessage(message: ExtendedMessage): void {
+    const existing = this.messages.find(
+      (m) => m.id === message.id || (message.nonce && m.nonce === message.nonce)
+    );
+    if (existing) return;
+
+    this.messages.push(message);
+    storageService.saveChannelMessage(message.channelId, message);
+
+    const channelListeners = this.listeners.get(message.channelId);
+    if (channelListeners) {
+      for (const listener of channelListeners) {
+        try {
+          listener(message);
+        } catch (err) {
+          console.error('Erro no listener de chat:', err);
+        }
+      }
+    }
   }
 
   async getMessages(channelId: string, pagination?: PaginationParams): Promise<Message[]> {
@@ -99,6 +134,7 @@ export class DesktopChatService implements TextChatService {
     }
 
     msg.isDeleted = true;
+    storageService.saveAllChannelMessages(msg.channelId, this.messages.filter((m) => m.channelId === msg.channelId));
     return true;
   }
 

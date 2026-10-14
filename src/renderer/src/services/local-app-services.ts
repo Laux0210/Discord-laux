@@ -5,6 +5,7 @@ import { DesktopCallController } from './desktop-call-controller';
 import { InMemoryGuildService } from './guild-service';
 import { InMemoryFriendshipService } from './friendship-service';
 import { InMemoryPresenceService } from './presence-service';
+import { storageService } from './storage-service';
 
 export interface LocalAppServices {
   authService: MockAuthService;
@@ -26,7 +27,13 @@ export async function createLocalAppServices(): Promise<LocalAppServices> {
   const friendshipService = new InMemoryFriendshipService();
   const presenceService = new InMemoryPresenceService();
 
-  const user = await authService.login('amigo-1');
+  let user = storageService.getCurrentUser();
+  if (!user) {
+    user = await authService.login('amigo-1');
+  } else {
+    authService.setCurrentUser(user);
+  }
+
   if (!user) throw new Error('Não foi possível iniciar a sessão local fictícia');
   const guild = await guildService.createGuild({ name: 'Comunidade dos Amigos', ownerId: user.id });
   guildService.addMemberDirect(guild.id, 'user-2');
@@ -39,12 +46,16 @@ export async function createLocalAppServices(): Promise<LocalAppServices> {
   await friendshipService.acceptFriendRequest('user-2', user.id);
   await friendshipService.sendFriendRequest('user-3', user.id);
   presenceService.setPresence('user-2', 'online');
-  await chatService.sendMessage({
-    channelId: general.id,
-    authorId: 'user-2',
-    authorName: 'Amigo Dois',
-    content: 'Mensagem fictícia de demonstração. Os dados locais são descartados ao fechar o aplicativo.'
-  });
+
+  const existingMessages = await chatService.getMessages(general.id);
+  if (existingMessages.length === 0) {
+    await chatService.sendMessage({
+      channelId: general.id,
+      authorId: 'user-2',
+      authorName: 'Amigo Dois',
+      content: 'Mensagem fictícia de demonstração. Bem-vindo! Suas conversas e configurações ficam salvas mesmo ao atualizar a página.'
+    });
+  }
 
   return { authService, chatService, mediaService, callController, guildService, friendshipService, presenceService };
 }

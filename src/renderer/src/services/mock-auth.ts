@@ -22,13 +22,23 @@ const SEED_USERS: User[] = [
   }
 ];
 
+import { storageService } from './storage-service';
+
 export class MockAuthService implements AuthService {
   private currentUser: User | null = null;
+
+  constructor() {
+    const saved = storageService.getCurrentUser();
+    if (saved) {
+      this.currentUser = saved;
+    }
+  }
 
   async login(username: string): Promise<User | null> {
     const found = SEED_USERS.find((u) => u.username === username);
     if (found) {
       this.currentUser = { ...found };
+      storageService.saveCurrentUser(this.currentUser);
       return this.currentUser;
     }
 
@@ -39,14 +49,37 @@ export class MockAuthService implements AuthService {
       displayName: username,
       avatarUrl: ''
     };
+    storageService.saveCurrentUser(this.currentUser);
     return this.currentUser;
   }
 
   async logout(): Promise<void> {
     this.currentUser = null;
+    storageService.saveCurrentUser(null);
   }
 
   getCurrentUser(): User | null {
+    if (!this.currentUser) {
+      const saved = storageService.getCurrentUser();
+      if (saved) {
+        this.currentUser = saved;
+      }
+    }
+    return this.currentUser;
+  }
+
+  setCurrentUser(user: User | null): void {
+    this.currentUser = user;
+    storageService.saveCurrentUser(user);
+  }
+
+  updateProfile(fields: Partial<User>): User | null {
+    if (!this.currentUser) return null;
+    this.currentUser = {
+      ...this.currentUser,
+      ...fields
+    };
+    storageService.saveCurrentUser(this.currentUser);
     return this.currentUser;
   }
 }

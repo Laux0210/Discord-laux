@@ -13,6 +13,8 @@ export interface UserSettingsModalProps {
 
 type SettingsTab = 'account' | 'profile' | 'voice' | 'appearance';
 
+import { storageService } from '../services/storage-service';
+
 export const UserSettingsModal: React.FC<UserSettingsModalProps> = ({
   isOpen,
   onClose,
@@ -21,16 +23,17 @@ export const UserSettingsModal: React.FC<UserSettingsModalProps> = ({
   onLogout,
   callController
 }) => {
+  const savedSettings = storageService.getSettings();
   const [activeTab, setActiveTab] = useState<SettingsTab>('account');
   const [displayName, setDisplayName] = useState(user?.displayName ?? 'Amigo Um');
   const [username, setUsername] = useState(user?.username ?? 'amigo-1');
-  const [customStatus, setCustomStatus] = useState('🎮 Jogando ROBLOX');
-  const [pronouns, setPronouns] = useState('ele/dele');
-  const [inputVolume, setInputVolume] = useState(85);
-  const [outputVolume, setOutputVolume] = useState(100);
-  const [inputMode, setInputMode] = useState<'vad' | 'ptt'>('vad');
-  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
-  const [compactMode, setCompactMode] = useState(false);
+  const [customStatus, setCustomStatus] = useState(savedSettings.customStatus ?? '🎮 Jogando ROBLOX');
+  const [pronouns, setPronouns] = useState(savedSettings.pronouns ?? 'ele/dele');
+  const [inputVolume, setInputVolume] = useState(savedSettings.inputVolume ?? 85);
+  const [outputVolume, setOutputVolume] = useState(savedSettings.outputVolume ?? 100);
+  const [inputMode, setInputMode] = useState<'vad' | 'ptt'>(savedSettings.inputMode ?? 'vad');
+  const [theme, setTheme] = useState<'dark' | 'light'>(savedSettings.theme ?? 'dark');
+  const [compactMode, setCompactMode] = useState(savedSettings.compactMode ?? false);
   const [isTestingMic, setIsTestingMic] = useState(false);
   const [testMicLevel, setTestMicLevel] = useState(0);
   const [devices, setDevices] = useState<AudioDevice[]>([]);
@@ -113,6 +116,15 @@ export const UserSettingsModal: React.FC<UserSettingsModalProps> = ({
     if (onUpdateUser) {
       onUpdateUser({ displayName, username });
     }
+    storageService.saveSettings({
+      customStatus,
+      pronouns,
+      inputVolume,
+      outputVolume,
+      inputMode,
+      theme,
+      compactMode
+    });
     setSaveFeedback('Alterações salvas com sucesso!');
     setTimeout(() => setSaveFeedback(null), 3000);
   };
