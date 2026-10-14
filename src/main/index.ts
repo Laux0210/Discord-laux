@@ -103,6 +103,9 @@ app.whenReady().then(async () => {
     return;
   }
 
+  mainWindow.show();
+  mainWindow.focus();
+
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
       mainWindow = createMainWindow(expectedURL);

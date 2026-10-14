@@ -27,8 +27,8 @@
   "files": [
     {
       "path": "dist-electron/main/index.js",
-      "sha256": "14b5d1808f8e87f9938c5a7a693aea1930b938df6b7a343cf9451ce9fd3a08b8",
-      "size": 9479
+      "sha256": "f6038d78f7fc5bddc9b98358da027f4f8a3dc6ccbf8293ef08e0fe34f0bd3335",
+      "size": 9522
     },
     {
       "path": "dist-electron/preload/index.cjs",
@@ -51,5 +51,5 @@
       "size": 672
     }
   ],
-  "createdAt": "2026-10-14T17:49:29.526Z"
+  "createdAt": "2026-10-14T18:04:48.699Z"
 }
