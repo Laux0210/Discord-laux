@@ -16,6 +16,20 @@ A base da aplicação desktop (Etapa 6 - BASE) foi implementada em Electron + Re
 - [Requisitos e aceite](docs/produto/requisitos-e-aceite.md).
 - [Arquitetura candidata e contratos](docs/arquitetura/arquitetura-e-contratos.md).
 - [Gate financeiro E0](docs/validacao/e0-financeiro.md) e [registro de execução](docs/execucao/registro.md).
+- [Engenharia reversa do Discord e reprodução de funções/modos/interface](docs/rea/plano-discord-referencia.md), acrescentada ao plano por pedido posterior. Produção REA gera evidências e contrato; construção REA implementa os módulos atribuídos; QA compara os resultados. A análise de referência é distinta da inspeção do nosso instalador.
+
+## Verificação local de E0
+
+A ferramenta abaixo organiza evidências locais sanitizadas e reproduz a projeção de tráfego do plano. Requer Python 3.11+ e usa somente a biblioteca padrão, sem rede ou ativação de provedores.
+
+```powershell
+python -B -m unittest discover -s tests -v
+python -B scripts/verificar_e0.py docs/validacao/e0-evidencias.exemplo.json
+```
+
+O exemplo contém dados não verificados e deve retornar `BLOQUEADO`, com código de saída 1. Código 0 significa somente `CANDIDATO_A_REVISAO`; código 2 indica entrada ilegível/inválida. Nenhum resultado aprova E0 ou autoriza mídia. Hashes e campos preenchidos não comprovam autenticidade das contas nem eficácia de corte. A janela de atualidade de 24 horas é uma regra conservadora deste utilitário, não uma condição publicada do provedor. `--agora` permite repetir uma avaliação histórica e deve ser identificado como replay.
+
+Veja [a retomada de E0](docs/validacao/e0-retomada.md) e o esquema de entrada em [e0-evidencias.exemplo.json](docs/validacao/e0-evidencias.exemplo.json). Para usar evidências reais, prepare um arquivo separado com referências locais relativas à sua pasta, sem tokens, senhas ou conteúdo privado; o exemplo não deve ser apresentado como prova real.
 
 ### Comandos de Desenvolvimento e Testes
 
