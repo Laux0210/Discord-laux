@@ -47,9 +47,9 @@
     },
     {
       "path": "dist/index.html",
-      "sha256": "105bdde46a72eb3691d2d8d0d12c477073c6e4d8a4dcf649d2167efa637a2ac6",
-      "size": 685
+      "sha256": "9719ae99eacba32b3447256f0969e1b825dedc7412328b9020f6b766a9027be8",
+      "size": 710
     }
   ],
-  "createdAt": "2026-10-14T19:12:33.265Z"
+  "createdAt": "2026-10-14T20:46:07.285Z"
 }

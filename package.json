@@ -12,7 +12,8 @@
     "release": "npm run build && node scripts/build-release.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "deploy:pages": "node scripts/deploy-gh-pages.mjs"
   },
   "keywords": [
     "electron",

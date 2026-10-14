@@ -1,3 +1,36 @@
+# Discord Web & Desktop (Laux)
+
+[![Acessar App Online](https://img.shields.io/badge/🚀%20ABRIR%20O%20APP%20ONLINE-CLIQUE%20AQUI-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://laux0210.github.io/Discord-laux/)
+[![Deploy to GitHub Pages](https://github.com/Laux0210/Discord-laux/actions/workflows/deploy.yml/badge.svg)](https://github.com/Laux0210/Discord-laux/actions/workflows/deploy.yml)
+[![Open in GitHub Codespaces](https://img.shields.io/badge/Codespaces-Abrir%20no%20Navegador-blue?style=for-the-badge&logo=github)](https://github.com/codespaces/new?hide_repo_select=true&ref=main&repo=Laux0210%2FDiscord-laux)
+
+> 🌐 **Acesse o aplicativo agora pelo navegador (sem instalar nada):**  
+> 👉 **[https://laux0210.github.io/Discord-laux/](https://laux0210.github.io/Discord-laux/)**
+
+---
+
+### 🌐 Como Abrir o Site / App Diretamente pelo GitHub
+
+Você pode abrir e usar o aplicativo de 3 formas simples:
+
+1. **Pelo Navegador (GitHub Pages - Recomendado):**
+   - Acesse diretamente: **[https://laux0210.github.io/Discord-laux/](https://laux0210.github.io/Discord-laux/)**
+   - *(Dica de configuração no GitHub: Em **Settings** > **Pages** > **Build and deployment**, selecione **Deploy from a branch** apontando para a branch `gh-pages` com pasta `/ (root)`, ou escolha **GitHub Actions**)*.
+
+2. **Pelo GitHub Codespaces (1 Clique na Nuvem):**
+   - Clique no botão **Open in GitHub Codespaces** acima ou pressione a tecla `.` (ponto) nesta página do GitHub.
+   - O ambiente web inicializa automaticamente e abre o app na porta 5173.
+
+3. **Execução Local:**
+   ```bash
+   git clone https://github.com/Laux0210/Discord-laux.git
+   cd Discord-laux
+   npm install
+   npm run dev
+   ```
+
+---
+
 # Equipe de agentes
 
 ## Memória no Obsidian e ai-memory
@@ -37,7 +70,8 @@ Resultados atuais: [E0-02 passou em 35 testes e revisão independente](docs/vali
 
 Ambiente verificado nesta rodada: Node.js 26.9.0, npm 11.19.1 e Python 3.14.7.
 
-# Executar bateria completa de testes unitários locais com Vitest (167 testes em 32 arquivos)
+```powershell
+# Executar bateria completa de testes unitários locais com Vitest (178 testes em 35 arquivos)
 npm test
 
 # Gerar pacote de release e manifesto auditado de distribuição (RF-15)
