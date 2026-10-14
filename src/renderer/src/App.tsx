@@ -113,7 +113,7 @@ export const App: React.FC<AppProps> = ({
         const { authUrl } = authService.initiateLogin('google');
         // Se houver API desktop, abre no navegador externo seguro
         if (typeof window !== 'undefined' && window.electronAPI?.openExternalUrl) {
-          await window.electronAPI.openExternalUrl({ url: authUrl });
+          await window.electronAPI.openExternalUrl(authUrl);
         }
       }
       // Em simulação / mock, executa login

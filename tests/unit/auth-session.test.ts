@@ -1,7 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { InMemorySessionStorage, SessionManager } from '../../src/renderer/src/services/session-manager';
 import { DesktopAuthService } from '../../src/renderer/src/services/auth-service';
-import type { AuthSession, User } from '../../src/common/auth-types';
+import type { AuthSession } from '../../src/common/auth-types';
+import type { User } from '../../src/common/types';
 
 describe('SessionManager', () => {
   let storage: InMemorySessionStorage;

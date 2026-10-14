@@ -41,6 +41,8 @@ describe('App Identity & Guild UI Integration', () => {
     const guildService = new InMemoryGuildService();
     const guild1 = await guildService.createGuild({ name: 'Comunidade Alpha', ownerId: user.id });
     const guild2 = await guildService.createGuild({ name: 'Comunidade Beta', ownerId: user.id });
+    expect(guild1.id).toBeDefined();
+    expect(guild2.id).toBeDefined();
 
     const chatService = new MockChatService();
     const mediaService = new MockMediaService();

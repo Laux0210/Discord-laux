@@ -17,13 +17,17 @@ export function createMainWindow(expectedURL: string, show = true): BrowserWindo
   localSession.setPermissionCheckHandler(() => false);
   localSession.setDisplayMediaRequestHandler((_request, callback) => callback({}));
 
-  const connectSource = expectedURL.startsWith('file:') ? "'self'" : "'self' " + new URL(expectedURL).origin;
   localSession.webRequest.onHeadersReceived((details, callback) => {
+    // O Vite fornece sua meta CSP com hashes de desenvolvimento; a produção usa a política abaixo.
+    if (!expectedURL.startsWith('file:')) {
+      callback({ responseHeaders: details.responseHeaders });
+      return;
+    }
     callback({
       responseHeaders: {
         ...details.responseHeaders,
         'Content-Security-Policy': [
-          "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'none'; connect-src " + connectSource + "; object-src 'none'; frame-src 'none';"
+          "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'none'; connect-src 'self'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none';"
         ]
       }
     });
