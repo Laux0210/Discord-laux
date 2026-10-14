@@ -8,21 +8,38 @@ Esta pasta contém 15 perfis especializados e os documentos do aplicativo deskto
 
 ## Execução do aplicativo
 
-A documentação inicial foi produzida. A prova de mídia e a implementação completa dependem do gate financeiro de R$0, atualmente **bloqueado** por falta de identificação/acesso às contas e de proteção comprovada contra cobrança. Ainda não há aplicação, instalador ou comandos de desenvolvimento configurados.
+A base da aplicação desktop (Etapa 6 - BASE) foi implementada em Electron + React 19 + TypeScript com isolamento de contexto (`contextIsolation`), sandbox e mocks locais desacoplados (R$0 preservado enquanto o gate E0 de nuvem real estiver em espera).
 
 - [Contexto mestre preservado](docs/contexto/contexto-mestre.md) e [proveniência da fonte](docs/contexto/fonte.json).
 - [Plano de doze etapas](docs/planejamento/plano.md), [backlog](docs/planejamento/backlog.md) e [decisões](docs/planejamento/decisoes.md).
+- [Especificação da Etapa 6 (BASE)](docs/superpowers/specs/2026-10-14-etapa6-base-electron-design.md) e [Plano de Implementação](docs/superpowers/plans/2026-10-14-etapa6-base-electron.md).
 - [Requisitos e aceite](docs/produto/requisitos-e-aceite.md).
 - [Arquitetura candidata e contratos](docs/arquitetura/arquitetura-e-contratos.md).
 - [Gate financeiro E0](docs/validacao/e0-financeiro.md) e [registro de execução](docs/execucao/registro.md).
 
-Para verificar novamente a conversão, com Python 3.11 ou superior e sem dependências externas:
+### Comandos de Desenvolvimento e Testes
+
+Requisitos: Node.js v26 ou superior, npm 11 ou superior.
+
+```powershell
+# Executar suíte de testes unitários automatizados (23 testes Vitest)
+npm test
+
+# Compilação e empacotamento estático (TypeScript + Vite)
+npm run build
+
+# Verificação estática de tipos
+npm run lint
+
+# Iniciar servidor de desenvolvimento do frontend
+npm run dev
+```
+
+Para verificar novamente a conversão do DOCX, com Python 3.11 ou superior e sem dependências externas:
 
 ```powershell
 python scripts/converter_contexto.py --source docs/contexto/fontes/contexto-mestre.docx --check
 ```
-
-Esse comando confere o Markdown e a proveniência contra a cópia do DOCX; não verifica layout do Word, integrações ou funcionamento de um aplicativo. Os comandos da aplicação serão documentados depois da passagem dos portões, configuração e execução reais.
 
 ## Organização
 
