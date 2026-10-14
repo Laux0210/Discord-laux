@@ -1,0 +1,55 @@
+{
+  "productName": "Discord Desktop",
+  "appId": "com.discord.desktop",
+  "version": "0.1.0",
+  "platform": "win32",
+  "arch": "x64",
+  "language": "pt-BR",
+  "targetOS": [
+    "Windows 10",
+    "Windows 11"
+  ],
+  "installMode": "per-user",
+  "installDirectory": "%LOCALAPPDATA%\\Programs\\discord-desktop",
+  "executable": "discord-desktop.exe",
+  "security": {
+    "contextIsolation": true,
+    "sandbox": true,
+    "nodeIntegration": false,
+    "cspEnforced": true,
+    "secretsLeaked": false
+  },
+  "boundaries": {
+    "webcamSupported": false,
+    "recordingSupported": false,
+    "dmVoiceSupported": false
+  },
+  "files": [
+    {
+      "path": "dist-electron/main/index.js",
+      "sha256": "14b5d1808f8e87f9938c5a7a693aea1930b938df6b7a343cf9451ce9fd3a08b8",
+      "size": 9479
+    },
+    {
+      "path": "dist-electron/preload/index.cjs",
+      "sha256": "df0ce563825c0dc48d80f4b5aa9d32f63cce7b76099fdf237ff9e3d39981a139",
+      "size": 1542
+    },
+    {
+      "path": "dist/assets/index-DUjnaRV3.js",
+      "sha256": "d1193f6654291f2e9218fc777ff578c29ecb3d60af1e3795cc8122af9d6d77d2",
+      "size": 270948
+    },
+    {
+      "path": "dist/assets/index-IoGesX1R.css",
+      "sha256": "7201c2548cf18e46efc0f96d621c85b91265fc419bd8b68442084c5bf2d1e1fa",
+      "size": 265
+    },
+    {
+      "path": "dist/index.html",
+      "sha256": "c2d8a7f9993b5813d1f0511c0e99ead3b311e53314e1116472e98ceaab8d1889",
+      "size": 672
+    }
+  ],
+  "createdAt": "2026-10-14T17:35:01.169Z"
+}

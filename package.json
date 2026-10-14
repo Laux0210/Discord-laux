@@ -9,6 +9,7 @@
     "build": "tsc && vite build && node scripts/build-desktop.mjs",
     "desktop": "npm run build && node scripts/start-desktop.mjs",
     "test:desktop": "npm run build && node scripts/smoke-desktop.mjs",
+    "release": "npm run build && node scripts/build-release.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "tsc --noEmit"

@@ -110,4 +110,36 @@ describe('Release and Installer Integrity Audit (RF-01, RF-15, RF-16)', () => {
     expect(dirtyResult.hasSecrets).toBe(true);
     expect(dirtyResult.detectedViolations.length).toBeGreaterThanOrEqual(2);
   });
+
+  it('valida o manifesto real gerado em disco dist-release/release-manifest.json', async () => {
+    const fs = await import('node:fs');
+    const path = await import('node:path');
+    const crypto = await import('node:crypto');
+
+    const manifestPath = path.resolve(__dirname, '../../dist-release/release-manifest.json');
+    expect(fs.existsSync(manifestPath)).toBe(true);
+
+    const raw = fs.readFileSync(manifestPath, 'utf8');
+    const manifest: ReleaseManifest = JSON.parse(raw);
+
+    const validation = validateReleaseManifest(manifest);
+    expect(validation.isValid).toBe(true);
+    expect(validation.errors).toHaveLength(0);
+
+    expect(manifest.productName).toBe('Discord Desktop');
+    expect(manifest.platform).toBe('win32');
+    expect(manifest.arch).toBe('x64');
+    expect(manifest.language).toBe('pt-BR');
+    expect(manifest.boundaries.webcamSupported).toBe(false);
+
+    // Valida que cada arquivo listado no manifesto existe e bate o hash SHA-256
+    for (const entry of manifest.files) {
+      const fullPath = path.resolve(__dirname, '../../', entry.path);
+      expect(fs.existsSync(fullPath)).toBe(true);
+
+      const content = fs.readFileSync(fullPath);
+      const computedHash = crypto.createHash('sha256').update(content).digest('hex');
+      expect(computedHash).toBe(entry.sha256);
+    }
+  });
 });
