@@ -146,6 +146,24 @@
     "Snapshot de checks globais13:36; alterações paralelas posteriores precisam de verificação própria",
     "Aceite local mock; BASE/DATA/IDENTITY integrais e E0/E1/E2 não aprovados",
     "REA estática parcial; UI/runtime/fidelidade da referência pendentes"
-  ]
+  ],
+  "recheck": {
+    "timestamp_local": "2026-10-14 13:57:10",
+    "tests": 92,
+    "files": 20,
+    "checks_passed": [
+      "npm run test:desktop",
+      "npm test",
+      "npm run lint"
+    ],
+    "evidence": "docs/validacao/base-local-02-rechecagem.json",
+    "obsidian_paths": [
+      "Discord/18-BASE-DESKTOP-LOCAL.md",
+      "Discord/01-ESTADO.md",
+      "Discord/11-REGISTRO-DE-EXECUCAO.md"
+    ],
+    "obsidian_read_verified": true,
+    "ai_memory_read_verified": true,
+    "source_hashes_unchanged": true
+  }
 }
-
