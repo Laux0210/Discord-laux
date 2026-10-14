@@ -8,7 +8,7 @@ Esta pasta contém 15 perfis especializados e os documentos do aplicativo deskto
 
 ## Execução do aplicativo
 
-A base da aplicação desktop (Etapa 6 - BASE) foi implementada em Electron + React 19 + TypeScript com isolamento de contexto (`contextIsolation`), sandbox e mocks locais desacoplados (R$0 preservado enquanto o gate E0 de nuvem real estiver em espera).
+Existe uma base local com código Electron, React 19, TypeScript e serviços mock. Foram verificados 23 testes unitários, tipagem e build do renderer. O build atual ainda não gera `dist-electron/main/index.js`, declarado como entrada desktop; a execução Electron e o aceite integral da etapa BASE permanecem pendentes. E0/E1/E2 continuam condicionando integrações e mídia reais.
 
 - [Contexto mestre preservado](docs/contexto/contexto-mestre.md) e [proveniência da fonte](docs/contexto/fonte.json).
 - [Plano de doze etapas](docs/planejamento/plano.md), [backlog](docs/planejamento/backlog.md) e [decisões](docs/planejamento/decisoes.md).
@@ -31,15 +31,17 @@ O exemplo contém dados não verificados e deve retornar `BLOQUEADO`, com códig
 
 Veja [a retomada de E0](docs/validacao/e0-retomada.md) e o esquema de entrada em [e0-evidencias.exemplo.json](docs/validacao/e0-evidencias.exemplo.json). Para usar evidências reais, prepare um arquivo separado com referências locais relativas à sua pasta, sem tokens, senhas ou conteúdo privado; o exemplo não deve ser apresentado como prova real.
 
+Resultados atuais: [E0-02 passou em 35 testes e revisão independente](docs/validacao/e0-02-verificacao-local.md); o gate financeiro continua bloqueado. A [análise REA inicial do Discord](docs/rea/discord/identidade.md) identificou a instalação e examinou o ASAR com cobertura parcial; interface e comportamento ainda não foram observados.
+
 ### Comandos de Desenvolvimento e Testes
 
-Requisitos: Node.js v26 ou superior, npm 11 ou superior.
+Ambiente verificado nesta rodada: Node.js 26.9.0, npm 11.19.1 e Python 3.14.7.
 
 ```powershell
-# Executar suíte de testes unitários automatizados (23 testes Vitest)
+# Executar suíte de testes unitários automatizados (35 testes Vitest cobrindo App, Schemas, RLS e Retenção)
 npm test
 
-# Compilação e empacotamento estático (TypeScript + Vite)
+# Verificação TypeScript e build do renderer com Vite
 npm run build
 
 # Verificação estática de tipos
@@ -47,6 +49,12 @@ npm run lint
 
 # Iniciar servidor de desenvolvimento do frontend
 npm run dev
+
+# Executar bateria completa de testes Python (39 testes: E0 e backup seguro)
+python -m unittest discover -s tests
+
+# Gerar comando de backup seguro por allowlist fechada (exclui estritamente mensagens - RF-14)
+python scripts/backup_db.py --dry-run --db-url postgresql://user:pass@localhost:5432/discord
 ```
 
 Para verificar novamente a conversão do DOCX, com Python 3.11 ou superior e sem dependências externas:
