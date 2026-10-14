@@ -38,11 +38,17 @@ Resultados atuais: [E0-02 passou em 35 testes e revisão independente](docs/vali
 Ambiente verificado nesta rodada: Node.js 26.9.0, npm 11.19.1 e Python 3.14.7.
 
 ```powershell
-# Executar suíte de testes unitários automatizados (35 testes Vitest cobrindo App, Schemas, RLS e Retenção)
+# Executar suíte de testes unitários automatizados (39 testes Vitest cobrindo App, Schemas, RLS, Retenção e Desktop Build)
 npm test
 
-# Verificação TypeScript e build do renderer com Vite
+# Verificação TypeScript, build do frontend com Vite e compilação desktop (main ESM + preload CJS)
 npm run build
+
+# Teste de fumaça automatizado do Electron (verifica isolamento, ausência de Node no renderer e segurança IPC)
+npm run test:desktop
+
+# Iniciar aplicação desktop completa localmente
+npm run desktop
 
 # Verificação estática de tipos
 npm run lint

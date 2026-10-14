@@ -2,11 +2,15 @@ import { contextBridge, ipcRenderer } from 'electron';
 import { createPreloadApi, type PreloadApi } from './api';
 
 const api = createPreloadApi(ipcRenderer);
+const bridgeApi = {
+  ...api,
+  getRuntimeIsolation: () => ({ contextIsolated: process.contextIsolated, sandboxed: process.sandboxed })
+};
 
-contextBridge.exposeInMainWorld('electronAPI', api);
+contextBridge.exposeInMainWorld('electronAPI', bridgeApi);
 
 declare global {
   interface Window {
-    electronAPI: PreloadApi;
+    electronAPI: PreloadApi & Pick<typeof bridgeApi, 'getRuntimeIsolation'>;
   }
 }

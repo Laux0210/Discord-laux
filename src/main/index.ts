@@ -1,51 +1,105 @@
-import { app, BrowserWindow, ipcMain, shell, desktopCapturer } from 'electron';
-import { createMainWindow } from './window';
+import { app, BrowserWindow, ipcMain, shell, type IpcMainInvokeEvent } from 'electron';
+import { mkdirSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { createMainWindow, rendererURL } from './window';
+import { isTrustedIpcSender } from './ipc-security';
 import { IPC_CHANNELS, validateIpcPayload, type DesktopSourceOptions, type OpenExternalUrlPayload } from '../common/ipc-channels';
 
+const smoke = process.argv.includes('--desktop-smoke');
+const expectedURL = rendererURL(smoke ? undefined : process.env.VITE_DEV_SERVER_URL);
+let mainWindow: BrowserWindow | null = null;
+
+if (smoke) {
+  const profile = fileURLToPath(new URL(`../../.codex/logs/desktop-smoke-${process.pid}/`, import.meta.url));
+  mkdirSync(profile, { recursive: true });
+  app.setPath('userData', profile);
+}
+
+function requireLocalRenderer(event: IpcMainInvokeEvent): void {
+  if (!mainWindow || !isTrustedIpcSender(event, { webContents: mainWindow.webContents, expectedURL })) {
+    throw new Error('Emissor IPC não autorizado');
+  }
+}
+
 function setupIpcHandlers(): void {
-  ipcMain.handle(IPC_CHANNELS.GET_APP_VERSION, () => {
+  ipcMain.handle(IPC_CHANNELS.GET_APP_VERSION, (event, payload?: unknown) => {
+    requireLocalRenderer(event);
+    if (!validateIpcPayload(IPC_CHANNELS.GET_APP_VERSION, payload)) throw new Error('Payload de versão inválido');
     return app.getVersion();
   });
 
-  ipcMain.handle(IPC_CHANNELS.GET_DESKTOP_SOURCES, async (_event, opts?: DesktopSourceOptions) => {
+  ipcMain.handle(IPC_CHANNELS.GET_DESKTOP_SOURCES, (event, opts?: DesktopSourceOptions) => {
+    requireLocalRenderer(event);
     if (!validateIpcPayload(IPC_CHANNELS.GET_DESKTOP_SOURCES, opts)) {
       throw new Error('Payload inválido para obtenção de fontes desktop');
     }
-
-    const types = opts?.types ?? ['screen', 'window'];
-    const thumbnailSize = opts?.thumbnailSize ?? { width: 150, height: 150 };
-
-    const sources = await desktopCapturer.getSources({ types, thumbnailSize });
-    return sources.map((source) => ({
-      id: source.id,
-      name: source.name,
-      thumbnail: source.thumbnail.toDataURL()
-    }));
+    throw new Error('Captura real indisponível nesta base mock; depende dos gates de mídia');
   });
 
-  ipcMain.handle(IPC_CHANNELS.OPEN_EXTERNAL_URL, async (_event, payload?: OpenExternalUrlPayload) => {
+  ipcMain.handle(IPC_CHANNELS.OPEN_EXTERNAL_URL, async (event, payload?: OpenExternalUrlPayload) => {
+    requireLocalRenderer(event);
     if (!validateIpcPayload(IPC_CHANNELS.OPEN_EXTERNAL_URL, payload) || !payload) {
       throw new Error('URL externa inválida ou insegura');
     }
-
+    const parsed = new URL(payload.url);
+    if (parsed.username || parsed.password) throw new Error('URL externa com credenciais não permitida');
     await shell.openExternal(payload.url);
     return true;
   });
 }
 
-app.whenReady().then(() => {
+async function verifySmoke(window: BrowserWindow): Promise<void> {
+  const page = await window.webContents.executeJavaScript(`(async () => {
+    await new Promise((resolve, reject) => {
+      const deadline = Date.now() + 5000;
+      function check() {
+        if (document.getElementById('root')?.textContent.includes('Comunidade dos Amigos')) return resolve();
+        if (Date.now() >= deadline) return reject(new Error('A interface não montou em cinco segundos'));
+        setTimeout(check, 25);
+      }
+      check();
+    });
+    const version = await window.electronAPI.getAppVersion();
+    let captureBlocked = false;
+    try { await window.electronAPI.getSystemSources({ types: ['screen'] }); }
+    catch (error) { captureBlocked = String(error).includes('Captura real indisponível'); }
+    return {
+      version, captureBlocked, bridgeIsolation: window.electronAPI.getRuntimeIsolation(), rendererLoaded: location.protocol === 'file:',
+      nodeUnavailable: typeof require === 'undefined' && typeof process === 'undefined'
+    };
+  })()`, true);
+  const isolation = page.bridgeIsolation.contextIsolated === true && page.bridgeIsolation.sandboxed === true;
+  if (!page.rendererLoaded || !page.captureBlocked || !page.nodeUnavailable || page.version !== app.getVersion() || !isolation) {
+    throw new Error('Falha de carregamento, isolamento ou ponte IPC no smoke desktop');
+  }
+  console.log('DESKTOP_SMOKE_RESULT ' + JSON.stringify({ ok: true, electron: process.versions.electron, ...page, isolation }));
+}
+
+app.whenReady().then(async () => {
   setupIpcHandlers();
-  createMainWindow();
+  mainWindow = createMainWindow(expectedURL, !smoke);
+  mainWindow.webContents.on('preload-error', (_event, _path, error) => console.error('Preload:', error.message));
+  await mainWindow.loadURL(expectedURL);
+  if (smoke) {
+    await verifySmoke(mainWindow);
+    app.quit();
+    return;
+  }
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
-      createMainWindow();
+      mainWindow = createMainWindow(expectedURL);
+      void mainWindow.loadURL(expectedURL);
     }
   });
+}).catch((error: Error) => {
+  if (smoke) console.log('DESKTOP_SMOKE_RESULT ' + JSON.stringify({ ok: false, error: error.message }));
+  else console.error(error.message);
+  app.exit(1);
 });
 
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
+  if (process.platform !== 'darwin' || smoke) {
     app.quit();
   }
 });
