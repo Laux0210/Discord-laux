@@ -1,0 +1,82 @@
+{
+  "verified_at_utc": "2026-10-14 06:26:33 UTC",
+  "scope": "Discord: plano REA e suporte local E0",
+  "notes": [
+    {
+      "path": "Discord/05-PLANO-DE-EXECUCAO.md",
+      "source": "docs/planejamento/plano.md",
+      "source_sha256": "14a379f18cd15eeecf49c368bc1418aa55130a0949faf2de899a0fb84f76789d",
+      "content_verified": true
+    },
+    {
+      "path": "Discord/06-REQUISITOS-E-ACEITE.md",
+      "source": "docs/produto/requisitos-e-aceite.md",
+      "source_sha256": "aac5e251458f44700f4b69c3876523c778aa6fcbff6d09b8ce1647ffa4c33ef0",
+      "content_verified": true
+    },
+    {
+      "path": "Discord/08-BACKLOG-E-DEPENDENCIAS.md",
+      "source": "docs/planejamento/backlog.md",
+      "source_sha256": "15b7d32eb5ce5cd2f64aec81454c597338086bf11eddaaefd2833e6c4fc1a3bf",
+      "content_verified": true
+    },
+    {
+      "path": "Discord/10-DECISOES-DO-APP.md",
+      "source": "docs/planejamento/decisoes.md",
+      "source_sha256": "f52190b508ba63a32340fed9b0f7c8da4dec3983de052f13471e76b7b3185735",
+      "content_verified": true
+    },
+    {
+      "path": "Discord/12-REA-DISCORD-REFERENCIA.md",
+      "source": "docs/rea/plano-discord-referencia.md",
+      "source_sha256": "f4bcd1d8dea2c24f665d49b9e37f91a9e0f2b43c9ccde2516fbe39d32b1e67b4",
+      "content_verified": true
+    },
+    {
+      "path": "Discord/13-E0-VERIFICACAO-LOCAL.md",
+      "source": "docs/validacao/e0-02-verificacao-local.md",
+      "source_sha256": "0ff52b5e032ba63c76718c7df100c14a86d6b3a7da7dfb7223fc1356639616fe",
+      "content_verified": true
+    },
+    {
+      "path": "Discord/14-REA-DISCORD-IDENTIDADE.md",
+      "source": "docs/rea/discord/identidade.md",
+      "source_sha256": "fca92561b270daba8476795ec4c4f14fda5c23ad362a0cbdff90e127ed3c165f",
+      "content_verified": true
+    },
+    {
+      "path": "Discord/15-E0-RETOMADA.md",
+      "source": "docs/validacao/e0-retomada.md",
+      "source_sha256": "d48bc2c17a1bcdee87ca084a2bdb67452edcf2c197325e19e8f4ebb0cabcc4ca",
+      "content_verified": true
+    }
+  ],
+  "append_notes": [
+    "Discord/00-INDICE.md",
+    "Discord/01-ESTADO.md",
+    "Discord/03-DECISOES.md",
+    "Discord/11-REGISTRO-DE-EXECUCAO.md"
+  ],
+  "historical_prefixes_verified": true,
+  "backups": ".codex/backups/plano-rea-discord-20261014/",
+  "independent_review": "QA-E0-02B/C/E",
+  "tests": {
+    "e0_unittest": 35,
+    "existing_mock_vitest": 23,
+    "typecheck": "pass",
+    "renderer_build": "pass"
+  },
+  "limits": {
+    "e0_financial_gate": "BLOQUEADO",
+    "discord_rea_coverage": "partial_static",
+    "discord_runtime": "not_observed",
+    "desktop_entry": "dist-electron/main/index.js absent",
+    "base_acceptance": "pending"
+  },
+  "ai_memory": {
+    "workspace": "discord",
+    "project": "discord",
+    "path": "notes/plano-rea-discord.md",
+    "write_and_search_verified": true
+  }
+}

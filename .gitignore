@@ -26,3 +26,7 @@ Thumbs.db
 # Cobertura de testes e relatórios
 coverage/
 .nyc_output/
+
+# Python cache
+__pycache__/
+*.py[cod]

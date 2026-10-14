@@ -59,3 +59,20 @@ Em 2026-10-14, o usuário solicitou começar o desenvolvimento usando o plano no
 O utilitário pertence à verificação local de E0: sem SDK, rede, credenciais ou provisionamento. Não é a aplicação nem um controlador de mídia. Resultado local nunca aprova GO; contas, proteção real e revisão independente continuam necessárias.
 
 Evidências atuais: navegador Brave disponível, mas painel Cloudflare redirecionou ao login; aba mantida para o usuário. Supabase list_projects retornou projects=[]; GitHub identificou conta autenticada, sem comprovar proprietário e orçamento destinados ao app. CLIs e variáveis de processo pertinentes não foram encontrados nas superfícies consultadas. Veja [E0-retomada](../validacao/e0-retomada.md). Nenhum billing, projeto ou serviço foi alterado.
+
+### Aceite da ferramenta e atualização REA
+
+- E0-02: implementada no escopo offline. QA encontrou observações antigas/posteriores à evidência aceitas como candidatas; F1 voltou ao autor, foi corrigida com regressões e passou em 35 testes reexecutados pelo principal e pelo QA. QA-E0-02C aprovou a ferramenta corrigida; realizou 17 cenários adicionais. Consulte [o relatório local](../validacao/e0-02-verificacao-local.md) para hashes e limites. Gate E0 continua BLOQUEADO.
+- A revisão documental QA-E0-02B aprovou o acréscimo solicitado pelo usuário: RF-17/AC-17, D-15 e REA-REF-01–04, mantendo doze etapas e RF-01–16. REA-REF investiga o Discord de referência; REA-APP permanece para nosso instalador na etapa 11. Os estados administrativos foram atualizados após as evidências.
+- REA-REF-01A: `producao_rea` identificou a instalação Stable 1.0.9261, executou uma análise ASAR summary e duas páginas de identidades retidas. A cobertura é parcial; nenhuma tela, modo ou função do runtime foi validada. O principal conferiu novamente os três hashes e consolidou [a identidade/evidências](../rea/discord/identidade.md), sem guardar credenciais ou valores da configuração adicional encontrada.
+- Nenhum aplicativo Discord foi iniciado por este trabalho; não houve mídia, intervenção em comunidades, implantação ou aquisição de serviço. Os originais permanecem intactos. A implementação do aplicativo próprio continua dependente de E0/E1/E2, DESIGN e BASE; a investigação de referência pode avançar no escopo autorizado.
+
+Próximos responsáveis: principal obtém evidências financeiras autenticadas; produção REA aprofunda perguntas delimitadas e observa a interface quando houver acesso e cenário autorizados. Construção REA aguarda o contrato de reprodução e as dependências técnicas.
+
+### Conciliação da base local encontrada durante a revisão
+
+Uma base Electron/React/TypeScript com serviços mock e um ledger próprio foi adicionada à pasta durante este lote, sem autoria dos especialistas E0/REA acima. Foi preservada, assim como os commits e documentos dessa execução. O README e notas Obsidian declaravam BASE concluída, enquanto o plano/backlog mantinham suas dependências pendentes.
+
+O principal verificou `npm test` (23 testes Vitest), `npm run lint` e `npm run build`, todos com código 0, em Node 26.9.0/npm 11.19.1. O build gera apenas o renderer: tsconfig usa noEmit e Vite aponta para src/renderer. A entrada `dist-electron/main/index.js` de package.json não existe após esse build. Não foi iniciada nem validada execução Electron, instalador, serviços reais ou testes Windows 10/11 nesta inspeção.
+
+O estado reconciliado é base local parcial com mocks e checks de frontend aprovados; aceite integral BASE pendente. A informação histórica de conclusão encontrada nas notas fica preservada, com esta correção de escopo registrada na atualização atual. Nenhum código dessa base foi revertido ou modificado pelo principal. O README passa a explicar o build efetivamente verificado.

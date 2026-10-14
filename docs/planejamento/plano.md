@@ -41,6 +41,8 @@ Responsáveis: `producao_rea` na investigação, `ux_ui` e `arquiteto` nos contr
 
 Identificação, leitura estática e documentação da referência podem avançar em paralelo com E0, sem ativar a mídia do projeto. Operações no Discord que enviem mensagens, modifiquem comunidades ou iniciem chamadas requerem cenário de teste autorizado. A implementação correspondente continua após E0/E1/E2, DESIGN e BASE. A referência não altera automaticamente limites de capacidade, retenção, privacidade, custos ou itens excluídos do MVP. Funções adicionais observadas entram em backlog separado. Esta preparação não está concluída nem é prova de engenharia reversa já executada.
 
+Estado verificado desta preparação: [REA-REF-01A](../rea/discord/identidade.md) identificou a instalação local Stable 1.0.9261 e executou análise estática mínima com cobertura parcial. Não houve observação da interface ou execução do Discord. O checklist integral e os contratos de reprodução permanecem pendentes.
+
 ### 1. Consolidar contexto, decisões e documentos — DOC
 
 Responsáveis: analista, produto e planejador; publicação pelo orquestrador.
@@ -60,6 +62,8 @@ Responsáveis: devops e arquiteto. Inspecionar planos, franquias, consumo existe
 Aceite: mecanismo verificável preserva prioridade R$0. Não transmitir mídia nem provocar excedentes reais nesta verificação.
 
 Estado da execução em 2026-10-14: relatório [E0 financeiro](../validacao/e0-financeiro.md) entregue e revisado; gate **BLOQUEADO**. Faltam conta Cloudflare identificada, acesso de leitura e evidências de ciclo/consumo/prevenção de cobrança. O checkbox de aceite permanece pendente; produzir o relatório não aprova o portão.
+
+A ferramenta offline [E0-02](../validacao/e0-02-verificacao-local.md) foi implementada e revisada com 35 testes. Seu exemplo permanece BLOQUEADO; essa validação estrutural não aprova E0 nem comprova condições reais das contas.
 
 ### 3. Executar uma prova pequena de mídia — E1
 
