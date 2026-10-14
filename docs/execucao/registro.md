@@ -84,3 +84,14 @@ O estado reconciliado é base local parcial com mocks e checks de frontend aprov
 - **Bateria de testes ampliada**: 39 testes unitários Vitest aprovados (`tests/unit/desktop-build.test.ts`), 39 testes unitários Python aprovados (`python -m unittest discover tests`), `npm run lint` aprovado e `python scripts/validar_agentes.py` OK com integridade do AGENTS.md preservada.
 - **Catálogo de referência (REA-REF-02A)**: Concluído inventário estático do ASAR da versão 1.0.9261 em [catalogo.md](../rea/discord/catalogo.md) e [resumo-catalogo.json](../rea/discord/evidencias/resumo-catalogo.json); atualizada a [matriz de reprodução](../rea/discord/matriz-reproducao.md). Limites mantidos: nenhuma execução ou captura de credenciais/sessão do Discord foi realizada.
 
+### Conclusão da Etapa 8 — Identidade e Comunidades (IDENTITY)
+
+- **Autenticação e Sessão Protegida (`DesktopAuthService` e `SessionManager`)**: Implementado fluxo com geração de state anti-CSRF, sanitização de sessão no armazenamento local, restauração automática na inicialização e expiração segura. Mocks offline disponíveis para operação contínua a R$0.
+- **Gerenciamento de Comunidades (`InMemoryGuildService`)**: Criação de comunidades com dono automático, cargo `@everyone`, canal padrão `#geral` e listagem de comunidades por usuário.
+- **Controle de Canais e Permissões**: Criação e remoção restritas por `MANAGE_CHANNELS` e filtragem dinâmica de canais conforme avaliação canônica de `VIEW_CHANNEL`.
+- **Sistema de Convites com Validação Estrita**: Geração de códigos alfanuméricos protegida por `CREATE_INSTANT_INVITE`, rejeição explícita de códigos inexistentes, expirados (`CONVITE_EXPIRADO`) ou esgotados (`CONVITE_ESGOTADO`), e garantia de idempotência para membros preexistentes.
+- **Hierarquia de Cargos**: Aplicação estrita da regra canônica `canManageRole`. Membros não-donos são impedidos de criar, atribuir ou revogar cargos iguais ou superiores ao seu cargo máximo.
+- **Interface e Navegação**: Componentes `LoginModal`, `Sidebar`, `UserBar` e `App` integrados, permitindo alternância fluida entre comunidades e logout seguro.
+- **Suíte de Testes**: Suíte Vitest expandida para 67 testes em 15 arquivos (100% verde), teste de fumaça desktop Electron validado (`npm run test:desktop`), tipagem TypeScript estrita sem erros (`npm run lint`), 39 testes unitários Python preservados e integridade do [AGENTS.md](../../AGENTS.md) intacta.
+
+

@@ -1,0 +1,110 @@
+{
+  "task_id": "BASE-LOCAL-02",
+  "date": "2026-10-14",
+  "accepted_scope": "Build e inicialização desktop local mock, CSP e IPC; não BASE integral",
+  "environment": {
+    "os": "Windows 10 Pro 10.0.19045 x64",
+    "node": "26.9.0",
+    "npm": "11.19.1",
+    "electron": "35.7.5"
+  },
+  "preserved_agents_sha256": "dad02adfe188a9345e59ba80039d96f4ec30fe7791c5f0173414d6852ed1a9d1",
+  "electron_recovery": {
+    "source": "Cache do ZIP oficial correspondente ao pacote fixado",
+    "artifact": "electron-v35.7.5-win32-x64.zip",
+    "sha256": "b87b2d6167845ece1d373eb37f5ce49868a07ec90203de44b6bd415d6c673c6d",
+    "checksum_matches_package": true,
+    "method": "Expand-Archive nativo após instalador encerrar sem extrair executável; sem mudar versões"
+  },
+  "source_hashes": {
+    "scripts/build-desktop.mjs": "4e6b6753e6caa511b2c740efa413651364cc92e9e4d962f63f036a2c51d2568b",
+    "scripts/start-desktop.mjs": "f910bfd5b2c9ccbd47430a140876215e7b37ed1c72c7ecd7637e196271d91f8b",
+    "package-lock.json": "55dafa41ae29b7724b1859a84b899e3efdaaa6e8207c7aa9137f7d470a494266",
+    "src/main/window.ts": "25a081c175f4966b30b637b1355c1936e72192ba655feb144865bd32bc0b3102",
+    ".gitignore": "949d7b786a6109aaaf7b4bffaedf4c6b7f6cc193a47e46e102ad741d66213f64",
+    "src/preload/index.ts": "d7572c41fe09dac8faef5321d54381223e7ca916ae146c3de1d569a04f0fb3ea",
+    "package.json": "b9d56cefd4bdf9638658d11d56d696632c75f139cac8d5ba6de95d17fae8fddd",
+    "tests/unit/auth-session.test.ts": "ef3df2b7af4f9ba5b9b11b7183b620343f9db3ba961f74090b3a6402428349bb",
+    "vite.config.ts": "7783528e9df51e2ceb2f43ee7ca34372247902804b7d0560a60b86c6b2062f67",
+    "src/renderer/index.html": "83e64e39b12bc9aff2e156c675d0b59937eff6a1d57a2e5203f22f1890dceec7",
+    "src/main/ipc-security.ts": "6dc28b9de0f11714de955e5c60127a0cd79c6d1d30635039e9d311a7661f6d9e",
+    "tests/unit/desktop-build.test.ts": "e248128099857a9c8dfcc37d9359b458ce2242420ae4d6222114cb15eb55e80c",
+    "src/main/index.ts": "912bf9dea1145ddda0c8b9e3dd68d65e0513b4c33c4d625431da731957beb78e",
+    "scripts/smoke-desktop.mjs": "eb19e41803733367ebfdf055f28e1a06f4d341a5d4a7d378ff25ccb344d82f9a"
+  },
+  "checks": [
+    {
+      "command": "npm run lint",
+      "timestamp_local": "2026-10-14 13:36",
+      "result": {
+        "chunk_id": "ff22f5",
+        "wall_time_seconds": 3.9161378,
+        "exit_code": 0,
+        "original_token_count": 12,
+        "output": "\n> discord-desktop@0.1.0 lint\n> tsc --noEmit\n\n"
+      }
+    },
+    {
+      "command": "npm test",
+      "timestamp_local": "2026-10-14 13:36:26",
+      "tests": 60,
+      "files": 13,
+      "result": {
+        "chunk_id": "adb9a3",
+        "wall_time_seconds": 2.8902736,
+        "exit_code": 0,
+        "original_token_count": 235,
+        "output": "\n> discord-desktop@0.1.0 test\n> vitest run\n\n\n RUN  v3.2.7 C:/Users/jv883/Documents/Codex/Discord\n\n ✓ tests/unit/data-schema.test.ts (3 tests) 4ms\n ✓ tests/unit/permissions.test.ts (7 tests) 4ms\n ✓ tests/unit/data-rls.test.ts (4 tests) 4ms\n ✓ tests/unit/data-retention.test.ts (5 tests) 5ms\n ✓ tests/unit/preload-api.test.ts (3 tests) 7ms\n ✓ tests/unit/auth-session.test.ts (9 tests) 11ms\n ✓ tests/unit/guild-service.test.ts (5 tests) 10ms\n ✓ tests/unit/invites.test.ts (7 tests) 13ms\n ✓ tests/unit/mock-services.test.ts (6 tests) 6ms\n ✓ tests/unit/app-layout.test.tsx (1 test) 13ms\n ✓ tests/unit/desktop-build.test.ts (4 tests) 571ms\n ✓ tests/unit/ipc-contracts.test.ts (4 tests) 3ms\n ✓ tests/unit/setup.test.ts (2 tests) 3ms\n\n Test Files  13 passed (13)\n      Tests  60 passed (60)\n   Start at  13:36:26\n   Duration  1.38s (transform 1.16s, setup 0ms, collect 2.28s, tests 657ms, environment 5ms, prepare 3.43s)\n\n"
+      }
+    },
+    {
+      "command": "npm run test:desktop",
+      "timestamp_local": "2026-10-14 13:36:53",
+      "result": {
+        "chunk_id": "4a52d9",
+        "wall_time_seconds": 4.759016,
+        "exit_code": 0,
+        "original_token_count": 217,
+        "output": "\n> discord-desktop@0.1.0 test:desktop\n> npm run build && node scripts/smoke-desktop.mjs\n\n\n> discord-desktop@0.1.0 build\n> tsc && vite build && node scripts/build-desktop.mjs\n\nvite v6.4.4 building for production...\ntransforming...\n✓ 38 modules transformed.\nrendering chunks...\ncomputing gzip size...\n../../dist/index.html                   0.67 kB │ gzip:  0.39 kB\n../../dist/assets/index-IoGesX1R.css    0.27 kB │ gzip:  0.22 kB\n../../dist/assets/index-BJnyw0Ro.js   236.53 kB │ gzip: 73.35 kB\n✓ built in 745ms\nDesktop: main ESM e preload CJS compilados.\n{\n  \"ok\": true,\n  \"electron\": \"35.7.5\",\n  \"version\": \"0.1.0\",\n  \"captureBlocked\": true,\n  \"cspConnectBlocked\": true,\n  \"bridgeIsolation\": {\n    \"contextIsolated\": true,\n    \"sandboxed\": true\n  },\n  \"rendererLoaded\": true,\n  \"nodeUnavailable\": true,\n  \"isolation\": true,\n  \"probeReachedNetwork\": false\n}\n"
+      }
+    }
+  ],
+  "smoke": {
+    "ok": true,
+    "version": "0.1.0",
+    "electron": "35.7.5",
+    "captureBlocked": true,
+    "cspConnectBlocked": true,
+    "bridgeIsolation": {
+      "contextIsolated": true,
+      "sandboxed": true
+    },
+    "rendererLoaded": true,
+    "nodeUnavailable": true,
+    "isolation": true,
+    "probeReachedNetwork": false
+  },
+  "browser_check": {
+    "browser": "Brave",
+    "url": "http://127.0.0.1:5173/",
+    "ui_mounted": true,
+    "observed_errors_warnings": 0,
+    "meta_before_scripts": true,
+    "scope": "Inicialização do frontend; sem fidelidade comparada ao Discord"
+  },
+  "reviews": {
+    "BASE_REV_02": "Reprovado inicialmente: meta CSP ampla e eficácia não testada",
+    "BASE_REV_02C": "Aprovado: desktop/CSP e importação User; leitura independente, sem executar runtime",
+    "REA_REV_02A": "Catálogo/matriz iniciais aprovados com cobertura parcial"
+  },
+  "limitations": [
+    "Checks globais são snapshot; trabalho paralelo acrescenta módulos e pode invalidar esse estado",
+    "Auth/guild/invites têm testes globais, mas não foram auditados por esta revisão",
+    "Instalação limpa com npm ci e Windows 11 não repetidos; nenhum instalador produzido",
+    "OAuth/provedores/mídia reais não integrados nem aceitos; E0 BLOQUEADO",
+    "Captura real desativada; teste negativo cobre IPC getSystemSources, não ensaio completo WebMedia",
+    "Não houve comparação visual com Discord nem UI/runtime original observados"
+  ],
+  "next": "Continuar REA/contratos com evidências; liberar integrações somente conforme E0/E1/E2"
+}
+
