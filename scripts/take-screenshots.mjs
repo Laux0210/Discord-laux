@@ -100,7 +100,21 @@ app.whenReady().then(async () => {
   writeFileSync(join(artifactDir, '04-dm-conversa.png'), img.toPNG());
   console.log('Gravado 04-dm-conversa.png');
 
+  // Clica na engrenagem de configurações
+  await win.webContents.executeJavaScript(`(() => {
+    const settingsBtn = document.querySelector('[data-testid="btn-settings"]');
+    if (settingsBtn) settingsBtn.click();
+  })()`);
+
+  await new Promise(r => setTimeout(r, 700));
+
+  // Screenshot 5: Configurações do Usuário (Minha Conta, Voz, Volume, Perfil)
+  img = await win.webContents.capturePage();
+  writeFileSync(join(artifactDir, '05-configuracoes.png'), img.toPNG());
+  console.log('Gravado 05-configuracoes.png');
+
   app.quit();
+
 }).catch((err) => {
   console.error(err);
   app.exit(1);

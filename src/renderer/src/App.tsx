@@ -14,8 +14,10 @@ import { VoiceControls } from './components/VoiceControls';
 import { LoginModal } from './components/LoginModal';
 import { FriendsArea, type FriendEntry } from './components/FriendsArea';
 import { DirectMessageArea } from './components/DirectMessageArea';
+import { UserSettingsModal } from './components/UserSettingsModal';
 import { soundEffects } from './services/sound-effects';
 import { voiceMediaService } from './services/voice-media-service';
+
 
 
 export interface AppProps {
@@ -87,6 +89,8 @@ export const App: React.FC<AppProps> = ({
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [screenStream, setScreenStream] = useState<MediaStream | null>(null);
   const [authError, setAuthError] = useState<string | null>(null);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
 
 
   useEffect(() => {
@@ -506,7 +510,161 @@ export const App: React.FC<AppProps> = ({
 
       {/* 2. Área Central (Comunidade ou Amigos/DMs) */}
       {activeView === 'dm' ? (
-        <div style={{ flex: 1, display: 'flex' }}>
+        <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+          {/* Barra Lateral de Mensagens Diretas (240px estilo Discord canônico) */}
+          <aside
+            style={{
+              width: '240px',
+              backgroundColor: '#2b2d31',
+              display: 'flex',
+              flexDirection: 'column',
+              flexShrink: 0
+            }}
+          >
+            {/* Campo de Busca Superior */}
+            <div style={{ height: '48px', borderBottom: '1px solid #202225', padding: '0 10px', display: 'flex', alignItems: 'center' }}>
+              <div
+                style={{
+                  width: '100%',
+                  padding: '6px 8px',
+                  backgroundColor: '#1e1f22',
+                  borderRadius: '4px',
+                  fontSize: '13px',
+                  color: '#949ba4',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                <span>🔍</span>
+                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>Encontre ou comece...</span>
+              </div>
+            </div>
+
+            {/* Lista de Navegação e DMs */}
+            <div style={{ flex: 1, padding: '8px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <button
+                data-testid="nav-friends-home"
+                onClick={() => setSelectedDm(null)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  padding: '8px 12px',
+                  borderRadius: '4px',
+                  backgroundColor: selectedDm === null ? '#404249' : 'transparent',
+                  color: selectedDm === null ? '#ffffff' : '#949ba4',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: 500,
+                  width: '100%',
+                  textAlign: 'left'
+                }}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                </svg>
+                <span>Amigos</span>
+              </button>
+
+              <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#949ba4', textTransform: 'uppercase', marginTop: '12px', marginBottom: '4px', padding: '0 8px' }}>
+                Mensagens Diretas
+              </div>
+
+              {friends.map((friend) => {
+                const isSelected = selectedDm?.friendId === friend.friendId;
+                const presence = presenceService ? presenceService.getPresence(friend.friendId) : 'online';
+                return (
+                  <div
+                    key={friend.friendId}
+                    data-testid={`dm-sidebar-item-${friend.friendId}`}
+                    onClick={() => {
+                      if (!friendshipService) return;
+                      setSelectedDm({
+                        userId: currentUser.id,
+                        friendId: friend.friendId,
+                        friendName: friend.displayName,
+                        service: friendshipService
+                      });
+                    }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                      padding: '6px 8px',
+                      borderRadius: '4px',
+                      backgroundColor: isSelected ? '#404249' : 'transparent',
+                      color: isSelected ? '#ffffff' : '#949ba4',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      transition: 'background 0.15s ease'
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: '32px',
+                        height: '32px',
+                        borderRadius: '50%',
+                        backgroundColor: '#5865f2',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '12px',
+                        fontWeight: 'bold',
+                        color: '#ffffff',
+                        position: 'relative',
+                        flexShrink: 0
+                      }}
+                    >
+                      {friend.displayName.substring(0, 2).toUpperCase()}
+                      <div
+                        style={{
+                          position: 'absolute',
+                          bottom: '-1px',
+                          right: '-1px',
+                          width: '10px',
+                          height: '10px',
+                          borderRadius: '50%',
+                          backgroundColor: presence === 'online' ? '#23a55a' : presence === 'idle' ? '#f0b232' : '#80848e',
+                          border: '2px solid #2b2d31'
+                        }}
+                      />
+                    </div>
+                    <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {friend.displayName}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Controles de Voz (se em chamada) e UserBar */}
+            <VoiceControls
+              isMuted={isMuted}
+              isDeafened={isDeafened}
+              isScreenSharing={isScreenSharing}
+              isConnected={isInVoiceCall}
+              channelName={channels.find((c) => c.id === (callState.channelId || selectedChannelId))?.name || 'Voz Principal'}
+              onToggleMute={handleToggleMute}
+              onToggleDeafen={handleToggleDeafen}
+              onToggleScreenShare={handleToggleScreenShare}
+              onDisconnect={handleDisconnectVoice}
+            />
+
+            <UserBar
+              user={currentUser}
+              onLogout={handleLogout}
+              onOpenSettings={() => setIsSettingsOpen(true)}
+              isMuted={isMuted}
+              isDeafened={isDeafened}
+              isSpeaking={isSpeaking}
+              onToggleMute={handleToggleMute}
+              onToggleDeafen={handleToggleDeafen}
+            />
+          </aside>
+
+          {/* Área Principal: DMs ou Amigos */}
           {selectedDm?.userId === currentUser.id && selectedDm.service === friendshipService ? (
             <DirectMessageArea
               key={JSON.stringify([currentUser.id, selectedDm.friendId])}
@@ -516,19 +674,27 @@ export const App: React.FC<AppProps> = ({
               friendName={selectedDm.friendName}
               onBack={() => setSelectedDm(null)}
             />
-          ) : <FriendsArea
-            friends={friends}
-            currentUserId={currentUser.id}
-            onSendFriendRequest={handleSendFriendRequest}
-            onAcceptFriendRequest={handleAcceptFriendRequest}
-            onOpenDm={(friendId) => {
-              if (!friendshipService) return;
-              setSelectedDm({ userId: currentUser.id, friendId, friendName: friends.find((friend) => friend.friendId === friendId)?.displayName ?? friendId, service: friendshipService });
-            }}
-            presenceService={presenceService}
-          />}
+          ) : (
+            <FriendsArea
+              friends={friends}
+              currentUserId={currentUser.id}
+              onSendFriendRequest={handleSendFriendRequest}
+              onAcceptFriendRequest={handleAcceptFriendRequest}
+              onOpenDm={(friendId) => {
+                if (!friendshipService) return;
+                setSelectedDm({
+                  userId: currentUser.id,
+                  friendId,
+                  friendName: friends.find((friend) => friend.friendId === friendId)?.displayName ?? friendId,
+                  service: friendshipService
+                });
+              }}
+              presenceService={presenceService}
+            />
+          )}
         </div>
       ) : (
+
         <>
           {/* Coluna de Canais e Perfil */}
           <aside
@@ -601,6 +767,7 @@ export const App: React.FC<AppProps> = ({
             <UserBar
               user={currentUser}
               onLogout={handleLogout}
+              onOpenSettings={() => setIsSettingsOpen(true)}
               isMuted={isMuted}
               isDeafened={isDeafened}
               isSpeaking={isSpeaking}
@@ -622,7 +789,6 @@ export const App: React.FC<AppProps> = ({
               isScreenSharing={isScreenSharing}
               screenStream={screenStream}
             />
-
           ) : (
             <ChatArea
               channel={currentChannel}
@@ -634,6 +800,21 @@ export const App: React.FC<AppProps> = ({
           )}
         </>
       )}
+
+      {/* Modal de Configurações de Usuário (Estilo Discord) */}
+      <UserSettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        user={currentUser}
+        onUpdateUser={(updated) => {
+          if (currentUser) {
+            setCurrentUser({ ...currentUser, ...updated });
+          }
+        }}
+        onLogout={handleLogout}
+        callController={callController}
+      />
     </div>
   );
 };
+

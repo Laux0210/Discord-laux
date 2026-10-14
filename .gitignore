@@ -33,3 +33,4 @@ __pycache__/
 
 # Perfis transitórios e logs dos testes desktop
 .codex/logs/
+.vite/
