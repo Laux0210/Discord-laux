@@ -6,6 +6,7 @@ export interface SidebarProps {
   guilds?: Guild[];
   selectedGuildId?: string | null;
   onSelectGuild?: (guildId: string) => void;
+  onSelectDmHome?: () => void;
   onOpenCreateGuild?: () => void;
 }
 
@@ -14,6 +15,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   guilds = [],
   selectedGuildId,
   onSelectGuild,
+  onSelectDmHome,
   onOpenCreateGuild
 }) => {
   // Se guilds estiver vazio mas currentGuildName estiver fornecido, simula item para retrocompatibilidade
@@ -40,6 +42,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <div
         data-testid="btn-dm-home"
         title="Mensagens Diretas"
+        onClick={onSelectDmHome}
         style={{
           width: '48px',
           height: '48px',

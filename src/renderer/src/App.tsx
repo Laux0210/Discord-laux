@@ -3,18 +3,22 @@ import type { Channel, Guild, Message, User } from '../../common/types';
 import type { AuthService as LegacyAuthService, ChatService, MediaService } from './services/types';
 import type { AuthService as ModernAuthService } from '../../common/auth-types';
 import type { GuildService } from '../../common/guild-types';
+import type { FriendshipService, PresenceService } from '../../common/text-types';
 import { Sidebar } from './components/Sidebar';
 import { ChannelList } from './components/ChannelList';
 import { UserBar } from './components/UserBar';
 import { ChatArea } from './components/ChatArea';
 import { VoiceControls } from './components/VoiceControls';
 import { LoginModal } from './components/LoginModal';
+import { FriendsArea, type FriendEntry } from './components/FriendsArea';
 
 export interface AppProps {
   authService: LegacyAuthService | ModernAuthService;
   chatService: ChatService;
   mediaService: MediaService;
   guildService?: GuildService;
+  friendshipService?: FriendshipService;
+  presenceService?: PresenceService;
 }
 
 const DEFAULT_CHANNELS: Channel[] = [
@@ -44,14 +48,18 @@ export const App: React.FC<AppProps> = ({
   authService,
   chatService,
   mediaService,
-  guildService
+  guildService,
+  friendshipService,
+  presenceService
 }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(authService.getCurrentUser());
+  const [activeView, setActiveView] = useState<'guild' | 'dm'>('guild');
   const [guilds, setGuilds] = useState<Guild[]>([]);
   const [selectedGuildId, setSelectedGuildId] = useState<string | null>(null);
   const [channels, setChannels] = useState<Channel[]>(DEFAULT_CHANNELS);
   const [selectedChannelId, setSelectedChannelId] = useState<string>('chan-general');
   const [messages, setMessages] = useState<Message[]>([]);
+  const [friends, setFriends] = useState<FriendEntry[]>([]);
   const [isMuted, setIsMuted] = useState(false);
   const [isDeafened, setIsDeafened] = useState(false);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
@@ -79,6 +87,20 @@ export const App: React.FC<AppProps> = ({
       }
     });
   }, [currentUser, guildService, selectedGuildId]);
+
+  // Carrega lista de amigos se friendshipService estiver disponível
+  useEffect(() => {
+    if (!currentUser || !friendshipService) return;
+
+    friendshipService.getFriends(currentUser.id).then((list) => {
+      const entries: FriendEntry[] = list.map((item) => ({
+        friendId: item.friendId,
+        displayName: item.friendId === 'user-2' ? 'Amigo Dois' : item.friendId === 'user-3' ? 'Amigo Três' : item.friendId,
+        status: item.status
+      }));
+      setFriends(entries);
+    });
+  }, [currentUser, friendshipService]);
 
   // Carrega canais da comunidade selecionada
   useEffect(() => {
@@ -111,12 +133,10 @@ export const App: React.FC<AppProps> = ({
       setAuthError(null);
       if ('initiateLogin' in authService) {
         const { authUrl } = authService.initiateLogin('google');
-        // Se houver API desktop, abre no navegador externo seguro
         if (typeof window !== 'undefined' && window.electronAPI?.openExternalUrl) {
           await window.electronAPI.openExternalUrl(authUrl);
         }
       }
-      // Em simulação / mock, executa login
       const user = await authService.login({ provider: 'mock', mockUsername: 'amigo-1' } as any);
       if (user) setCurrentUser(user);
     } catch (err: any) {
@@ -205,6 +225,32 @@ export const App: React.FC<AppProps> = ({
     setIsScreenSharing(false);
   };
 
+  const handleSendFriendRequest = async (targetUserId: string) => {
+    if (!currentUser || !friendshipService) return;
+    await friendshipService.sendFriendRequest(currentUser.id, targetUserId);
+    const updated = await friendshipService.getFriends(currentUser.id);
+    setFriends(
+      updated.map((i) => ({
+        friendId: i.friendId,
+        displayName: i.friendId,
+        status: i.status
+      }))
+    );
+  };
+
+  const handleAcceptFriendRequest = async (friendId: string) => {
+    if (!currentUser || !friendshipService) return;
+    await friendshipService.acceptFriendRequest(currentUser.id, friendId);
+    const updated = await friendshipService.getFriends(currentUser.id);
+    setFriends(
+      updated.map((i) => ({
+        friendId: i.friendId,
+        displayName: i.friendId,
+        status: i.status
+      }))
+    );
+  };
+
   // Se não estiver logado, exibe a tela de login
   if (!currentUser) {
     return (
@@ -232,72 +278,94 @@ export const App: React.FC<AppProps> = ({
         color: '#dbdee1'
       }}
     >
-      {/* 1. Barra Lateral de Comunidades */}
+      {/* 1. Barra Lateral de Comunidades e DMs */}
       <Sidebar
         currentGuildName={currentGuildName}
         guilds={guilds}
-        selectedGuildId={selectedGuildId}
-        onSelectGuild={(id) => setSelectedGuildId(id)}
-      />
-
-      {/* 2. Coluna de Canais e Perfil */}
-      <aside
-        style={{
-          width: '240px',
-          backgroundColor: '#2b2d31',
-          display: 'flex',
-          flexDirection: 'column'
+        selectedGuildId={activeView === 'guild' ? selectedGuildId : null}
+        onSelectGuild={(id) => {
+          setSelectedGuildId(id);
+          setActiveView('guild');
         }}
-      >
-        <header
-          style={{
-            height: '48px',
-            borderBottom: '1px solid #202225',
-            padding: '0 16px',
-            display: 'flex',
-            alignItems: 'center',
-            fontWeight: 'bold',
-            color: '#f2f3f5'
-          }}
-        >
-          {currentGuildName}
-        </header>
-
-        <ChannelList
-          channels={channels}
-          selectedChannelId={selectedChannelId}
-          onSelectChannel={(id) => {
-            setSelectedChannelId(id);
-            if (id === 'chan-voice-main' && currentUser) {
-              mediaService.joinCall(currentUser.id, currentUser.displayName).then((ok) => {
-                if (ok) setIsInVoiceCall(true);
-              });
-            }
-          }}
-        />
-
-        <VoiceControls
-          isMuted={isMuted}
-          isDeafened={isDeafened}
-          isScreenSharing={isScreenSharing}
-          isConnected={isInVoiceCall}
-          onToggleMute={handleToggleMute}
-          onToggleDeafen={handleToggleDeafen}
-          onToggleScreenShare={handleToggleScreenShare}
-          onDisconnect={handleDisconnectVoice}
-        />
-
-        <UserBar user={currentUser} onLogout={handleLogout} />
-      </aside>
-
-      {/* 3. Área de Chat Principal */}
-      <ChatArea
-        channel={currentChannel}
-        messages={messages}
-        currentUserId={currentUser?.id}
-        onSendMessage={handleSendMessage}
-        onDeleteMessage={handleDeleteMessage}
+        onSelectDmHome={() => {
+          setActiveView('dm');
+        }}
       />
+
+      {/* 2. Área Central (Comunidade ou Amigos/DMs) */}
+      {activeView === 'dm' ? (
+        <div style={{ flex: 1, display: 'flex' }}>
+          <FriendsArea
+            friends={friends}
+            currentUserId={currentUser.id}
+            onSendFriendRequest={handleSendFriendRequest}
+            onAcceptFriendRequest={handleAcceptFriendRequest}
+            onOpenDm={(_friendId) => {}}
+            presenceService={presenceService}
+          />
+        </div>
+      ) : (
+        <>
+          {/* Coluna de Canais e Perfil */}
+          <aside
+            style={{
+              width: '240px',
+              backgroundColor: '#2b2d31',
+              display: 'flex',
+              flexDirection: 'column'
+            }}
+          >
+            <header
+              style={{
+                height: '48px',
+                borderBottom: '1px solid #202225',
+                padding: '0 16px',
+                display: 'flex',
+                alignItems: 'center',
+                fontWeight: 'bold',
+                color: '#f2f3f5'
+              }}
+            >
+              {currentGuildName}
+            </header>
+
+            <ChannelList
+              channels={channels}
+              selectedChannelId={selectedChannelId}
+              onSelectChannel={(id) => {
+                setSelectedChannelId(id);
+                if (id === 'chan-voice-main' && currentUser) {
+                  mediaService.joinCall(currentUser.id, currentUser.displayName).then((ok) => {
+                    if (ok) setIsInVoiceCall(true);
+                  });
+                }
+              }}
+            />
+
+            <VoiceControls
+              isMuted={isMuted}
+              isDeafened={isDeafened}
+              isScreenSharing={isScreenSharing}
+              isConnected={isInVoiceCall}
+              onToggleMute={handleToggleMute}
+              onToggleDeafen={handleToggleDeafen}
+              onToggleScreenShare={handleToggleScreenShare}
+              onDisconnect={handleDisconnectVoice}
+            />
+
+            <UserBar user={currentUser} onLogout={handleLogout} />
+          </aside>
+
+          {/* Área de Chat Principal do Canal */}
+          <ChatArea
+            channel={currentChannel}
+            messages={messages}
+            currentUserId={currentUser?.id}
+            onSendMessage={handleSendMessage}
+            onDeleteMessage={handleDeleteMessage}
+          />
+        </>
+      )}
     </div>
   );
 };
