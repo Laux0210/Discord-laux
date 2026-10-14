@@ -4,10 +4,12 @@ import type { AuthService as LegacyAuthService, ChatService, MediaService } from
 import type { AuthService as ModernAuthService } from '../../common/auth-types';
 import type { GuildService } from '../../common/guild-types';
 import type { FriendshipService, PresenceService } from '../../common/text-types';
+import type { CallController, CallState } from '../../common/media-types';
 import { Sidebar } from './components/Sidebar';
 import { ChannelList } from './components/ChannelList';
 import { UserBar } from './components/UserBar';
 import { ChatArea } from './components/ChatArea';
+import { VoiceRoomArea } from './components/VoiceRoomArea';
 import { VoiceControls } from './components/VoiceControls';
 import { LoginModal } from './components/LoginModal';
 import { FriendsArea, type FriendEntry } from './components/FriendsArea';
@@ -16,9 +18,12 @@ export interface AppProps {
   authService: LegacyAuthService | ModernAuthService;
   chatService: ChatService;
   mediaService: MediaService;
+  callController?: CallController;
   guildService?: GuildService;
   friendshipService?: FriendshipService;
   presenceService?: PresenceService;
+  initialSelectedChannelId?: string;
+  initialIsInVoiceCall?: boolean;
 }
 
 const DEFAULT_CHANNELS: Channel[] = [
@@ -48,23 +53,68 @@ export const App: React.FC<AppProps> = ({
   authService,
   chatService,
   mediaService,
+  callController,
   guildService,
   friendshipService,
-  presenceService
+  presenceService,
+  initialSelectedChannelId,
+  initialIsInVoiceCall
 }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(authService.getCurrentUser());
   const [activeView, setActiveView] = useState<'guild' | 'dm'>('guild');
   const [guilds, setGuilds] = useState<Guild[]>([]);
   const [selectedGuildId, setSelectedGuildId] = useState<string | null>(null);
   const [channels, setChannels] = useState<Channel[]>(DEFAULT_CHANNELS);
-  const [selectedChannelId, setSelectedChannelId] = useState<string>('chan-general');
+  const [selectedChannelId, setSelectedChannelId] = useState<string>(
+    initialSelectedChannelId ?? 'chan-general'
+  );
   const [messages, setMessages] = useState<Message[]>([]);
   const [friends, setFriends] = useState<FriendEntry[]>([]);
   const [isMuted, setIsMuted] = useState(false);
   const [isDeafened, setIsDeafened] = useState(false);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
-  const [isInVoiceCall, setIsInVoiceCall] = useState(false);
+  const [isInVoiceCall, setIsInVoiceCall] = useState(initialIsInVoiceCall ?? false);
   const [authError, setAuthError] = useState<string | null>(null);
+
+  const [callState, setCallState] = useState<CallState>(() => {
+    if (callController) {
+      return callController.getCallState();
+    }
+    return {
+      channelId: null,
+      guildId: null,
+      participants: mediaService.getParticipants ? mediaService.getParticipants() : [],
+      activeScreenShareUserId: null,
+      startedAt: null
+    };
+  });
+
+  // Escuta atualizações de chamada de voz e mídia
+  useEffect(() => {
+    if (callController) {
+      const unsub = callController.onCallStateUpdated((st) => {
+        setCallState(st);
+        if (currentUser) {
+          const me = st.participants.find((p) => p.userId === currentUser.id);
+          if (me) {
+            setIsInVoiceCall(true);
+            setIsMuted(me.isMuted);
+            setIsDeafened(me.isDeafened);
+            setIsScreenSharing(me.isScreenSharing);
+          } else {
+            setIsInVoiceCall(false);
+            setIsScreenSharing(false);
+          }
+        }
+      });
+      return () => unsub();
+    } else if (mediaService.onParticipantsUpdated) {
+      const unsub = mediaService.onParticipantsUpdated((parts) => {
+        setCallState((prev) => ({ ...prev, participants: parts }));
+      });
+      return () => unsub();
+    }
+  }, [callController, mediaService, currentUser]);
 
   // Escuta mudanças de sessão se for o ModernAuthService
   useEffect(() => {
@@ -137,7 +187,9 @@ export const App: React.FC<AppProps> = ({
           await window.electronAPI.openExternalUrl(authUrl);
         }
       }
-      const user = await authService.login({ provider: 'mock', mockUsername: 'amigo-1' } as any);
+      const user = 'initiateLogin' in authService
+        ? await authService.login({ provider: 'mock', mockUsername: 'amigo-1' })
+        : await authService.login('amigo-1');
       if (user) setCurrentUser(user);
     } catch (err: any) {
       setAuthError(err?.message || 'Falha na autenticação Google');
@@ -147,14 +199,9 @@ export const App: React.FC<AppProps> = ({
   const handleLoginMock = async (username: string) => {
     try {
       setAuthError(null);
-      let user: User | null = null;
-      if ('login' in authService) {
-        user = await (authService as any).login(
-          typeof (authService as any).login.length === 'number' && (authService as any).login.length === 1
-            ? username
-            : { provider: 'mock', mockUsername: username }
-        );
-      }
+      const user = 'initiateLogin' in authService
+        ? await authService.login({ provider: 'mock', mockUsername: username })
+        : await authService.login(username);
       if (user) setCurrentUser(user);
     } catch (err: any) {
       setAuthError(err?.message || 'Falha ao autenticar usuário');
@@ -194,7 +241,11 @@ export const App: React.FC<AppProps> = ({
     if (!currentUser) return;
     const next = !isMuted;
     setIsMuted(next);
-    await mediaService.setMute(currentUser.id, next);
+    if (callController) {
+      await callController.setMute(currentUser.id, next);
+    } else {
+      await mediaService.setMute(currentUser.id, next);
+    }
   };
 
   const handleToggleDeafen = async () => {
@@ -202,16 +253,33 @@ export const App: React.FC<AppProps> = ({
     const next = !isDeafened;
     setIsDeafened(next);
     if (next) setIsMuted(true);
-    await mediaService.setDeafen(currentUser.id, next);
+    if (callController) {
+      await callController.setDeafen(currentUser.id, next);
+    } else {
+      await mediaService.setDeafen(currentUser.id, next);
+    }
   };
 
   const handleToggleScreenShare = async () => {
     if (!currentUser) return;
     if (isScreenSharing) {
-      await mediaService.stopScreenShare(currentUser.id);
+      if (callController) {
+        await callController.stopScreenShare(currentUser.id);
+      } else {
+        await mediaService.stopScreenShare(currentUser.id);
+      }
       setIsScreenSharing(false);
     } else {
-      const ok = await mediaService.startScreenShare(currentUser.id);
+      let ok = false;
+      if (callController) {
+        try {
+          ok = await callController.startScreenShare(currentUser.id);
+        } catch (err) {
+          console.error('Falha ao compartilhar tela:', err);
+        }
+      } else {
+        ok = await mediaService.startScreenShare(currentUser.id);
+      }
       if (ok) {
         setIsScreenSharing(true);
       }
@@ -220,7 +288,11 @@ export const App: React.FC<AppProps> = ({
 
   const handleDisconnectVoice = async () => {
     if (!currentUser) return;
-    await mediaService.leaveCall(currentUser.id);
+    if (callController) {
+      await callController.leaveCall(currentUser.id);
+    } else {
+      await mediaService.leaveCall(currentUser.id);
+    }
     setIsInVoiceCall(false);
     setIsScreenSharing(false);
   };
@@ -334,10 +406,25 @@ export const App: React.FC<AppProps> = ({
               selectedChannelId={selectedChannelId}
               onSelectChannel={(id) => {
                 setSelectedChannelId(id);
-                if (id === 'chan-voice-main' && currentUser) {
-                  mediaService.joinCall(currentUser.id, currentUser.displayName).then((ok) => {
-                    if (ok) setIsInVoiceCall(true);
-                  });
+                const targetChannel = channels.find((channel) => channel.id === id);
+                if (targetChannel?.type === 'voice' && currentUser) {
+                  if (callController) {
+                    callController
+                      .joinCall(
+                        id,
+                        selectedGuildId || 'guild-1',
+                        currentUser.id,
+                        currentUser.displayName
+                      )
+                      .then((ok) => {
+                        if (ok) setIsInVoiceCall(true);
+                      })
+                      .catch((err) => console.error('Erro ao conectar em chamada:', err));
+                  } else {
+                    mediaService.joinCall(currentUser.id, currentUser.displayName).then((ok) => {
+                      if (ok) setIsInVoiceCall(true);
+                    });
+                  }
                 }
               }}
             />
@@ -356,14 +443,26 @@ export const App: React.FC<AppProps> = ({
             <UserBar user={currentUser} onLogout={handleLogout} />
           </aside>
 
-          {/* Área de Chat Principal do Canal */}
-          <ChatArea
-            channel={currentChannel}
-            messages={messages}
-            currentUserId={currentUser?.id}
-            onSendMessage={handleSendMessage}
-            onDeleteMessage={handleDeleteMessage}
-          />
+          {/* Área Principal: Sala de Voz ou Chat */}
+          {currentChannel.type === 'voice' ? (
+            <VoiceRoomArea
+              channel={currentChannel}
+              participants={callState.participants}
+              activeScreenShareUserId={callState.activeScreenShareUserId}
+              currentUserId={currentUser?.id}
+              onDisconnect={handleDisconnectVoice}
+              onToggleScreenShare={handleToggleScreenShare}
+              isScreenSharing={isScreenSharing}
+            />
+          ) : (
+            <ChatArea
+              channel={currentChannel}
+              messages={messages}
+              currentUserId={currentUser?.id}
+              onSendMessage={handleSendMessage}
+              onDeleteMessage={handleDeleteMessage}
+            />
+          )}
         </>
       )}
     </div>
