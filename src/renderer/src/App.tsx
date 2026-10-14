@@ -253,10 +253,16 @@ export const App: React.FC<AppProps> = ({
     if (!currentUser) return;
     const next = !isMuted;
     setIsMuted(next);
-    if (callController) {
-      await callController.setMute(currentUser.id, next);
-    } else {
-      await mediaService.setMute(currentUser.id, next);
+    try {
+      if (isInVoiceCall) {
+        if (callController) {
+          await callController.setMute(currentUser.id, next);
+        } else {
+          await mediaService.setMute(currentUser.id, next);
+        }
+      }
+    } catch (err) {
+      console.warn('Erro ao alternar mudo:', err);
     }
   };
 
@@ -265,10 +271,16 @@ export const App: React.FC<AppProps> = ({
     const next = !isDeafened;
     setIsDeafened(next);
     if (next) setIsMuted(true);
-    if (callController) {
-      await callController.setDeafen(currentUser.id, next);
-    } else {
-      await mediaService.setDeafen(currentUser.id, next);
+    try {
+      if (isInVoiceCall) {
+        if (callController) {
+          await callController.setDeafen(currentUser.id, next);
+        } else {
+          await mediaService.setDeafen(currentUser.id, next);
+        }
+      }
+    } catch (err) {
+      console.warn('Erro ao alternar ensurdecer:', err);
     }
   };
 
@@ -283,6 +295,25 @@ export const App: React.FC<AppProps> = ({
       setIsScreenSharing(false);
     } else {
       let ok = false;
+      // Garante entrada no canal de voz se não estiver conectado
+      const targetChannelId = callState.channelId || selectedChannelId || channels.find((c) => c.type === 'voice')?.id || 'chan-voice-main';
+      const targetGuildId = callState.guildId || selectedGuildId || 'guild-1';
+
+      if (!isInVoiceCall) {
+        setSelectedChannelId(targetChannelId);
+        if (callController) {
+          await callController.joinCall(
+            targetChannelId,
+            targetGuildId,
+            currentUser.id,
+            currentUser.displayName
+          );
+        } else {
+          await mediaService.joinCall(currentUser.id, currentUser.displayName);
+        }
+        setIsInVoiceCall(true);
+      }
+
       if (callController) {
         try {
           ok = await callController.startScreenShare(currentUser.id);
@@ -295,6 +326,32 @@ export const App: React.FC<AppProps> = ({
       if (ok) {
         setIsScreenSharing(true);
       }
+    }
+  };
+
+  const handleSimulateFriendJoin = async () => {
+    if (!callController) return;
+    const targetChannelId = callState.channelId || selectedChannelId || channels.find((c) => c.type === 'voice')?.id || 'chan-voice-main';
+    const targetGuildId = callState.guildId || selectedGuildId || 'guild-1';
+    const hasFriend2 = callState.participants.some((p) => p.userId === 'user-2');
+    const hasFriend3 = callState.participants.some((p) => p.userId === 'user-3');
+
+    try {
+      if (!hasFriend2) {
+        await callController.joinCall(targetChannelId, targetGuildId, 'user-2', 'Amigo Dois');
+      } else if (!hasFriend3) {
+        await callController.joinCall(targetChannelId, targetGuildId, 'user-3', 'Amigo Três');
+      } else {
+        if (callState.activeScreenShareUserId === 'user-2') {
+          await callController.stopScreenShare('user-2');
+        } else if (!callState.activeScreenShareUserId) {
+          await callController.startScreenShare('user-2');
+        } else {
+          await callController.leaveCall('user-3');
+        }
+      }
+    } catch (err) {
+      console.error('Falha ao simular amigo na chamada:', err);
     }
   };
 
@@ -430,6 +487,8 @@ export const App: React.FC<AppProps> = ({
             <ChannelList
               channels={channels}
               selectedChannelId={selectedChannelId}
+              voiceParticipants={callState.participants}
+              activeVoiceChannelId={callState.channelId}
               onSelectChannel={(id) => {
                 setSelectedChannelId(id);
                 const targetChannel = channels.find((channel) => channel.id === id);
@@ -460,6 +519,7 @@ export const App: React.FC<AppProps> = ({
               isDeafened={isDeafened}
               isScreenSharing={isScreenSharing}
               isConnected={isInVoiceCall}
+              channelName={channels.find((c) => c.id === (callState.channelId || selectedChannelId))?.name || 'Voz Principal'}
               onToggleMute={handleToggleMute}
               onToggleDeafen={handleToggleDeafen}
               onToggleScreenShare={handleToggleScreenShare}
@@ -478,6 +538,7 @@ export const App: React.FC<AppProps> = ({
               currentUserId={currentUser?.id}
               onDisconnect={handleDisconnectVoice}
               onToggleScreenShare={handleToggleScreenShare}
+              onSimulateFriendJoin={handleSimulateFriendJoin}
               isScreenSharing={isScreenSharing}
             />
           ) : (

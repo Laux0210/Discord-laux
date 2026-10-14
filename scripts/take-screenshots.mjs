@@ -40,16 +40,32 @@ app.whenReady().then(async () => {
   writeFileSync(join(artifactDir, '01-chat-geral.png'), img.toPNG());
   console.log('Gravado 01-chat-geral.png');
 
-  // Clica especificamente no span 'Voz Principal'
+  // Clica no canal 'Voz Principal'
   await win.webContents.executeJavaScript(`(() => {
     const spans = Array.from(document.querySelectorAll('span'));
     const span = spans.find(s => s.textContent === 'Voz Principal');
     span?.click();
   })()`);
 
-  await new Promise(r => setTimeout(r, 700));
+  await new Promise(r => setTimeout(r, 600));
 
-  // Screenshot 2: Sala de Voz
+  // Simula Amigo Dois entrando na chamada
+  await win.webContents.executeJavaScript(`(() => {
+    const addFriendBtn = document.querySelector('[data-testid="btn-room-add-friend"]');
+    if (addFriendBtn) (addFriendBtn).click();
+  })()`);
+
+  await new Promise(r => setTimeout(r, 600));
+
+  // Inicia transmissão de tela
+  await win.webContents.executeJavaScript(`(() => {
+    const shareBtn = document.querySelector('[data-testid="btn-room-screen-share"]');
+    if (shareBtn) (shareBtn).click();
+  })()`);
+
+  await new Promise(r => setTimeout(r, 800));
+
+  // Screenshot 2: Sala de Voz com 2 participantes e Transmissão de Tela Ativa
   img = await win.webContents.capturePage();
   writeFileSync(join(artifactDir, '02-sala-voz.png'), img.toPNG());
   console.log('Gravado 02-sala-voz.png');

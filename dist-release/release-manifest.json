@@ -36,9 +36,9 @@
       "size": 1542
     },
     {
-      "path": "dist/assets/index-CRCg_G8g.js",
-      "sha256": "4a63f6553195a40d1feab710d5bc7b60425fd83842ad6e4ede43c6da38424440",
-      "size": 276499
+      "path": "dist/assets/index-Bz4W-oB9.js",
+      "sha256": "92ecd00597c6847f3c10c874e0adef63c06c515cf4f88441a6ec41dd5afd68ea",
+      "size": 286931
     },
     {
       "path": "dist/assets/index-IoGesX1R.css",
@@ -47,9 +47,9 @@
     },
     {
       "path": "dist/index.html",
-      "sha256": "53543765c05b11fe39cc3c5466717260222707431e02cf6391953416b14d3c25",
+      "sha256": "c7072bb5dfcc096e98ad12674b64b3b606267279c8eb4e2329e7aa7f72654ca5",
       "size": 672
     }
   ],
-  "createdAt": "2026-10-14T18:04:48.699Z"
+  "createdAt": "2026-10-14T18:31:13.559Z"
 }

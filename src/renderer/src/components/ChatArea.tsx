@@ -25,6 +25,15 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
     setInputText('');
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      if (!inputText.trim()) return;
+      onSendMessage(inputText.trim());
+      setInputText('');
+    }
+  };
+
   return (
     <main
       data-testid="chat-area"
@@ -136,13 +145,14 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
         )}
       </div>
 
-      {/* Caixa de Entrada de Texto */}
+      {/* Caixa de Entrada de Texto com envio ao pressionar Enter */}
       <footer style={{ padding: '0 16px 20px 16px' }}>
         <form onSubmit={handleSubmit}>
           <input
             type="text"
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
+            onKeyDown={handleKeyDown}
             placeholder={`Conversar em #${channel.name}`}
             style={{
               width: '100%',

@@ -160,7 +160,24 @@ export function DirectMessageArea({ service, user, friendId, friendName, onBack 
       </div>
       <form onSubmit={handleSend} style={{ padding: '12px 16px', display: 'flex', flexWrap: 'wrap', alignItems: 'end', gap: '8px' }}>
         <label htmlFor={inputId} style={{ flex: '1 1 100%' }}>Mensagem direta para {friendName}</label>
-        <textarea id={inputId} value={content} onChange={(event) => setDraft({ scope, content: event.target.value })} maxLength={2000} disabled={view.phase !== 'ready' || isSending} rows={2} style={{ flex: '1 1 240px', minWidth: 0, padding: '10px', backgroundColor: '#383a40', color: '#dbdee1', borderRadius: '6px' }} />
+        <textarea
+          id={inputId}
+          value={content}
+          onChange={(event) => setDraft({ scope, content: event.target.value })}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' && !event.shiftKey) {
+              event.preventDefault();
+              if (content.trim() && view.phase === 'ready' && !isSending) {
+                event.currentTarget.form?.requestSubmit();
+              }
+            }
+          }}
+          maxLength={2000}
+          disabled={view.phase !== 'ready' || isSending}
+          rows={2}
+          placeholder="Pressione Enter para enviar, Shift+Enter para nova linha"
+          style={{ flex: '1 1 240px', minWidth: 0, padding: '10px', backgroundColor: '#383a40', color: '#dbdee1', borderRadius: '6px' }}
+        />
         <button type="submit" disabled={view.phase !== 'ready' || isSending || !content.trim()}>{isSending ? 'Enviando…' : 'Enviar'}</button>
       </form>
     </section>
