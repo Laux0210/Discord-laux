@@ -30,6 +30,9 @@ describe('serviços da aplicação local', () => {
     ]);
     expect(services.presenceService.getPresence('user-2')).toBe('online');
     expect(services.mediaService.getParticipants()).toEqual([]);
+    expect(services.callController.getCallState()).toEqual({
+      channelId: null, guildId: null, participants: [], activeScreenShareUserId: null, startedAt: null
+    });
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 
@@ -46,11 +49,21 @@ describe('serviços da aplicação local', () => {
     await a.friendshipService.removeFriendship('user-1', 'user-2');
     a.presenceService.setPresence('user-2', 'offline');
     await a.mediaService.joinCall('user-1', 'Amigo Um');
+    const voiceA = (await a.guildService.getGuildChannels(guildA.id, 'user-1'))
+      .find((channel) => channel.type === 'voice')!;
+    expect(await a.callController.joinCall(voiceA.id, guildA.id, 'user-1', 'Amigo Um')).toBe(true);
+    expect(a.callController.getCallState()).toMatchObject({
+      channelId: voiceA.id, guildId: guildA.id,
+      participants: [expect.objectContaining({ userId: 'user-1', displayName: 'Amigo Um' })]
+    });
     expect(b.authService.getCurrentUser()?.id).toBe('user-1');
     expect(await b.guildService.getUserGuilds('user-1')).toHaveLength(1);
     expect(await b.chatService.getMessages(generalB.id)).toHaveLength(1);
     expect(await b.friendshipService.getFriends('user-1')).toContainEqual({ friendId: 'user-2', status: 'accepted' });
     expect(b.presenceService.getPresence('user-2')).toBe('online');
     expect(b.mediaService.getParticipants()).toEqual([]);
+    expect(b.callController.getCallState()).toEqual({
+      channelId: null, guildId: null, participants: [], activeScreenShareUserId: null, startedAt: null
+    });
   });
 });

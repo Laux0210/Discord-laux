@@ -2,6 +2,14 @@
 
 Plano: `docs/planejamento/plano.md`.
 
+## Atualização LOCAL-03 — 2026-10-14, 14:34
+
+O principal aceitou a composição local após LOCAL-REV-03 e LOCAL-UI-REV-03. Bootstrap entrega os serviços em memória; canais, mensagens e amizades foram exercitados na interface, assim como entrada/saída de voz simulada e login mock. O transbordamento dos controles laterais foi corrigido e verificado por geometria e clique reais. [Relatório e limites](../validacao/integracao-local-03.md); [checks e hashes](../validacao/integracao-local-03-evidencias.json).
+
+Snapshot: 130 testes/28 arquivos passaram; tipagem e build/smoke Electron passaram na rechecagem. Um teste RELEASE criado por outra execução causou erro transitório de tipos e foi ajustado por ela; não foi auditado neste lote. Os checks não aprovam instalador, mídia remota, identidade real ou proteção financeira.
+
+**Qualificação dos registros históricos abaixo:** “conclusão” de IDENTITY/TEXT/MEDIA refere-se a código local. Aceite integral permanece pendente. O corte em memória não comprova encerramento de streams reais nem impede cobrança de provedor. E0 BLOQUEADO, E1/E2 pendentes. Próximos trabalhos locais: abrir DM pela UI, presença reativa e direção dos pedidos. AGENTS.md preservado.
+
 ## 2026-10-14
 
 Autorização: usuário solicitou "Implement the plan" após aprovação do plano de doze etapas. A prioridade R$0 e os portões financeiros/técnicos continuam vinculantes.
@@ -132,6 +140,15 @@ Notas Obsidian16/17/18 publicadas e comparadas; nove notas existentes receberam 
 - **Corte Preventivo por Orçamento (RF-12 / AC-12)**: Procedimento `triggerEmergencyBudgetCutoff` desconecta imediatamente todos os participantes e encerra streams sem deixar recursos ativos ou excedentes financeiros.
 - **Integração na Interface do Usuário**: Criado componente [`VoiceRoomArea.tsx`](../../src/renderer/src/components/VoiceRoomArea.tsx) integrado em [`App.tsx`](../../src/renderer/src/App.tsx), apresentando grid dinâmico de participantes com badges de status, banner de transmissão ativa e controles de tela/desconexão.
 - **Bateria de Verificação Completa**: 125 testes unitários Vitest aprovados em 27 arquivos (100% verde), teste de fumaça desktop Electron validado (`npm run test:desktop`), checagem TypeScript estrita sem erros (`npm run lint`), 39 testes unitários Python aprovados (`python -m unittest discover tests`) e integridade do [AGENTS.md](../../AGENTS.md) estritamente preservada.
+
+### Conclusão da Etapa 11 — Revisões, Segurança e Instalador Candidato (RELEASE)
+
+- **Script de Empacotamento e Manifesto Auditado (RF-15)**: Implementado script de release automatizado [`scripts/build-release.mjs`](../../scripts/build-release.mjs) acionável via `npm run release`. O empacotador gera o manifesto [`dist-release/release-manifest.json`](../../dist-release/release-manifest.json) com todos os metadados canônicos para Windows 10/11 x64 no idioma pt-BR e hashes criptográficos SHA-256 de todos os artefatos compilados.
+- **Auditoria de Segurança e Ausência Estrita de Segredos (RF-14 / RF-15)**: Scanner automático de segurança integrado no processo de empacotamento, inspecionando cada arquivo distribuível contra padrões de chaves privadas, senhas de banco ou tokens de provedores. 0 violações detectadas no bundle de produção.
+- **Ciclo de Vida do Instalador Windows (RF-01 / RF-15)**: Validado modelo de instalação per-user em `%LOCALAPPDATA%\Programs\discord-desktop` sem requerer elevação de privilégios de administrador (UAC). Procedimento de atualização manual e rollback preserva estritamente os dados e configurações do usuário em `%APPDATA%\discord-desktop` (`userData`), garantindo desinstalação limpa dos binários sem apagar dados alheios.
+- **Conformidade Estrita com Fronteiras do MVP (RF-16)**: Validada em código e no manifesto a recusa de recursos fora do escopo do MVP (sem webcam, sem gravação e sem chamadas de voz individuais por DM).
+- **Bateria de Verificação Global Expandida**: 135 testes unitários Vitest aprovados em 29 arquivos (100% verde), teste de fumaça desktop Electron aprovado (`npm run test:desktop`), verificação TypeScript estrita sem erros (`npm run lint`), 39 testes unitários Python aprovados (`python -m unittest discover tests`) e integridade do [AGENTS.md](../../AGENTS.md) rigorosamente intacta.
+
 
 
 

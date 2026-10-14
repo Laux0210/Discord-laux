@@ -1,0 +1,104 @@
+{
+  "id": "LOCAL-03",
+  "checkedAt": "2026-10-14 17:34:26 UTC",
+  "scope": "Composição e integração locais com dados fictícios; implementação MEDIA interna e RELEASE não auditadas neste lote.",
+  "commands": [
+    {
+      "command": "npm test",
+      "exitCode": 0,
+      "output": "\n> discord-desktop@0.1.0 test\n> vitest run\n\n\n RUN  v3.2.7 C:/Users/jv883/Documents/Codex/Discord\n\n ✓ tests/unit/release-installer.test.ts (5 tests) 5ms\n ✓ tests/unit/role-hierarchy.test.ts (5 tests) 8ms\n ✓ tests/unit/guild-service.test.ts (5 tests) 9ms\n ✓ tests/unit/auth-session.test.ts (9 tests) 11ms\n ✓ tests/unit/local-app-services.test.ts (2 tests) 12ms\n ✓ tests/unit/app-text.test.tsx (2 tests) 15ms\n ✓ tests/unit/app-layout.test.tsx (1 test) 13ms\n ✓ tests/unit/app-identity.test.tsx (2 tests) 17ms\n ✓ tests/unit/app-media.test.tsx (4 tests) 18ms\n ✓ tests/unit/renderer-bootstrap.test.tsx (2 tests) 63ms\n ✓ tests/unit/desktop-build.test.ts (4 tests) 362ms\n ✓ tests/unit/friendships.test.ts (8 tests) 7ms\n ✓ tests/unit/media-call-controller.test.ts (7 tests) 7ms\n ✓ tests/unit/preload-api.test.ts (3 tests) 9ms\n ✓ tests/unit/invites.test.ts (7 tests) 9ms\n ✓ tests/unit/presence.test.ts (5 tests) 6ms\n ✓ tests/unit/direct-messages.test.ts (5 tests) 13ms\n ✓ tests/unit/data-rls.test.ts (4 tests) 8ms\n ✓ tests/unit/media-screen-share.test.ts (7 tests) 7ms\n ✓ tests/unit/media-remote-cut.test.ts (9 tests) 7ms\n ✓ tests/unit/chat-pagination-idempotency.test.ts (5 tests) 8ms\n ✓ tests/unit/data-retention.test.ts (5 tests) 7ms\n ✓ tests/unit/mock-services.test.ts (6 tests) 6ms\n ✓ tests/unit/media-budget-cutoff.test.ts (2 tests) 6ms\n ✓ tests/unit/data-schema.test.ts (3 tests) 5ms\n ✓ tests/unit/ipc-contracts.test.ts (4 tests) 3ms\n ✓ tests/unit/setup.test.ts (2 tests) 3ms\n ✓ tests/unit/permissions.test.ts (7 tests) 5ms\n\n Test Files  28 passed (28)\n      Tests  130 passed (130)\n   Start at  14:33:24\n   Duration  2.03s (transform 1.32s, setup 0ms, collect 4.06s, tests 650ms, environment 7ms, prepare 6.14s)\n\n"
+    },
+    {
+      "command": "npm run lint",
+      "exitCode": 1,
+      "output": "\n> discord-desktop@0.1.0 lint\n> tsc --noEmit\n\ntests/unit/release-installer.test.ts(64,44): error TS2345: Argument of type '{ platform: \"linux\"; arch: \"arm64\"; productName: string; appId: string; version: string; language: string; targetOS: string[]; installMode: \"per-user\" | \"all-users\"; installDirectory: string; executable: string; security: ReleaseSecurityStatus; boundaries: ReleaseMvpBoundaries; files: ReleaseFileEntry[]; }' is not assignable to parameter of type 'ReleaseManifest'.\r\n  Types of property 'platform' are incompatible.\r\n    Type '\"linux\"' is not assignable to type '\"win32\"'.\r\n"
+    },
+    {
+      "command": "npm run lint",
+      "exitCode": 0,
+      "output": "\n> discord-desktop@0.1.0 lint\n> tsc --noEmit\n\n"
+    },
+    {
+      "command": "npm run test:desktop",
+      "exitCode": 0,
+      "output": "\n> discord-desktop@0.1.0 test:desktop\n> npm run build && node scripts/smoke-desktop.mjs\n\n\n> discord-desktop@0.1.0 build\n> tsc && vite build && node scripts/build-desktop.mjs\n\nvite v6.4.4 building for production...\ntransforming...\n✓ 47 modules transformed.\nrendering chunks...\ncomputing gzip size...\n../../dist/index.html                   0.67 kB │ gzip:  0.39 kB\n../../dist/assets/index-IoGesX1R.css    0.27 kB │ gzip:  0.22 kB\n../../dist/assets/index-DUjnaRV3.js   270.95 kB │ gzip: 81.13 kB\n✓ built in 852ms\nDesktop: main ESM e preload CJS compilados.\n{\n  \"ok\": true,\n  \"electron\": \"35.7.5\",\n  \"version\": \"0.1.0\",\n  \"captureBlocked\": true,\n  \"cspConnectBlocked\": true,\n  \"bridgeIsolation\": {\n    \"contextIsolated\": true,\n    \"sandboxed\": true\n  },\n  \"rendererLoaded\": true,\n  \"nodeUnavailable\": true,\n  \"isolation\": true,\n  \"probeReachedNetwork\": false\n}\n"
+    }
+  ],
+  "sourceHashes": [
+    {
+      "path": "src/renderer/src/services/local-app-services.ts",
+      "sha256": "78cccdf23b99a464e8056d57d1687e35f53386c678bbb6efa55ff64bbb7c1935"
+    },
+    {
+      "path": "src/renderer/src/bootstrap.tsx",
+      "sha256": "c1a8d3e5646fbf12114b31bdf0bcca9c446db199b09beb60ba5698f706181709"
+    },
+    {
+      "path": "src/renderer/src/main.tsx",
+      "sha256": "a19f91831ead0c860a9d98d984cfb363d223e0abf56870eb0c4a5e88d0d4203c"
+    },
+    {
+      "path": "src/renderer/src/App.tsx",
+      "sha256": "9ff22df5ce8c226db963c34b885786ec3020bad9d78d0685ace43b007cbe7234"
+    },
+    {
+      "path": "src/renderer/src/components/FriendsArea.tsx",
+      "sha256": "d0206f270dff348aaff1fd40cd52b3c2713f77067471173984e88b6ff8317bd6"
+    },
+    {
+      "path": "src/renderer/src/components/VoiceControls.tsx",
+      "sha256": "9979baed200433764b1b5beab358985ae64ad99438c35c4fc612ac86cfd7af31"
+    },
+    {
+      "path": "tests/unit/local-app-services.test.ts",
+      "sha256": "961a49af1d9c384b6712451af088c897d5bad6c26f263f2f6857d6b1a766f7f3"
+    },
+    {
+      "path": "tests/unit/renderer-bootstrap.test.tsx",
+      "sha256": "8ce9a8e24fd06786e5228e9b138dc10a26e59aa7f9ffd5e71f47868464d2b358"
+    },
+    {
+      "path": "AGENTS.md",
+      "sha256": "dad02adfe188a9345e59ba80039d96f4ec30fe7791c5f0173414d6852ed1a9d1"
+    }
+  ],
+  "reviews": [
+    {
+      "id": "LOCAL-REV-03",
+      "verdict": "approved",
+      "scope": "Factory, bootstrap, entrypoint, testes, login legado/moderno, seleção de canal de voz, retorno assíncrono de amizade"
+    },
+    {
+      "id": "LOCAL-UI-REV-03",
+      "verdict": "approved",
+      "scope": "Somente diff de layout VoiceControls"
+    }
+  ],
+  "ui": {
+    "browser": "Brave",
+    "url": "http://127.0.0.1:5173/",
+    "observations": [
+      "geral/avisos com mensagens correspondentes",
+      "envio e exclusão de mensagem própria",
+      "amigos 1→2; pedidos pendentes 1→0 após aceite fictício",
+      "autoamizade rejeitada sem sucesso falso",
+      "voz simulada 1/10; desconexão lateral 0/10",
+      "quatro botões contidos no painel x72..312 largura240 após ajuste",
+      "logout e login mock retornaram à comunidade",
+      "console: nenhuma entrada error/warn observada"
+    ],
+    "screenshots": [
+      "evidencias/integracao-local-03-chat.jpg",
+      "evidencias/integracao-local-03-voz.jpg"
+    ],
+    "screenshotLimitation": "Captura fullPage expirou; getScreenshot do viewport funcionou e foi salvo."
+  },
+  "limitations": [
+    "E0 BLOQUEADO; E1/E2 pendentes",
+    "Nenhum OAuth, banco remoto, mídia ou cobrança real validado",
+    "DM na UI sem ação e presença sem assinatura reativa",
+    "Sem comparação com UI principal original do Discord",
+    "Check de tipos falhou transitoriamente em teste RELEASE escrito externamente; autor externo alterou fixture e rechecagem passou. Código RELEASE não foi revisado por este lote.",
+    "Workspace compartilhado com outra execução: checks são snapshots; alterações posteriores requerem revalidação"
+  ]
+}

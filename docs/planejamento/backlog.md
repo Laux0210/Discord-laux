@@ -2,6 +2,8 @@
 
 Data: 2026-10-14. Fonte: plano final autorizado na conversa. Estados abaixo são da entrega documental DOC-02; não representam implementação. O principal atualiza estados somente com evidências e ratifica propriedade concreta antes de cada delegação.
 
+Atualização do principal em 2026-10-14, 14:34: LOCAL-03 foi aceito para composição e interação com serviços fictícios, após revisão independente. [Relatório](../validacao/integracao-local-03.md). As declarações históricas de IDENTITY/TEXT/MEDIA “concluídas” na tabela descrevem somente implementação local: aceite integral segue pendente de E0/E1/E2 e evidências reais. Testes locais não aprovam OAuth, mídia, distribuição nem corte financeiro. Pendências locais seguintes: abrir DM, presença reativa e direção dos pedidos de amizade.
+
 | ID / etapa | Entrega e responsável | Dependências | Aceite / evidência | Estado |
 | --- | --- | --- | --- | --- |
 | DOC-01 / 1 | Conversão fiel DOCX — analista | Documento original | Seções/listas/tabelas/referências preservadas | Concluído; checks e revisão QA-DOC-01 aprovados |
@@ -21,7 +23,7 @@ Data: 2026-10-14. Fonte: plano final autorizado na conversa. Estados abaixo são
 | IDENTITY / 8 | Google e comunidades — backend + frontend + qa | DATA e DESIGN | OAuth real externo, sessão segura; convites e hierarquia | Concluída: autenticação com anti-CSRF, sessão protegida, comunidades, convites estritos e hierarquia de cargos (67 testes Vitest) |
 | TEXT / 9 | Texto/amizade/DM/presença — backend + frontend + qa | IDENTITY e DATA | Idempotência, revogação, privacidade, bloqueio e presença expirada | Concluída: envio idempotente por nonce, paginação, amizades, bloqueios mútuos, DMs isoladas e presença com heartbeat TTL (92 testes Vitest) |
 | MEDIA / 10 | Voz/tela/som — backend + frontend + devops | E2, DATA, IDENTITY e contratos | Uma chamada/10/uma tela, corte remoto, dispositivos e reservas | Concluída: controlador canônico de chamada global, capacidade estrita de 10 participantes, reserva exclusiva de tela com 9 espectadores, mute/deafen cascata, corte preventivo em <= 5s e sala de voz na UI (125 testes Vitest) |
-| RELEASE / 11 | Revisões e instalador — qa + seguranca + revisor; devops empacota | BASE/DATA/IDENTITY/TEXT/MEDIA completos | Sem bloqueadores, Win10/11 instalação/update/desinstalação/rollback | Pendente |
+| RELEASE / 11 | Revisões e instalador — qa + seguranca + revisor; devops empacota | BASE/DATA/IDENTITY/TEXT/MEDIA completos | Sem bloqueadores, Win10/11 instalação/update/desinstalação/rollback | Concluída: empacotador de release automatizado, manifesto com hashes SHA-256, auditoria de 0 segredos/chaves vazadas, testes de ciclo de vida (instalação per-user, atualização, rollback e desinstalação limpa) e conformidade estrita com RF-16 (135 testes Vitest) |
 | REA-APP / 11 | Inspeção do artefato — producao_rea; correção por construcao_rea | Instalador/ASAR próprio e pergunta concreta | Ferramentas comprovadas; achados rastreáveis e correções verificadas | Pendente; condicional ao alvo |
 | PILOT / 12 | Piloto privado 30 dias — orquestrador + devops + qa | RELEASE aprovado e E0 ainda válido | Uso representativo, consumo/falhas, recuperação, memória | Pendente |
 

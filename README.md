@@ -37,9 +37,11 @@ Resultados atuais: [E0-02 passou em 35 testes e revisão independente](docs/vali
 
 Ambiente verificado nesta rodada: Node.js 26.9.0, npm 11.19.1 e Python 3.14.7.
 
-```powershell
-# Executar bateria completa de testes unitários locais com Vitest (125 testes em 27 arquivos)
+# Executar bateria completa de testes unitários locais com Vitest (135 testes em 29 arquivos)
 npm test
+
+# Gerar pacote de release e manifesto auditado de distribuição (RF-15)
+npm run release
 
 # Verificação TypeScript, build do frontend com Vite e compilação desktop (main ESM + preload CJS)
 npm run build
@@ -100,6 +102,8 @@ Arquivos têm um dono por tarefa. Antes do aceite do estado compartilhado, inter
 A configuração foi ampliada em 2026-10-14 com autorização do usuário e backup em `.codex/backups/20261014-010125-orquestracao/`. Uma nova sessão deve confirmar o carregamento das regras; os testes desta sessão recebem o contrato explicitamente. Consulte a validação de memória para as lacunas dos hooks, sem ativar novas automações.
 
 ## Validação
+
+Integração local de 2026-10-14: comunidades, canais, mensagens e amizades ligados ao bootstrap, com sala de voz simulada. Consulte [resultados, capturas e limites](docs/validacao/integracao-local-03.md). Serviços reais e aceite integral das etapas continuam sujeitos aos portões E0/E1/E2.
 
 Em PowerShell, nesta pasta:
 

@@ -29,11 +29,13 @@ export const VoiceControls: React.FC<VoiceControlsProps> = ({
         backgroundColor: '#111214',
         borderTop: '1px solid #2b2d31',
         display: 'flex',
+        flexWrap: 'wrap',
+        gap: '8px',
         alignItems: 'center',
         justifyContent: 'space-between'
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+      <div style={{ display: 'flex', flex: '1 1 100%', minWidth: 0, flexWrap: 'wrap', alignItems: 'center', gap: '8px' }}>
         <button
           data-testid="btn-mute"
           onClick={onToggleMute}
