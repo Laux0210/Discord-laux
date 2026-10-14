@@ -10,7 +10,7 @@ export interface FriendEntry {
 export interface FriendsAreaProps {
   friends: FriendEntry[];
   currentUserId: string;
-  onSendFriendRequest: (targetUserId: string) => void;
+  onSendFriendRequest: (targetUserId: string) => void | Promise<void>;
   onAcceptFriendRequest: (friendId: string) => void;
   onOpenDm: (friendId: string) => void;
   presenceService?: PresenceService;
@@ -26,18 +26,22 @@ export const FriendsArea: React.FC<FriendsAreaProps> = ({
   const [activeTab, setActiveTab] = useState<'all' | 'pending' | 'add'>('all');
   const [targetIdInput, setTargetIdInput] = useState('');
   const [feedback, setFeedback] = useState<string | null>(null);
+  const [hasRequestError, setHasRequestError] = useState(false);
 
   const acceptedFriends = friends.filter((f) => f.status === 'accepted');
   const pendingFriends = friends.filter((f) => f.status === 'pending');
 
-  const handleAddSubmit = (e: React.FormEvent) => {
+  const handleAddSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!targetIdInput.trim()) return;
+    setFeedback(null);
+    setHasRequestError(false);
     try {
-      onSendFriendRequest(targetIdInput.trim());
+      await onSendFriendRequest(targetIdInput.trim());
       setFeedback('Pedido de amizade enviado com sucesso!');
       setTargetIdInput('');
     } catch (err: any) {
+      setHasRequestError(true);
       setFeedback(err?.message || 'Erro ao enviar pedido');
     }
   };
@@ -302,7 +306,7 @@ export const FriendsArea: React.FC<FriendsAreaProps> = ({
               </button>
             </form>
             {feedback && (
-              <div style={{ marginTop: '12px', fontSize: '13px', color: '#23a55a' }}>
+              <div role={hasRequestError ? 'alert' : 'status'} style={{ marginTop: '12px', fontSize: '13px', color: hasRequestError ? '#f23f43' : '#23a55a' }}>
                 {feedback}
               </div>
             )}
