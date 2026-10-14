@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import type { Channel, VoiceParticipant } from '../../../common/types';
 
 export interface VoiceRoomAreaProps {
@@ -10,6 +10,7 @@ export interface VoiceRoomAreaProps {
   onToggleScreenShare?: () => void;
   onSimulateFriendJoin?: () => void;
   isScreenSharing?: boolean;
+  screenStream?: MediaStream | null;
 }
 
 export const VoiceRoomArea: React.FC<VoiceRoomAreaProps> = ({
@@ -20,10 +21,18 @@ export const VoiceRoomArea: React.FC<VoiceRoomAreaProps> = ({
   onDisconnect,
   onToggleScreenShare,
   onSimulateFriendJoin,
-  isScreenSharing
+  isScreenSharing,
+  screenStream
 }) => {
   const activeStreamer = participants.find((p) => p.userId === activeScreenShareUserId);
   const spectatorsCount = Math.max(0, participants.length - (activeStreamer ? 1 : 0));
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    if (videoRef.current && screenStream) {
+      videoRef.current.srcObject = screenStream;
+    }
+  }, [screenStream, activeScreenShareUserId]);
 
   return (
     <main
@@ -133,7 +142,7 @@ export const VoiceRoomArea: React.FC<VoiceRoomAreaProps> = ({
         </div>
       </header>
 
-      {/* Conteúdo Central: Tela Compartilhada (se houver) e Grid de Participantes */}
+      {/* Conteúdo Central: Tela Compartilhada e Grid de Participantes */}
       <div
         style={{
           flex: 1,
@@ -196,50 +205,79 @@ export const VoiceRoomArea: React.FC<VoiceRoomAreaProps> = ({
               </div>
             </div>
 
-            {/* Simulação Visual da Área da Tela */}
-            <div
-              style={{
-                flex: 1,
-                backgroundColor: '#18191c',
-                padding: '24px',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                alignItems: 'center',
-                position: 'relative',
-                background: 'linear-gradient(135deg, #1e1f22 0%, #111214 100%)'
-              }}
-            >
+            {/* Vídeo Real da Transmissão ou Simulação de Fallback */}
+            {screenStream && activeStreamer.userId === currentUserId ? (
               <div
                 style={{
-                  width: '90%',
-                  maxWidth: '560px',
-                  backgroundColor: '#2b2d31',
-                  borderRadius: '6px',
-                  border: '1px solid #35373c',
-                  padding: '16px',
-                  fontFamily: 'monospace',
-                  fontSize: '13px',
-                  color: '#dbdee1'
+                  flex: 1,
+                  backgroundColor: '#000000',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '8px',
+                  minHeight: '280px'
                 }}
               >
-                <div style={{ display: 'flex', gap: '6px', marginBottom: '12px' }}>
-                  <div style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#da373c' }} />
-                  <div style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#f0b232' }} />
-                  <div style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#23a55a' }} />
-                  <span style={{ color: '#949ba4', fontSize: '11px', marginLeft: '8px' }}>
-                    workspace - Discord Desktop Stream
-                  </span>
-                </div>
-                <div style={{ color: '#5865f2' }}>// Transmissão de tela em tempo real</div>
-                <div style={{ color: '#23a55a' }}>const status = &apos;Ao vivo com amigos&apos;;</div>
-                <div style={{ color: '#949ba4', marginTop: '6px' }}>
-                  {activeStreamer.userId === currentUserId
-                    ? '▶ Você está transmitindo sua tela para o canal.'
-                    : `▶ Assistindo à tela de ${activeStreamer.displayName}.`}
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  playsInline
+                  muted
+                  data-testid="live-screen-video"
+                  style={{
+                    maxWidth: '100%',
+                    maxHeight: '420px',
+                    borderRadius: '4px',
+                    objectFit: 'contain',
+                    boxShadow: '0 4px 16px rgba(0,0,0,0.7)'
+                  }}
+                />
+              </div>
+            ) : (
+              <div
+                style={{
+                  flex: 1,
+                  backgroundColor: '#18191c',
+                  padding: '24px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  position: 'relative',
+                  background: 'linear-gradient(135deg, #1e1f22 0%, #111214 100%)'
+                }}
+              >
+                <div
+                  style={{
+                    width: '90%',
+                    maxWidth: '560px',
+                    backgroundColor: '#2b2d31',
+                    borderRadius: '6px',
+                    border: '1px solid #35373c',
+                    padding: '16px',
+                    fontFamily: 'monospace',
+                    fontSize: '13px',
+                    color: '#dbdee1'
+                  }}
+                >
+                  <div style={{ display: 'flex', gap: '6px', marginBottom: '12px' }}>
+                    <div style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#da373c' }} />
+                    <div style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#f0b232' }} />
+                    <div style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#23a55a' }} />
+                    <span style={{ color: '#949ba4', fontSize: '11px', marginLeft: '8px' }}>
+                      workspace - Discord Desktop Stream
+                    </span>
+                  </div>
+                  <div style={{ color: '#5865f2' }}>// Transmissão de tela em tempo real</div>
+                  <div style={{ color: '#23a55a' }}>const status = &apos;Ao vivo com amigos&apos;;</div>
+                  <div style={{ color: '#949ba4', marginTop: '6px' }}>
+                    {activeStreamer.userId === currentUserId
+                      ? '▶ Você está transmitindo sua tela para o canal.'
+                      : `▶ Assistindo à tela de ${activeStreamer.displayName}.`}
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
         )}
 
@@ -255,6 +293,8 @@ export const VoiceRoomArea: React.FC<VoiceRoomAreaProps> = ({
         >
           {participants.map((p) => {
             const isMe = p.userId === currentUserId;
+            const isSpeaking = Boolean(p.isSpeaking);
+
             return (
               <div
                 key={p.userId}
@@ -268,13 +308,16 @@ export const VoiceRoomArea: React.FC<VoiceRoomAreaProps> = ({
                   justifyContent: 'center',
                   position: 'relative',
                   minHeight: '130px',
-                  border: p.isScreenSharing
+                  border: isSpeaking
                     ? '2px solid #23a55a'
+                    : p.isScreenSharing
+                    ? '2px solid #5865f2'
                     : '1px solid #1e1f22',
-                  transition: 'border 0.2s ease'
+                  boxShadow: isSpeaking ? '0 0 12px rgba(35, 165, 90, 0.4)' : 'none',
+                  transition: 'border 0.15s ease, box-shadow 0.15s ease'
                 }}
               >
-                {/* Avatar com anel de fala */}
+                {/* Avatar com anel de fala dinâmico */}
                 <div
                   style={{
                     width: '54px',
@@ -288,8 +331,9 @@ export const VoiceRoomArea: React.FC<VoiceRoomAreaProps> = ({
                     fontSize: '20px',
                     fontWeight: 'bold',
                     marginBottom: '8px',
-                    border: '2px solid #23a55a',
-                    boxShadow: '0 0 8px rgba(35, 165, 90, 0.4)'
+                    border: isSpeaking ? '3px solid #23a55a' : '3px solid transparent',
+                    boxShadow: isSpeaking ? '0 0 10px rgba(35, 165, 90, 0.9)' : 'none',
+                    transition: 'border 0.15s ease, box-shadow 0.15s ease'
                   }}
                 >
                   {p.displayName.charAt(0).toUpperCase()}
@@ -312,6 +356,20 @@ export const VoiceRoomArea: React.FC<VoiceRoomAreaProps> = ({
 
                 {/* Badges de Status de Mídia */}
                 <div style={{ display: 'flex', gap: '4px', marginTop: '8px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                  {isSpeaking && (
+                    <span
+                      style={{
+                        backgroundColor: '#23a55a',
+                        color: '#ffffff',
+                        fontSize: '10px',
+                        fontWeight: 600,
+                        padding: '2px 6px',
+                        borderRadius: '4px'
+                      }}
+                    >
+                      Falando
+                    </span>
+                  )}
                   {p.isMuted && (
                     <span
                       style={{

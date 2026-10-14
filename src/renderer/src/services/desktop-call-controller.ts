@@ -155,6 +155,16 @@ export class DesktopCallController implements CallController {
     this.notifyListeners();
   }
 
+  public async setSpeaking(userId: string, isSpeaking: boolean): Promise<void> {
+    const participant = this.participants.get(userId);
+    if (!participant) {
+      return;
+    }
+
+    participant.isSpeaking = isSpeaking;
+    this.notifyListeners();
+  }
+
   public async kickParticipant(
     targetUserId: string,
     _actorId: string,

@@ -15,6 +15,8 @@ import { LoginModal } from './components/LoginModal';
 import { FriendsArea, type FriendEntry } from './components/FriendsArea';
 import { DirectMessageArea } from './components/DirectMessageArea';
 import { soundEffects } from './services/sound-effects';
+import { voiceMediaService } from './services/voice-media-service';
+
 
 export interface AppProps {
   authService: LegacyAuthService | ModernAuthService;
@@ -82,7 +84,10 @@ export const App: React.FC<AppProps> = ({
   const [isDeafened, setIsDeafened] = useState(false);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
   const [isInVoiceCall, setIsInVoiceCall] = useState(initialIsInVoiceCall ?? false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [screenStream, setScreenStream] = useState<MediaStream | null>(null);
   const [authError, setAuthError] = useState<string | null>(null);
+
 
   useEffect(() => {
     setSelectedDm(null);
@@ -128,7 +133,35 @@ export const App: React.FC<AppProps> = ({
     }
   }, [callController, mediaService, currentUser]);
 
+  // Inicia ou encerra captura real do microfone e detecção de fala (VAD)
+  useEffect(() => {
+    if (isInVoiceCall && currentUser) {
+      voiceMediaService
+        .startMicrophone((speaking) => {
+          setIsSpeaking(speaking);
+          if (callController?.setSpeaking) {
+            callController.setSpeaking(currentUser.id, speaking);
+          } else {
+            setCallState((prev) => ({
+              ...prev,
+              participants: prev.participants.map((p) =>
+                p.userId === currentUser.id ? { ...p, isSpeaking: speaking } : p
+              )
+            }));
+          }
+        })
+        .catch((err) => console.warn('Microfone não iniciado:', err));
+    } else {
+      voiceMediaService.stopMicrophone();
+      setIsSpeaking(false);
+    }
+    return () => {
+      voiceMediaService.stopMicrophone();
+    };
+  }, [isInVoiceCall, currentUser?.id, callController]);
+
   // Escuta mudanças de sessão se for o ModernAuthService
+
   useEffect(() => {
     if ('onAuthStateChanged' in authService) {
       const unsub = authService.onAuthStateChanged((user) => {
@@ -254,6 +287,7 @@ export const App: React.FC<AppProps> = ({
     if (!currentUser) return;
     const next = !isMuted;
     setIsMuted(next);
+    voiceMediaService.setMute(next);
     if (next) {
       soundEffects.playMute();
     } else {
@@ -278,6 +312,7 @@ export const App: React.FC<AppProps> = ({
     setIsDeafened(next);
     if (next) {
       setIsMuted(true);
+      voiceMediaService.setMute(true);
       soundEffects.playDeafen();
     } else {
       soundEffects.playUndeafen();
@@ -299,6 +334,8 @@ export const App: React.FC<AppProps> = ({
     if (!currentUser) return;
     if (isScreenSharing) {
       soundEffects.playScreenShareStop();
+      voiceMediaService.stopScreenShare();
+      setScreenStream(null);
       if (callController) {
         await callController.stopScreenShare(currentUser.id);
       } else {
@@ -326,6 +363,18 @@ export const App: React.FC<AppProps> = ({
         }
         setIsInVoiceCall(true);
       }
+
+      voiceMediaService
+        .startScreenShare(() => {
+          handleToggleScreenShare();
+        })
+        .then((stream) => {
+          if (stream) setScreenStream(stream);
+        })
+        .catch((err) => {
+          console.warn('Captura de tela real via getDisplayMedia:', err);
+        });
+
 
       if (callController) {
         try {
@@ -372,6 +421,10 @@ export const App: React.FC<AppProps> = ({
   const handleDisconnectVoice = async () => {
     if (!currentUser) return;
     soundEffects.playVoiceDisconnect();
+    voiceMediaService.stopMicrophone();
+    voiceMediaService.stopScreenShare();
+    setScreenStream(null);
+    setIsSpeaking(false);
     if (callController) {
       await callController.leaveCall(currentUser.id);
     } else {
@@ -380,6 +433,7 @@ export const App: React.FC<AppProps> = ({
     setIsInVoiceCall(false);
     setIsScreenSharing(false);
   };
+
 
   const handleSendFriendRequest = async (targetUserId: string) => {
     if (!currentUser || !friendshipService) return;
@@ -544,7 +598,15 @@ export const App: React.FC<AppProps> = ({
               onDisconnect={handleDisconnectVoice}
             />
 
-            <UserBar user={currentUser} onLogout={handleLogout} />
+            <UserBar
+              user={currentUser}
+              onLogout={handleLogout}
+              isMuted={isMuted}
+              isDeafened={isDeafened}
+              isSpeaking={isSpeaking}
+              onToggleMute={handleToggleMute}
+              onToggleDeafen={handleToggleDeafen}
+            />
           </aside>
 
           {/* Área Principal: Sala de Voz ou Chat */}
@@ -558,7 +620,9 @@ export const App: React.FC<AppProps> = ({
               onToggleScreenShare={handleToggleScreenShare}
               onSimulateFriendJoin={handleSimulateFriendJoin}
               isScreenSharing={isScreenSharing}
+              screenStream={screenStream}
             />
+
           ) : (
             <ChatArea
               channel={currentChannel}

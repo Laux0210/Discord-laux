@@ -72,4 +72,6 @@ export interface VoiceParticipant {
   isDeafened: boolean;
   isScreenSharing: boolean;
   joinedAt: number;
+  isSpeaking?: boolean;
 }
+

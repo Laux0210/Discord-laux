@@ -44,26 +44,29 @@ app.whenReady().then(async () => {
   await win.webContents.executeJavaScript(`(() => {
     const spans = Array.from(document.querySelectorAll('span'));
     const span = spans.find(s => s.textContent === 'Voz Principal');
-    span?.click();
+    const div = span?.closest('div');
+    if (div) div.click();
+    else if (span) span.click();
   })()`);
 
-  await new Promise(r => setTimeout(r, 600));
+  await new Promise(r => setTimeout(r, 800));
 
   // Simula Amigo Dois entrando na chamada
   await win.webContents.executeJavaScript(`(() => {
     const addFriendBtn = document.querySelector('[data-testid="btn-room-add-friend"]');
-    if (addFriendBtn) (addFriendBtn).click();
+    if (addFriendBtn) addFriendBtn.click();
   })()`);
 
-  await new Promise(r => setTimeout(r, 600));
+  await new Promise(r => setTimeout(r, 800));
 
   // Inicia transmissão de tela
   await win.webContents.executeJavaScript(`(() => {
     const shareBtn = document.querySelector('[data-testid="btn-room-screen-share"]');
-    if (shareBtn) (shareBtn).click();
+    if (shareBtn) shareBtn.click();
   })()`);
 
-  await new Promise(r => setTimeout(r, 800));
+  await new Promise(r => setTimeout(r, 1000));
+
 
   // Screenshot 2: Sala de Voz com 2 participantes e Transmissão de Tela Ativa
   img = await win.webContents.capturePage();
