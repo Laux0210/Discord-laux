@@ -30,3 +30,6 @@ coverage/
 # Python cache
 __pycache__/
 *.py[cod]
+
+# Perfis transitórios e logs dos testes desktop
+.codex/logs/

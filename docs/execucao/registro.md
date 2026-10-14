@@ -76,3 +76,11 @@ Uma base Electron/React/TypeScript com serviços mock e um ledger próprio foi a
 O principal verificou `npm test` (23 testes Vitest), `npm run lint` e `npm run build`, todos com código 0, em Node 26.9.0/npm 11.19.1. O build gera apenas o renderer: tsconfig usa noEmit e Vite aponta para src/renderer. A entrada `dist-electron/main/index.js` de package.json não existe após esse build. Não foi iniciada nem validada execução Electron, instalador, serviços reais ou testes Windows 10/11 nesta inspeção.
 
 O estado reconciliado é base local parcial com mocks e checks de frontend aprovados; aceite integral BASE pendente. A informação histórica de conclusão encontrada nas notas fica preservada, com esta correção de escopo registrada na atualização atual. Nenhum código dessa base foi revertido ou modificado pelo principal. O README passa a explicar o build efetivamente verificado.
+
+### Resolução do build desktop e entrega REA-REF-02A
+
+- **Compilação e segurança desktop (BASE)**: Implementados `scripts/build-desktop.mjs` (compilando `dist-electron/main/index.js` em ESM e `dist-electron/preload/index.cjs` em CJS com esbuild), validação estrita de frames de origem em `src/main/ipc-security.ts`, sanitização de URLs externas e bloqueio explícito de captura não autorizada na base mock.
+- **Teste de fumaça desktop (`scripts/smoke-desktop.mjs`)**: Execução em Electron real com verificação automatizada de montagem da UI, `contextIsolation: true`, `sandboxed: true`, ausência de APIs de Node no renderer e bloqueio de mídia. Validado com sucesso via `npm run test:desktop`.
+- **Bateria de testes ampliada**: 39 testes unitários Vitest aprovados (`tests/unit/desktop-build.test.ts`), 39 testes unitários Python aprovados (`python -m unittest discover tests`), `npm run lint` aprovado e `python scripts/validar_agentes.py` OK com integridade do AGENTS.md preservada.
+- **Catálogo de referência (REA-REF-02A)**: Concluído inventário estático do ASAR da versão 1.0.9261 em [catalogo.md](../rea/discord/catalogo.md) e [resumo-catalogo.json](../rea/discord/evidencias/resumo-catalogo.json); atualizada a [matriz de reprodução](../rea/discord/matriz-reproducao.md). Limites mantidos: nenhuma execução ou captura de credenciais/sessão do Discord foi realizada.
+

@@ -1,0 +1,655 @@
+{
+  "schema_version": 1,
+  "task_id": "REA-REF-02A",
+  "date": "2026-10-14",
+  "responsible": "producao_rea",
+  "status": "parcial",
+  "scope": "Catálogo estático de bootstrap/splash e seleção IPC/preferências/captura; matriz inicial RF-01–17",
+  "target": {
+    "path": "C:/Users/jv883/AppData/Local/Discord/app-1.0.9261/resources/app.asar",
+    "version_metadata_historical": "1.0.9261",
+    "channel_metadata_historical": "stable",
+    "size_bytes": 3619342,
+    "sha256": "535bcb3de917fa65289519e399ea82ab93d9e4df35f7b437ae8433e5ca9d39ca",
+    "identity_basis": "SHA e tamanho revalidados na tarefa; versão/canal provenientes de identidade.md",
+    "authenticity_verified": false
+  },
+  "memory_read": {
+    "obsidian_method": "Markdown local; MCP Obsidian não anunciado",
+    "obsidian_paths": [
+      "Discord/00-INDICE.md",
+      "Discord/12-REA-DISCORD-REFERENCIA.md",
+      "Discord/14-REA-DISCORD-IDENTIDADE.md"
+    ],
+    "ai_memory_workspace": "discord",
+    "ai_memory_project": "discord",
+    "ai_memory_operations": [
+      "memory_query",
+      "memory_read_page"
+    ],
+    "ai_memory_page": "notes/plano-rea-discord.md",
+    "memory_written": false
+  },
+  "rea_recovery": {
+    "parent_evidence_id_historical": "ev_29c909220a39cbc2854eabe746d7a327c192ea08a95f265dfe02a61c8cca19bb",
+    "inspect_analysis_view": {
+      "view": "modules,page,offset=0,limit=8",
+      "success": false,
+      "error_code": "evidence_integrity_mismatch",
+      "reason": "missing"
+    },
+    "get_evidence_bundle": {
+      "detail": "summary",
+      "operation_filter": "analyze_javascript_application",
+      "target_sha256_filter": "535bcb3de917fa65289519e399ea82ab93d9e4df35f7b437ae8433e5ca9d39ca",
+      "success": true,
+      "total_retained_records": 0,
+      "matching_records": 0
+    },
+    "conclusion": "Ledger anterior indisponível nesta sessão; não se repetiu o produtor ASAR nem se contornou a integridade",
+    "producer_repeated": false,
+    "drill_or_trace_performed": false,
+    "new_rea_evidence_ids": [],
+    "historical_evidence_ids": [
+      "ev_29c909220a39cbc2854eabe746d7a327c192ea08a95f265dfe02a61c8cca19bb",
+      "ev_eec2ba95f7f8912ab876bbd3d20329f4a6813ca1c38b994f66ca85d9e0d6397f",
+      "ev_b1030f58218b94f64eb3935cc930b6a83f70959e712090593e738d52b2c8c807",
+      "ev_a6bdadde69b675e611bf0a8c8e98ca302ebd89a5c91411d053e9837997167c90"
+    ],
+    "historical_payloads_recovered": false
+  },
+  "local_method": {
+    "authorization": "Leitura local delimitada ratificada pelo principal após ledger ausente",
+    "operations": [
+      "Leitura/hash ASAR",
+      "Inventário do cabeçalho com Python stdlib",
+      "Seleção sintática com parser TypeScript existente",
+      "Seleção de tokens CSS da splash"
+    ],
+    "source_code_executed": false,
+    "source_code_exported": false,
+    "resource_assets_copied": false,
+    "credentials_or_user_settings_read": false,
+    "injection_config_accessed": false,
+    "target_started_or_reconfigured": false,
+    "ipc_invoked": false,
+    "endpoints_followed": false,
+    "private_ui_captured": false,
+    "native_sessions_opened": 0,
+    "local_ids_are_rea_evidence": false,
+    "source_location_convention": {
+      "javascript_line_base": 1,
+      "javascript_column_base": 0,
+      "javascript_offsets": "UTF-16, início inclusivo/fim exclusivo",
+      "archive_byte_offsets": "Bytes, início inclusivo/fim exclusivo"
+    }
+  },
+  "sources": [
+    {
+      "id": "L-01",
+      "kind": "inspecao_estatica_local",
+      "archive_header_size": 2968,
+      "archive_json_size": 2958,
+      "archive_content_base": 2976,
+      "member_count": 11
+    },
+    {
+      "id": "L-02",
+      "kind": "inspecao_estatica_local",
+      "member": "package.json",
+      "size_bytes": 883,
+      "member_offset": 3064501,
+      "absolute_byte_start": 3067477,
+      "sha256": "30dfc02065c7e0a135e16351c129a118f1b1f40f764b85ea4d038e2c86117039"
+    },
+    {
+      "id": "L-03",
+      "kind": "inspecao_estatica_local",
+      "member": "bundle.js",
+      "size_bytes": 3064091,
+      "member_offset": 0,
+      "absolute_byte_start": 2976,
+      "sha256": "316fb6200a9e923133674679d65457593462dba9a524b318bf4d11a48f79b408"
+    },
+    {
+      "id": "L-04",
+      "kind": "inspecao_estatica_local",
+      "member": "splashScreenPreload.js",
+      "size_bytes": 9289,
+      "member_offset": 3065384,
+      "absolute_byte_start": 3068360,
+      "sha256": "49e2c11f79868587e69d15529f08645e5699a27437fe85855137dfd7709fc051"
+    },
+    {
+      "id": "L-05",
+      "kind": "inspecao_estatica_local",
+      "member": "splash/index.css",
+      "size_bytes": 5394,
+      "member_offset": 3141319,
+      "absolute_byte_start": 3144295,
+      "sha256": "2e0ee4441dd310616276306ca9da50466363002b51bae3e14f68e73949449d21"
+    }
+  ],
+  "inventory": [
+    {
+      "path": "bundle.js",
+      "size_bytes": 3064091
+    },
+    {
+      "path": "data/quotes_copy.json",
+      "size_bytes": 410,
+      "content_read": false
+    },
+    {
+      "path": "package.json",
+      "size_bytes": 883
+    },
+    {
+      "path": "splash/fonts/ggsans-400-normal.woff2",
+      "size_bytes": 29668,
+      "content_read": false
+    },
+    {
+      "path": "splash/fonts/ggsans-500-medium.woff2",
+      "size_bytes": 30600,
+      "content_read": false
+    },
+    {
+      "path": "splash/images/img_lucky_dice.png",
+      "size_bytes": 6378,
+      "content_read": false
+    },
+    {
+      "path": "splash/index.css",
+      "size_bytes": 5394
+    },
+    {
+      "path": "splash/index.html",
+      "size_bytes": 198,
+      "content_sha256": "4bfe611cf9dc0882c51364b1d102bee34a151e9d1d881a250c8deaaab6cbd738",
+      "content_exported": false
+    },
+    {
+      "path": "splash/videos/connecting.webm",
+      "size_bytes": 160381,
+      "content_read": false
+    },
+    {
+      "path": "splash/videos/connecting.webp",
+      "size_bytes": 309074,
+      "content_read": false
+    },
+    {
+      "path": "splashScreenPreload.js",
+      "size_bytes": 9289
+    }
+  ],
+  "findings": [
+    {
+      "id": "F-01",
+      "type": "observacao",
+      "confidence": "observed_static",
+      "sources": [
+        "L-01",
+        "L-02"
+      ],
+      "claim": "ASAR possui 11 membros; package declara name=discord/main=bundle.js/license=UNLICENSED e não apresenta campo version",
+      "runtime_confirmed": false
+    },
+    {
+      "id": "F-02",
+      "type": "observacao",
+      "confidence": "observed_static",
+      "sources": [
+        "L-03"
+      ],
+      "location": {
+        "line": 10,
+        "utf16_start": 24755,
+        "utf16_end": 24792
+      },
+      "claim": "Há chamada sintática requireNative com argumento literal discord_desktop_core, que não é membro do ASAR inventariado",
+      "limitation": "Implementação/localização do componente e origem do renderer não examinadas",
+      "runtime_confirmed": false
+    },
+    {
+      "id": "F-03",
+      "type": "observacao_e_derivacao_literal",
+      "confidence": "derived_static",
+      "sources": [
+        "L-03"
+      ],
+      "location": {
+        "line": 12,
+        "utf16_start": 89322,
+        "utf16_end": 89523
+      },
+      "claim": "Configuração da splash declara nodeIntegration=false/sandbox=false/contextIsolation=true e preload splashScreenPreload.js; janela com largura 300, frame=false/resizable=false/center=true/show=false",
+      "limitation": "Opções não comprovam janela principal nem política efetiva; booleanos derivados de literais",
+      "runtime_confirmed": false
+    },
+    {
+      "id": "F-04",
+      "type": "observacao",
+      "confidence": "observed_static",
+      "sources": [
+        "L-04"
+      ],
+      "claim": "Preload contém branches/comparações de estados e leitura de campos de atualização",
+      "states": [
+        "installing-updates",
+        "downloading-updates",
+        "update-failure",
+        "launching",
+        "update-manually",
+        "checking-for-updates"
+      ],
+      "state_fields": [
+        "status",
+        "progress",
+        "current",
+        "total",
+        "seconds",
+        "newVersion"
+      ],
+      "locations": [
+        {
+          "line": 4,
+          "utf16_start": 2114,
+          "utf16_end": 2578
+        },
+        {
+          "line": 4,
+          "utf16_start": 2578,
+          "utf16_end": 6151
+        },
+        {
+          "line": 28,
+          "utf16_start": 7275,
+          "utf16_end": 7297
+        }
+      ],
+      "runtime_confirmed": false
+    },
+    {
+      "id": "F-05",
+      "type": "observacao_e_inferencia",
+      "confidence": "mixed_static",
+      "sources": [
+        "L-03",
+        "L-04"
+      ],
+      "claim": "Wrapper IPC e canais da splash/override oferecem pareamentos candidatos; runtime/aliases completos não resolvidos",
+      "location": {
+        "source_id": "L-03",
+        "line": 12,
+        "utf16_start": 52535,
+        "utf16_end": 52621
+      },
+      "runtime_confirmed": false
+    },
+    {
+      "id": "F-06",
+      "type": "observacao_e_derivacao_literal",
+      "confidence": "derived_static",
+      "sources": [
+        "L-03"
+      ],
+      "claim": "Acessos settings.get com nomes e segundo argumento literal selecionados, sem ler preferências pessoais",
+      "settings": [
+        {
+          "key": "START_MINIMIZED",
+          "second_argument": false,
+          "line": 10,
+          "utf16_start": 13567,
+          "utf16_end": 13602
+        },
+        {
+          "key": "enableHardwareAcceleration",
+          "second_argument": true,
+          "line": 10,
+          "utf16_start": 16570,
+          "utf16_end": 16616
+        },
+        {
+          "key": "openH264Enabled",
+          "second_argument": true,
+          "line": 10,
+          "utf16_start": 18983,
+          "utf16_end": 19018
+        }
+      ],
+      "limitation": "Valores ativos/defaults efetivos/controles de UI/uso do codec não confirmados",
+      "runtime_confirmed": false
+    },
+    {
+      "id": "F-07",
+      "type": "observacao",
+      "confidence": "observed_static",
+      "sources": [
+        "L-01",
+        "L-05"
+      ],
+      "claim": "CSS da splash declara paleta/fontes/dimensões selecionadas; fontes presentes no inventário",
+      "palette": [
+        {
+          "name": "--brand-purple",
+          "value": "#5865f2",
+          "line": 4
+        },
+        {
+          "name": "--account-grey",
+          "value": "#282b30",
+          "line": 30
+        }
+      ],
+      "font_family": "gg sans",
+      "body_html_dimensions_css_px": {
+        "width": 300,
+        "height": 300
+      },
+      "limitation": "Não comprova tema/layout/medidas efetivas da UI principal",
+      "runtime_confirmed": false
+    },
+    {
+      "id": "F-08",
+      "type": "observacao_e_derivacao_literal",
+      "confidence": "derived_static",
+      "sources": [
+        "L-03"
+      ],
+      "location": {
+        "line": 397,
+        "utf16_start": 765339,
+        "utf16_end": 765561
+      },
+      "enclosing_symbol": "useTakeScreenshot",
+      "claim": "getDisplayMedia em caminho de screenshot solicita audio=false; caminho contém stream.getTracks/track.stop",
+      "capture_options": {
+        "audio": false,
+        "monitorTypeSurfaces": "exclude",
+        "preferCurrentTab": true,
+        "selfBrowserSurface": "include",
+        "surfaceSwitching": "exclude",
+        "video_dimensions": "expressões, não valores resolvidos"
+      },
+      "limitation": "Não estabelece transmissão de tela, som do sistema, fps, escolha de fonte ou espectadores",
+      "runtime_confirmed": false
+    },
+    {
+      "id": "F-09",
+      "type": "observacao",
+      "confidence": "observed_static",
+      "sources": [
+        "L-03"
+      ],
+      "claim": "exposeInMainWorld declara nomes de pontes de bibliotecas",
+      "bridge_names": [
+        "__SENTRY_IPC__",
+        "__electronLog"
+      ],
+      "locations": [
+        {
+          "line": 507,
+          "utf16_start": 1645359,
+          "utf16_end": 1645439
+        },
+        {
+          "line": 517,
+          "utf16_start": 2243938,
+          "utf16_end": 2243998
+        }
+      ],
+      "limitation": "Não estabelece ponte funcional/políticas/autorização do produto",
+      "runtime_confirmed": false
+    }
+  ],
+  "ipc_selected": [
+    {
+      "channel": "DISCORD_SPLASH_SCREEN_READY",
+      "preload_method": "send",
+      "preload_location": {
+        "line": 28,
+        "utf16_start": 7348,
+        "utf16_end": 7406
+      },
+      "bootstrap_candidate": "SPLASH_SCREEN_READY",
+      "bootstrap_method": "on",
+      "pairing_confidence": "inferred_static",
+      "runtime_confirmed": false
+    },
+    {
+      "channel": "DISCORD_SPLASH_SCREEN_QUIT",
+      "preload_method": "send",
+      "preload_location": {
+        "line": 17,
+        "utf16_start": 3899,
+        "utf16_end": 3956
+      },
+      "bootstrap_candidate": "SPLASH_SCREEN_QUIT",
+      "bootstrap_method": "on",
+      "pairing_confidence": "inferred_static",
+      "runtime_confirmed": false
+    },
+    {
+      "channel": "DISCORD_SPLASH_UPDATE_STATE",
+      "preload_method": "on",
+      "preload_location": {
+        "line": 28,
+        "utf16_start": 6564,
+        "utf16_end": 6777
+      },
+      "bootstrap_candidate": "SPLASH_UPDATE_STATE",
+      "bootstrap_method": "webContentsSend",
+      "pairing_confidence": "inferred_static",
+      "runtime_confirmed": false
+    },
+    {
+      "channel": "DISCORD_SPLASH_SCREEN_QUOTE",
+      "preload_method": "on",
+      "preload_location": {
+        "line": 28,
+        "utf16_start": 6778,
+        "utf16_end": 6849
+      },
+      "bootstrap_candidate": "SPLASH_SCREEN_QUOTE",
+      "bootstrap_method": "webContentsSend",
+      "pairing_confidence": "inferred_static",
+      "runtime_confirmed": false
+    },
+    {
+      "channel": "DISCORD_GET_BUILD_OVERRIDE_STATUS",
+      "preload_method": "invoke",
+      "preload_location": {
+        "line": 28,
+        "utf16_start": 6850,
+        "utf16_end": 6916
+      },
+      "bootstrap_candidate": "IPCEvents.GET_BUILD_OVERRIDE_STATUS",
+      "bootstrap_method": "handle",
+      "pairing_confidence": "inferred_static_alias_unresolved",
+      "runtime_confirmed": false
+    },
+    {
+      "channel": "DISCORD_CLEAR_BUILD_OVERRIDE",
+      "preload_method": "invoke",
+      "preload_location": {
+        "line": 28,
+        "utf16_start": 6287,
+        "utf16_end": 6348
+      },
+      "bootstrap_candidate": "IPCEvents.CLEAR_BUILD_OVERRIDE",
+      "bootstrap_method": "handle",
+      "pairing_confidence": "inferred_static_alias_unresolved",
+      "runtime_confirmed": false
+    }
+  ],
+  "requirement_sources": [
+    {
+      "path": "docs/produto/requisitos-e-aceite.md",
+      "sha256_at_read": "aac5e251458f44700f4b69c3876523c778aa6fcbff6d09b8ce1647ffa4c33ef0"
+    },
+    {
+      "path": "docs/arquitetura/arquitetura-e-contratos.md",
+      "sha256_at_read": "c582b3fc73de7435bc38423109d03570ab511be9544cf4cad16b745240ca92cd"
+    },
+    {
+      "path": "docs/rea/plano-discord-referencia.md",
+      "sha256_at_read": "f4bcd1d8dea2c24f665d49b9e37f91a9e0f2b43c9ccde2516fbe39d32b1e67b4"
+    },
+    {
+      "path": "docs/rea/discord/identidade.md",
+      "sha256_at_read": "fca92561b270daba8476795ec4c4f14fda5c23ad362a0cbdff90e127ed3c165f"
+    }
+  ],
+  "matrix_coverage": [
+    {
+      "requirement_id": "RF-01",
+      "acceptance_id": "AC-01",
+      "implementation_verified": false,
+      "visual_reference_confirmed": false
+    },
+    {
+      "requirement_id": "RF-02",
+      "acceptance_id": "AC-02",
+      "implementation_verified": false,
+      "visual_reference_confirmed": false
+    },
+    {
+      "requirement_id": "RF-03",
+      "acceptance_id": "AC-03",
+      "implementation_verified": false,
+      "visual_reference_confirmed": false
+    },
+    {
+      "requirement_id": "RF-04",
+      "acceptance_id": "AC-04",
+      "implementation_verified": false,
+      "visual_reference_confirmed": false
+    },
+    {
+      "requirement_id": "RF-05",
+      "acceptance_id": "AC-05",
+      "implementation_verified": false,
+      "visual_reference_confirmed": false
+    },
+    {
+      "requirement_id": "RF-06",
+      "acceptance_id": "AC-06",
+      "implementation_verified": false,
+      "visual_reference_confirmed": false
+    },
+    {
+      "requirement_id": "RF-07",
+      "acceptance_id": "AC-07",
+      "implementation_verified": false,
+      "visual_reference_confirmed": false
+    },
+    {
+      "requirement_id": "RF-08",
+      "acceptance_id": "AC-08",
+      "implementation_verified": false,
+      "visual_reference_confirmed": false
+    },
+    {
+      "requirement_id": "RF-09",
+      "acceptance_id": "AC-09",
+      "implementation_verified": false,
+      "visual_reference_confirmed": false
+    },
+    {
+      "requirement_id": "RF-10",
+      "acceptance_id": "AC-10",
+      "implementation_verified": false,
+      "visual_reference_confirmed": false
+    },
+    {
+      "requirement_id": "RF-11",
+      "acceptance_id": "AC-11",
+      "implementation_verified": false,
+      "visual_reference_confirmed": false
+    },
+    {
+      "requirement_id": "RF-12",
+      "acceptance_id": "AC-12",
+      "implementation_verified": false,
+      "visual_reference_confirmed": false
+    },
+    {
+      "requirement_id": "RF-13",
+      "acceptance_id": "AC-13",
+      "implementation_verified": false,
+      "visual_reference_confirmed": false
+    },
+    {
+      "requirement_id": "RF-14",
+      "acceptance_id": "AC-14",
+      "implementation_verified": false,
+      "visual_reference_confirmed": false
+    },
+    {
+      "requirement_id": "RF-15",
+      "acceptance_id": "AC-15",
+      "implementation_verified": false,
+      "visual_reference_confirmed": false
+    },
+    {
+      "requirement_id": "RF-16",
+      "acceptance_id": "AC-16",
+      "implementation_verified": false,
+      "visual_reference_confirmed": false
+    },
+    {
+      "requirement_id": "RF-17",
+      "acceptance_id": "AC-17",
+      "implementation_verified": false,
+      "visual_reference_confirmed": false
+    }
+  ],
+  "unknowns": [
+    {
+      "id": "U-01",
+      "question": "Comunidades/canais, texto, amizades/DMs e presença da UI principal",
+      "status": "pendente"
+    },
+    {
+      "id": "U-02",
+      "question": "Temas e modos online/ausente/ocupado da UI principal",
+      "status": "pendente"
+    },
+    {
+      "id": "U-03",
+      "question": "Voz, dispositivos, mute, captura/transmissão com som e espectador",
+      "status": "pendente"
+    },
+    {
+      "id": "U-04",
+      "question": "Colunas, menus/modais, densidade, tipografia efetiva, foco e teclado",
+      "status": "pendente"
+    },
+    {
+      "id": "U-05",
+      "question": "Preferências ativas, canais dinâmicos e configuração da janela principal",
+      "status": "pendente"
+    },
+    {
+      "id": "U-06",
+      "question": "Políticas remotas, retenção, capacidade, backup e custos",
+      "status": "não demonstrado pelo pacote/UI"
+    }
+  ],
+  "limitations": [
+    "Observação sintática local selecionada, sem grafo ou resolução completa de aliases/controle/dados",
+    "Nenhum comportamento/tela de runtime observado; origem do renderer não confirmada",
+    "Ledger e payloads REA anteriores indisponíveis nesta sessão; IDs históricos não reinterpretados",
+    "Componente externo discord_desktop_core não investigado; inventário limitado ao ASAR",
+    "Contagens zero/ausência na seleção não comprovam ausência no produto completo",
+    "Catálogo/matriz não aprovam E0/E1/E2, contratos finais ou reprodução implementada"
+  ],
+  "deliverables": [
+    "docs/rea/discord/catalogo.md",
+    "docs/rea/discord/matriz-reproducao.md",
+    "docs/rea/discord/evidencias/resumo-catalogo.json"
+  ],
+  "next_owner": "principal para revisão/aceite; produção REA e UX/arquiteto para lacunas/contratos; construção REA somente após atribuição"
+}
