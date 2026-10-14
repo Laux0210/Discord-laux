@@ -1,4 +1,4 @@
-import { BrowserWindow, session } from 'electron';
+import { BrowserWindow, session, desktopCapturer } from 'electron';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
@@ -37,8 +37,9 @@ export function createMainWindow(): BrowserWindow {
 
   // Handler seguro de captura de tela/sistema
   session.defaultSession.setDisplayMediaRequestHandler((_request, callback) => {
-    // Permite captura de telas e janelas locais
-    callback({ video: 'screen', audio: 'loopback' });
+    desktopCapturer.getSources({ types: ['screen'] }).then((sources) => {
+      callback({ video: sources[0], audio: 'loopback' });
+    });
   });
 
   if (process.env.VITE_DEV_SERVER_URL) {
