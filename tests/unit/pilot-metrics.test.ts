@@ -74,4 +74,51 @@ describe('Local Pilot Telemetry and p95 SLAs (RF-12, AC-12)', () => {
     expect(slowReport.maxReconnectionMs).toBe(16000);
     expect(slowReport.reconnectionSlaPassed).toBe(false);
   });
+
+  it('mantém o orçamento dentro do limite quando o consumo de horas não excede os tetos de 120h e 60h', () => {
+    let cutoffFired = false;
+    telemetry.setOnCutoffCallback(() => {
+      cutoffFired = true;
+    });
+
+    telemetry.addVoiceHours(50);
+    telemetry.addScreenShareHours(25);
+
+    const report = telemetry.generateReport();
+    expect(report.voiceHoursConsumed).toBe(50);
+    expect(report.screenShareHoursConsumed).toBe(25);
+    expect(report.budgetWithinLimit).toBe(true);
+    expect(report.cutoffTriggered).toBe(false);
+    expect(cutoffFired).toBe(false);
+  });
+
+  it('aciona corte preventivo e dispara callback quando voz ultrapassa o teto mensal de 120 horas', () => {
+    let cutoffFired = false;
+    telemetry.setOnCutoffCallback(() => {
+      cutoffFired = true;
+    });
+
+    telemetry.addVoiceHours(121);
+
+    const report = telemetry.generateReport();
+    expect(report.voiceHoursConsumed).toBe(121);
+    expect(report.budgetWithinLimit).toBe(false);
+    expect(report.cutoffTriggered).toBe(true);
+    expect(cutoffFired).toBe(true);
+  });
+
+  it('aciona corte preventivo quando transmissão de tela ultrapassa o teto mensal de 60 horas', () => {
+    let cutoffFired = false;
+    telemetry.setOnCutoffCallback(() => {
+      cutoffFired = true;
+    });
+
+    telemetry.addScreenShareHours(60.5);
+
+    const report = telemetry.generateReport();
+    expect(report.screenShareHoursConsumed).toBe(60.5);
+    expect(report.budgetWithinLimit).toBe(false);
+    expect(report.cutoffTriggered).toBe(true);
+    expect(cutoffFired).toBe(true);
+  });
 });
