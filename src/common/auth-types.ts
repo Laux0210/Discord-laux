@@ -8,8 +8,12 @@ export interface AuthSession {
 }
 
 export interface LoginParams {
-  provider: 'google' | 'mock';
+  provider: 'google' | 'mock' | 'credentials';
   mockUsername?: string;
+  email?: string;
+  password?: string;
+  isSignUp?: boolean;
+  displayName?: string;
 }
 
 export interface CallbackParams {
@@ -27,6 +31,8 @@ export interface AuthService {
   initiateLogin(provider?: 'google'): { authUrl: string; state: string };
   handleCallback(params: CallbackParams): Promise<User>;
   login(params?: LoginParams): Promise<User>;
+  loginWithCredentials?(email: string, password: string, isSignUp?: boolean, displayName?: string): Promise<User>;
+  loginWithGoogle?(): Promise<User>;
   restoreSession(): Promise<User | null>;
   logout(): Promise<void>;
   getCurrentUser(): User | null;

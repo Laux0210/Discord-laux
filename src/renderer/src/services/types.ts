@@ -2,6 +2,8 @@ import type { User, Message, VoiceParticipant } from '../../../common/types';
 
 export interface AuthService {
   login(username: string): Promise<User | null>;
+  loginWithCredentials?(email: string, password: string, isSignUp?: boolean, displayName?: string): Promise<User | null>;
+  loginWithGoogle?(): Promise<User | null>;
   logout(): Promise<void>;
   getCurrentUser(): User | null;
 }

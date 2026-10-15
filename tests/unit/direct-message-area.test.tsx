@@ -2,12 +2,21 @@
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { Storage } from 'happy-dom';
 import type { DmMessage } from '../../src/common/text-types';
 import type { User } from '../../src/common/types';
 import { DirectMessageArea } from '../../src/renderer/src/components/DirectMessageArea';
 import { InMemoryFriendshipService } from '../../src/renderer/src/services/friendship-service';
 import { createLocalAppServices } from '../../src/renderer/src/services/local-app-services';
 import { App } from '../../src/renderer/src/App';
+
+// Estes testes exercitam DMs locais; os adapters de rede não integram este lote.
+vi.mock('../../src/renderer/src/services/realtime-network-service', () => ({
+  realtimeNetworkService: {
+    init: vi.fn(),
+    onRemoteScreenStream: () => () => {}
+  }
+}));
 
 const alice: User = { id: 'user-1', username: 'alice', displayName: 'Alice' };
 const charlie: User = { id: 'user-3', username: 'charlie', displayName: 'Charlie' };
@@ -53,6 +62,8 @@ async function submit() {
 }
 
 beforeEach(() => {
+  vi.stubGlobal('localStorage', new Storage());
+  window.localStorage.clear();
   vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
   host = document.createElement('div');
   document.body.append(host);
@@ -62,11 +73,25 @@ beforeEach(() => {
 afterEach(async () => {
   await act(async () => root.unmount());
   host.remove();
+  window.localStorage.clear();
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
 });
 
 describe('conversa direta local com efeitos React reais', () => {
+  it('mantém o contrato de login legado ao retornar à tela de entrada', async () => {
+    const services = await createLocalAppServices();
+    const login = vi.fn(async (username: string) => {
+      if (typeof username !== 'string') throw new Error('Login legado exige nome de usuário');
+      return alice;
+    });
+    const auth = { login, logout: async () => {}, getCurrentUser: () => null };
+    await act(async () => root.render(<App {...services} authService={auth} />));
+    await click(host.querySelector('[data-testid="btn-login-google"]'));
+    expect(login).toHaveBeenCalledWith('google-user');
+    expect(host.querySelector('[data-testid="login-error"]')).toBeNull();
+  });
+
   it('abre pela UI do App, envia, volta aos Amigos e reabre o histórico', async () => {
     const services = await createLocalAppServices();
     await act(async () => root.render(<App {...services} />));

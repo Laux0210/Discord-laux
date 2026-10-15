@@ -18,6 +18,38 @@ describe('Local Mock Services Layer', () => {
       await auth.logout();
       expect(auth.getCurrentUser()).toBeNull();
     });
+
+    it('suporta login com e-mail e senha cadastrando novo usuário', async () => {
+      const auth = new MockAuthService();
+      const user = await auth.loginWithCredentials('novo.amigo@email.com', 'senha1234', true, 'Novo Amigo');
+      expect(user).toBeDefined();
+      expect(user.displayName).toBe('Novo Amigo');
+      expect(user.username).toBe('novo_amigo');
+      expect(auth.getCurrentUser()?.id).toBe(user.id);
+
+      // Impede cadastro duplicado do mesmo e-mail
+      await expect(
+        auth.loginWithCredentials('novo.amigo@email.com', 'outrasenha', true)
+      ).rejects.toThrow(/já está cadastrado/i);
+
+      // Rejeita senha incorreta
+      await expect(
+        auth.loginWithCredentials('novo.amigo@email.com', 'senhaerrada', false)
+      ).rejects.toThrow(/Senha incorreta/i);
+
+      // Sucesso ao logar com senha correta
+      const logged = await auth.loginWithCredentials('novo.amigo@email.com', 'senha1234', false);
+      expect(logged.id).toBe(user.id);
+    });
+
+    it('suporta login com Google atribuindo perfil Google', async () => {
+      const auth = new MockAuthService();
+      const user = await auth.loginWithGoogle();
+      expect(user).toBeDefined();
+      expect(user.displayName).toBe('Usuário Google');
+      expect(user.id).toContain('user-google');
+      expect(auth.getCurrentUser()?.id).toBe(user.id);
+    });
   });
 
   describe('MockChatService with 10-day Retention', () => {

@@ -1,0 +1,139 @@
+{
+  "scope": "LOCAL-DM-04: somente comportamento local de DMs e fixture isolada",
+  "verifiedAt": {
+    "current_time": "2026-10-15 05:59:30 UTC"
+  },
+  "checks": [
+    {
+      "command": "npm run build",
+      "chunk_id": "a927a7",
+      "wall_time_seconds": 6.5489691,
+      "exit_code": 0,
+      "original_token_count": 203,
+      "output": "\n> discord-desktop@0.1.0 build\n> tsc && vite build && node scripts/build-desktop.mjs\n\nvite v6.4.4 building for production...\ntransforming...\n✓ 85 modules transformed.\nrendering chunks...\ncomputing gzip size...\n../../dist/index.html                   0.72 kB │ gzip:   0.42 kB\n../../dist/assets/index-IoGesX1R.css    0.27 kB │ gzip:   0.22 kB\n../../dist/assets/index-BbGIDEV9.js   778.38 kB │ gzip: 228.96 kB\n\n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\n✓ built in 2.17s\nDesktop: main ESM e preload CJS compilados.\n"
+    },
+    {
+      "command": "node scripts/build-release.mjs",
+      "chunk_id": "8f7661",
+      "wall_time_seconds": 0.2252008,
+      "exit_code": 0,
+      "original_token_count": 75,
+      "output": "--- Iniciando Auditoria e Empacotamento de Release ---\nManifesto de release gerado com sucesso em: C:\\Users\\jv883\\Documents\\Codex\\Discord\\dist-release\\release-manifest.json\nTotal de arquivos auditados: 5\nAuditoria de segredos: 100% LIMPO (0 violações)\n--- Empacotamento de Release Concluído ---\n"
+    },
+    {
+      "command": "npm test",
+      "chunk_id": "b4cfb1",
+      "wall_time_seconds": 5.0524487,
+      "exit_code": 0,
+      "original_token_count": 632,
+      "output": "\n> discord-desktop@0.1.0 test\n> vitest run\n\n\n RUN  v3.2.7 C:/Users/jv883/Documents/Codex/Discord\n\n ✓ tests/unit/release-installer.test.ts (6 tests) 17ms\n ✓ tests/unit/direct-message-access.test.ts (10 tests) 11ms\n ✓ tests/unit/direct-message-retention.test.ts (6 tests) 10ms\n ✓ tests/unit/user-settings-modal.test.tsx (2 tests) 12ms\n ✓ tests/unit/desktop-build.test.ts (4 tests) 311ms\n ✓ tests/unit/local-app-services.test.ts (2 tests) 11ms\n ✓ tests/unit/invites.test.ts (7 tests) 8ms\n ✓ tests/unit/sound-effects.test.ts (6 tests) 10ms\n ✓ tests/unit/auth-session.test.ts (9 tests) 9ms\n ✓ tests/unit/app-layout.test.tsx (1 test) 16ms\n ✓ tests/unit/app-media.test.tsx (4 tests) 23ms\n ✓ tests/unit/app-identity.test.tsx (2 tests) 21ms\n ✓ tests/unit/renderer-bootstrap.test.tsx (2 tests) 50ms\n ✓ tests/unit/role-hierarchy.test.ts (5 tests) 8ms\n ✓ tests/unit/app-text.test.tsx (2 tests) 21ms\n ✓ tests/unit/media-call-controller.test.ts (7 tests) 7ms\n ✓ tests/unit/guild-service.test.ts (5 tests) 8ms\n ✓ tests/unit/presence.test.ts (5 tests) 7ms\n ✓ tests/unit/voice-media-service.test.ts (3 tests) 9ms\n ✓ tests/unit/friendships.test.ts (8 tests) 7ms\n ✓ tests/unit/media-remote-cut.test.ts (9 tests) 8ms\n ✓ tests/unit/data-rls.test.ts (4 tests) 8ms\n ✓ tests/unit/direct-messages.test.ts (5 tests) 7ms\n ✓ tests/unit/media-screen-share.test.ts (7 tests) 7ms\n ✓ tests/unit/mock-services.test.ts (6 tests) 6ms\n ✓ tests/unit/preload-api.test.ts (3 tests) 8ms\n ✓ tests/unit/data-retention.test.ts (5 tests) 6ms\n ✓ tests/unit/data-schema.test.ts (3 tests) 7ms\n ✓ tests/unit/chat-pagination-idempotency.test.ts (5 tests) 7ms\n ✓ tests/unit/media-budget-cutoff.test.ts (2 tests) 5ms\n ✓ tests/unit/permissions.test.ts (7 tests) 5ms\n ✓ tests/unit/release-lifecycle.test.ts (4 tests) 3ms\n ✓ tests/unit/ipc-contracts.test.ts (4 tests) 3ms\n ✓ tests/unit/setup.test.ts (2 tests) 3ms\n ✓ tests/unit/pilot-metrics.test.ts (8 tests) 5ms\n ✓ tests/unit/login-modal.test.tsx (8 tests) 155ms\n(node:15280) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.\n(Use `node --trace-warnings ...` to show where the warning was created)\n ✓ tests/unit/storage-and-realtime.test.ts (4 tests) 3ms\n ✓ tests/unit/direct-message-area.test.tsx (15 tests) 330ms\n\n Test Files  38 passed (38)\n      Tests  197 passed (197)\n   Start at  02:59:20\n   Duration  3.86s (transform 2.50s, setup 0ms, collect 7.71s, tests 1.15s, environment 1.72s, prepare 7.74s)\n\n"
+    },
+    {
+      "command": "npm run lint",
+      "chunk_id": "1da8b5",
+      "wall_time_seconds": 3.8877585,
+      "exit_code": 0,
+      "original_token_count": 12,
+      "output": "\n> discord-desktop@0.1.0 lint\n> tsc --noEmit\n\n"
+    }
+  ],
+  "smoke": {
+    "observedLocalTime": "2026-10-15T02:58:38-03:00",
+    "exit_code": 0,
+    "ok": true,
+    "sent": true,
+    "reopened": true,
+    "otherParticipantRead": true,
+    "thirdPartyHidden": true,
+    "externalRequests": 0,
+    "consoleErrors": 0,
+    "electron": "35.7.5",
+    "fixture": "http://127.0.0.1:5181/dm-validation.html"
+  },
+  "sourceHashes": [
+    {
+      "path": "AGENTS.md",
+      "sha256": "f305f523b90ce664ab0f206bf8cca4fa8ba3d3ef18afec0d4dddd8b2ebac4262"
+    },
+    {
+      "path": "src/common/text-types.ts",
+      "sha256": "dd8c2af2ca921f38e7b22f86db451c2b99f13138c9c643f2125a0427d0177252"
+    },
+    {
+      "path": "src/renderer/src/services/friendship-service.ts",
+      "sha256": "74767046987ceacef06eb457f9476591eb5e193b4c6a70f21848c6df14b22317"
+    },
+    {
+      "path": "src/renderer/src/components/DirectMessageArea.tsx",
+      "sha256": "3e6c5126bcf9eef96c9ba86730dacd54171b7cbb28142c7f5c0b6661212d8400"
+    },
+    {
+      "path": "src/renderer/src/App.tsx",
+      "sha256": "64529b6a66cd8e469c03d9f70e9249272132647a97932f927dde3aca897f5d92"
+    },
+    {
+      "path": "tests/unit/direct-message-access.test.ts",
+      "sha256": "83c3a3cea9eb0fa2b50cc806cb9e3e9d1dfa3cf8356b56c09a5c340cf5242d69"
+    },
+    {
+      "path": "tests/unit/direct-message-retention.test.ts",
+      "sha256": "688e7597baff75a96d95feefb9296b2a51e50121fe27cac4361891174ee296d5"
+    },
+    {
+      "path": "tests/unit/direct-message-area.test.tsx",
+      "sha256": "a55debb0a4f2dc7c265f0bfff0b1c5d3fef10fc6eac886eb75c13a8a37e31e90"
+    },
+    {
+      "path": "scripts/smoke-dm.mjs",
+      "sha256": "3ee9e00af17a51ea801f5caca4d4a524ba2341f304c88ebf6fb05a7cf4bc7e19"
+    },
+    {
+      "path": "src/renderer/dm-validation.html",
+      "sha256": "6d221cc91c0b10c6a6729127c0a3777ac73e44780d23f2b0f58664dbc2bce52b"
+    },
+    {
+      "path": "src/renderer/src/dm-validation.tsx",
+      "sha256": "a4491bc93f084bb31ee8714f47fcdaf8c980179b4075ab31f273f0d6b5cafa02"
+    },
+    {
+      "path": "vite.config.ts",
+      "sha256": "559f375d215eb31311ef3baecc9f599fa1c6b1334c65fc96f4107be52803a5bb"
+    },
+    {
+      "path": "src/renderer/src/services/storage-service.ts",
+      "sha256": "c850cbef9ed22502e2c74647abccd2d8f852d75bd0dd6accc0e1a1757a1dfb4d"
+    },
+    {
+      "path": "tests/unit/chat-pagination-idempotency.test.ts",
+      "sha256": "e6e9d7a4e4f403fc1d55b8e7cd786c30a9597f70ade496dcb90f5571ce594ce3"
+    }
+  ],
+  "reviews": [
+    {
+      "scope": "DM delimitada",
+      "verdict": "aprovada sem achado material",
+      "tests": 35
+    },
+    {
+      "scope": "harness isolado e remoção de fonte CSP inválida",
+      "verdict": "aprovada sem achado material"
+    },
+    {
+      "scope": "discriminantes de login/helper de remoção e isolamento dos testes",
+      "verdict": "aprovada sem achado material",
+      "tests": 20
+    }
+  ],
+  "limitations": [
+    "E0 bloqueado; E1/E2 reais pendentes",
+    "Sem aceite de OAuth/RLS remotos, mídia real, proteção financeira, instalador, Windows 11 ou piloto",
+    "Retenção filtra leituras/deduplicação; não prova exclusão física nem expiração do texto já renderizado",
+    "Alterações externas de autenticação/storage/configuração/publicação preservadas e não auditadas integralmente",
+    "REA da interface principal e fidelidade pendentes",
+    "Logs de build-release usam linguagem de auditoria; busca por padrões não garante ausência de segredos"
+  ],
+  "screenshots": [
+    "evidencias/dm-local-04-envio.png",
+    "evidencias/dm-local-04-outro-participante.png"
+  ]
+}

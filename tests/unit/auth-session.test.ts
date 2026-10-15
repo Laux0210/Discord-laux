@@ -137,4 +137,64 @@ describe('DesktopAuthService', () => {
     const stored = await sessionManager.loadSession();
     expect(stored).toBeNull();
   });
+
+  it('suporta login com e-mail e senha persistindo sessão de 7 dias', async () => {
+    const user = await authService.login({
+      provider: 'credentials',
+      email: 'alex@discord.local',
+      password: 'senha-segura-123',
+      displayName: 'Alexandre'
+    });
+
+    expect(user.username).toBe('alex');
+    expect(user.displayName).toBe('Alexandre');
+    expect(authService.getCurrentUser()?.id).toBe(user.id);
+
+    const stored = await sessionManager.loadSession();
+    expect(stored).not.toBeNull();
+    expect(stored?.user.username).toBe('alex');
+    // Sessão de 7 dias
+    expect(stored!.expiresAt).toBeGreaterThan(Date.now() + 1000 * 60 * 60 * 24 * 6);
+  });
+
+  it('valida formato de e-mail e tamanho de senha no login por credenciais', async () => {
+    await expect(
+      authService.login({
+        provider: 'credentials',
+        email: 'invalido-sem-arroba',
+        password: 'senha'
+      })
+    ).rejects.toThrow(/endereço de e-mail válido/i);
+
+    await expect(
+      authService.login({
+        provider: 'credentials',
+        email: 'valido@email.com',
+        password: '123'
+      })
+    ).rejects.toThrow(/no mínimo 6 caracteres/i);
+  });
+
+  it('suporta login com Google simulado diretamente', async () => {
+    const user = await authService.login({
+      provider: 'google',
+      displayName: 'Usuário Google Teste'
+    });
+
+    expect(user.displayName).toBe('Usuário Google Teste');
+    expect(user.id).toContain('user-google');
+    expect(authService.getCurrentUser()?.displayName).toBe('Usuário Google Teste');
+
+    const stored = await sessionManager.loadSession();
+    expect(stored?.user.displayName).toBe('Usuário Google Teste');
+  });
+
+  it('suporta chamadas via métodos auxiliares loginWithCredentials e loginWithGoogle', async () => {
+    const credUser = await authService.loginWithCredentials('marcos@teste.com', '12345678', false, 'Marcos');
+    expect(credUser.username).toBe('marcos');
+
+    const googleUser = await authService.loginWithGoogle();
+    expect(googleUser.displayName).toBe('Usuário Google Autenticado');
+  });
 });
+

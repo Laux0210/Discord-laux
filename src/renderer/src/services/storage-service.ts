@@ -4,16 +4,29 @@ interface ExtendedMessage extends Message {
   nonce?: string;
 }
 
+export interface StoredAccount {
+  id: string;
+  email: string;
+  username: string;
+  displayName: string;
+  password?: string;
+  provider: 'credentials' | 'google';
+  createdAt: number;
+}
+
 const STORAGE_KEYS = {
   CURRENT_USER: 'discord_laux_v1_current_user',
   CHANNEL_MESSAGES: 'discord_laux_v1_channel_messages',
   DIRECT_MESSAGES: 'discord_laux_v1_direct_messages',
   USER_SETTINGS: 'discord_laux_v1_user_settings',
-  FRIENDS: 'discord_laux_v1_friends'
+  FRIENDS: 'discord_laux_v1_friends',
+  ACCOUNTS: 'discord_laux_v1_accounts'
 } as const;
 
 export class StorageService {
   private memoryCache: Map<string, string> = new Map();
+
+  private accountMemory: Record<string, StoredAccount> = {};
 
   private isLocalStorageAvailable(): boolean {
     try {
@@ -46,6 +59,17 @@ export class StorageService {
     }
   }
 
+  private removeItem(key: string): void {
+    if (this.isLocalStorageAvailable()) {
+      try {
+        window.localStorage.removeItem(key);
+      } catch (e) {
+        console.warn('Falha ao remover de localStorage:', e);
+      }
+    }
+    this.memoryCache.delete(key);
+  }
+
   // --- Usuário Atual ---
   public getCurrentUser(): User | null {
     const raw = this.getItem(STORAGE_KEYS.CURRENT_USER);
@@ -59,13 +83,35 @@ export class StorageService {
 
   public saveCurrentUser(user: User | null): void {
     if (!user) {
-      if (this.isLocalStorageAvailable()) {
-        window.localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
-      }
-      this.memoryCache.delete(STORAGE_KEYS.CURRENT_USER);
+      this.removeItem(STORAGE_KEYS.CURRENT_USER);
       return;
     }
     this.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(user));
+  }
+
+  // --- Contas Cadastradas (E-mail/Senha e Google) ---
+  public getAccounts(): Record<string, StoredAccount> {
+    const raw = this.getItem(STORAGE_KEYS.ACCOUNTS);
+    if (!raw) return this.accountMemory;
+    try {
+      return { ...this.accountMemory, ...JSON.parse(raw) };
+    } catch {
+      return this.accountMemory;
+    }
+  }
+
+  public getAccount(email: string): StoredAccount | null {
+    const accounts = this.getAccounts();
+    const normalized = email.trim().toLowerCase();
+    return accounts[normalized] ?? null;
+  }
+
+  public saveAccount(account: StoredAccount): void {
+    const accounts = { ...this.getAccounts() };
+    const normalized = account.email.trim().toLowerCase();
+    accounts[normalized] = account;
+    this.accountMemory[normalized] = account;
+    this.setItem(STORAGE_KEYS.ACCOUNTS, JSON.stringify(accounts));
   }
 
   // --- Mensagens de Canais ---

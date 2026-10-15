@@ -265,12 +265,45 @@ export const App: React.FC<AppProps> = ({
           await window.electronAPI.openExternalUrl(authUrl);
         }
       }
-      const user = 'initiateLogin' in authService
-        ? await authService.login({ provider: 'mock', mockUsername: 'amigo-1' })
-        : await authService.login('amigo-1');
+      let user: User | null = null;
+      if ('loginWithGoogle' in authService && typeof (authService as any).loginWithGoogle === 'function') {
+        user = await (authService as any).loginWithGoogle();
+      } else if ('initiateLogin' in authService) {
+        user = await (authService as any).login({ provider: 'google' });
+      } else {
+        user = await authService.login('google-user');
+      }
       if (user) setCurrentUser(user);
     } catch (err: any) {
       setAuthError(err?.message || 'Falha na autenticação Google');
+    }
+  };
+
+  const handleLoginCredentials = async (
+    email: string,
+    password: string,
+    isSignUp?: boolean,
+    displayName?: string
+  ) => {
+    try {
+      setAuthError(null);
+      let user: User | null = null;
+      if ('loginWithCredentials' in authService && typeof (authService as any).loginWithCredentials === 'function') {
+        user = await (authService as any).loginWithCredentials(email, password, isSignUp, displayName);
+      } else if ('initiateLogin' in authService) {
+        user = await (authService as any).login({
+          provider: 'credentials',
+          email,
+          password,
+          isSignUp,
+          displayName
+        });
+      } else {
+        user = await authService.login(email.split('@')[0]);
+      }
+      if (user) setCurrentUser(user);
+    } catch (err: any) {
+      setAuthError(err?.message || 'Falha ao autenticar com e-mail e senha');
     }
   };
 
@@ -506,6 +539,7 @@ export const App: React.FC<AppProps> = ({
     return (
       <LoginModal
         onLoginGoogle={handleLoginGoogle}
+        onLoginCredentials={handleLoginCredentials}
         onLoginMock={handleLoginMock}
         errorMessage={authError}
       />

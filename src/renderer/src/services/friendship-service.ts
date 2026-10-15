@@ -242,16 +242,17 @@ export class InMemoryFriendshipService implements FriendshipService {
     }
 
     // Idempotência por nonce
+    const cutoff = Date.now() - RETENTION_PERIOD_MS;
     if (params.nonce) {
       const existing = this.dmMessages.find(
         (m) =>
           m.dmChannelId === params.dmChannelId &&
           m.authorId === params.authorId &&
           m.nonce === params.nonce &&
-          !m.isDeleted
+            !m.isDeleted && m.createdAt > cutoff
       );
       if (existing) {
-        return existing;
+          return { ...existing };
       }
     }
 
@@ -267,7 +268,7 @@ export class InMemoryFriendshipService implements FriendshipService {
 
     this.dmMessages.push(message);
     this.emitDmUpdated(params.dmChannelId);
-    return message;
+    return { ...message };
   }
 
   async getDmMessages(
@@ -279,7 +280,7 @@ export class InMemoryFriendshipService implements FriendshipService {
 
     const cutoff = Date.now() - RETENTION_PERIOD_MS;
     let filtered = this.dmMessages.filter(
-      (m) => m.dmChannelId === dmChannelId && !m.isDeleted && m.createdAt >= cutoff
+      (m) => m.dmChannelId === dmChannelId && !m.isDeleted && m.createdAt > cutoff
     );
 
     if (pagination?.before !== undefined) {
@@ -293,6 +294,6 @@ export class InMemoryFriendshipService implements FriendshipService {
       filtered = filtered.slice(filtered.length - limit);
     }
 
-    return filtered;
+    return filtered.map((message) => ({ ...message }));
   }
 }

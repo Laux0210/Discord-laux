@@ -107,6 +107,55 @@ export class DesktopAuthService implements AuthService {
   }
 
   async login(params?: LoginParams): Promise<User> {
+    if (params?.provider === 'credentials') {
+      if (!params.email || !params.email.includes('@')) {
+        throw new Error('Por favor, informe um endereço de e-mail válido.');
+      }
+      if (!params.password || params.password.length < 6) {
+        throw new Error('A senha deve ter no mínimo 6 caracteres.');
+      }
+
+      const cleanUsername = params.email.trim().toLowerCase().split('@')[0].replace(/[^a-z0-9_-]/g, '_');
+      const existing = SEED_USERS[cleanUsername];
+      const user: User = existing || {
+        id: `user-${cleanUsername}`,
+        username: cleanUsername,
+        displayName: params.displayName?.trim() || cleanUsername,
+        avatarUrl: ''
+      };
+
+      const session: AuthSession = {
+        user,
+        token: `jwt-cred-${Date.now()}`,
+        expiresAt: Date.now() + 1000 * 60 * 60 * 24 * 7 // 7 dias
+      };
+
+      await this.sessionManager.saveSession(session);
+      this.currentUser = user;
+      this.notifyListeners();
+      return user;
+    }
+
+    if (params?.provider === 'google') {
+      const user: User = {
+        id: `user-google-${Date.now()}`,
+        username: params.email ? params.email.split('@')[0].toLowerCase() : 'google_user',
+        displayName: params.displayName || 'Usuário Google Autenticado',
+        avatarUrl: ''
+      };
+
+      const session: AuthSession = {
+        user,
+        token: `jwt-google-${Date.now()}`,
+        expiresAt: Date.now() + 1000 * 60 * 60 * 24 * 7 // 7 dias
+      };
+
+      await this.sessionManager.saveSession(session);
+      this.currentUser = user;
+      this.notifyListeners();
+      return user;
+    }
+
     if (params?.provider === 'mock' && params.mockUsername) {
       const existing = SEED_USERS[params.mockUsername];
       const user: User = existing || {
@@ -130,6 +179,25 @@ export class DesktopAuthService implements AuthService {
 
     // Default mock user se nada especificado
     return this.login({ provider: 'mock', mockUsername: 'amigo-1' });
+  }
+
+  async loginWithCredentials(
+    email: string,
+    password: string,
+    isSignUp?: boolean,
+    displayName?: string
+  ): Promise<User> {
+    return this.login({
+      provider: 'credentials',
+      email,
+      password,
+      isSignUp,
+      displayName
+    });
+  }
+
+  async loginWithGoogle(): Promise<User> {
+    return this.login({ provider: 'google' });
   }
 
   async restoreSession(): Promise<User | null> {

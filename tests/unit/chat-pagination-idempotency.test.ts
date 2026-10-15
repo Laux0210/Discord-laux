@@ -1,6 +1,16 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { DesktopChatService } from '../../src/renderer/src/services/desktop-chat-service';
 import { PermissionFlags } from '../../src/common/permissions';
+
+// Este alvo testa o chat em memória; persistência possui seu próprio alvo.
+vi.mock('../../src/renderer/src/services/storage-service', () => ({
+  storageService: {
+    getAllChannelMessages: () => ({}),
+    getChannelMessages: () => null,
+    saveChannelMessage: () => {},
+    saveAllChannelMessages: () => {}
+  }
+}));
 
 describe('DesktopChatService - Idempotência, Paginação e Limites', () => {
   let chatService: DesktopChatService;
