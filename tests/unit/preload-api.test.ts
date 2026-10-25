@@ -15,6 +15,7 @@ describe('Preload Bridge Security & API', () => {
     const keys = Object.keys(api).sort();
     expect(keys).toEqual([
       'getAppVersion',
+      'getEndpoints',
       'getSystemSources',
       'onSystemNotification',
       'openExternalUrl'

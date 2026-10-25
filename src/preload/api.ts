@@ -1,7 +1,9 @@
 import { IPC_CHANNELS, type DesktopSourceOptions } from '../common/ipc-channels';
+import type { ResolvedEndpoints } from '../common/discord-reference';
 
 export interface PreloadApi {
   getAppVersion: () => Promise<string>;
+  getEndpoints: () => Promise<ResolvedEndpoints>;
   getSystemSources: (opts?: DesktopSourceOptions) => Promise<unknown>;
   openExternalUrl: (url: string) => Promise<boolean>;
   onSystemNotification: (callback: (title: string, body: string) => void) => () => void;
@@ -18,6 +20,10 @@ export function createPreloadApi(ipc: MinimalIpcRenderer): PreloadApi {
     getAppVersion: async (): Promise<string> => {
       const version = await ipc.invoke(IPC_CHANNELS.GET_APP_VERSION, undefined);
       return String(version);
+    },
+
+    getEndpoints: async (): Promise<ResolvedEndpoints> => {
+      return (await ipc.invoke(IPC_CHANNELS.GET_ENDPOINTS, undefined)) as ResolvedEndpoints;
     },
 
     getSystemSources: async (opts?: DesktopSourceOptions): Promise<unknown> => {

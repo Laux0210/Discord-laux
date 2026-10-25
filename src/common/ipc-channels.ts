@@ -5,6 +5,7 @@
 
 export const IPC_CHANNELS = {
   GET_APP_VERSION: 'app:get-version',
+  GET_ENDPOINTS: 'app:get-endpoints',
   GET_DESKTOP_SOURCES: 'desktop:get-sources',
   OPEN_EXTERNAL_URL: 'system:open-external',
   SYSTEM_NOTIFICATION: 'system:notification'
@@ -37,6 +38,7 @@ export function validateIpcPayload(channel: string, payload: unknown): boolean {
 
   switch (channel) {
     case IPC_CHANNELS.GET_APP_VERSION:
+    case IPC_CHANNELS.GET_ENDPOINTS:
       return payload === undefined || payload === null;
 
     case IPC_CHANNELS.OPEN_EXTERNAL_URL: {

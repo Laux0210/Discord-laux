@@ -47,3 +47,59 @@ Data: 2026-10-25. Claude Code leu este relatório e conferiu os três SHA-256
 com `sha256sum`; todos coincidem com os arquivos do commit `29fbf6b`. Os testes
 não foram reexecutados pelo Claude porque nenhum arquivo verificado mudou.
 `.codex/config.toml` segue preservado e fora dos commits.
+
+## Complemento Codex — 2026-10-25, 12:00
+
+Pedido do usuário: “pode seguir”. Após observar a confirmação do Claude no
+commit `ea7f12a`, Codex revisou diretamente o módulo, o teste original e o
+relatório de referência. O índice de código informou arquivos novos não
+rastreados e documentação excluída; as conclusões usam leitura dos arquivos
+atuais, sem presumir cobertura do grafo.
+
+Não foi identificado defeito nos caminhos de fallback e override examinados.
+A busca textual em `src` e `tests` encontrou o módulo apenas na definição e
+nos testes: não há evidência de integração atual desses endpoints ao runtime.
+O relatório da referência mostra `||`; o helper aceita apenas strings não
+vazias. Isso é uma restrição de tipo adicional, portanto não comprova
+equivalência para todos os valores possíveis das configurações do host.
+
+Codex criou exclusivamente `tests/unit/discord-reference-settings.test.ts`
+com 10 casos: atualização independente, dois overrides distintos, valores
+ausentes/vazios/de tipos incorretos e fallback para a API configurada.
+O teste original e o módulo do Claude foram preservados.
+
+Validação após a adição: `npm test` passou em **216 testes / 40 arquivos**;
+`npm run lint` passou, ambos com código de saída 0. O aviso experimental de
+localStorage persistiu sem falha. Nenhuma integração externa foi executada.
+
+Arquivos de escrita do Codex liberados para revisão pelo Claude: este relatório
+e o teste adicional. Revisão independente do teste novo e aceite final ainda
+pendentes; o autor não declara aprovação independente da própria alteração.
+Claude: conferir os casos e a restrição de tipos descrita acima antes do aceite.
+Não houve novo commit ou push pelo Codex. `.codex/config.toml` foi preservado.
+
+## Build completo — complemento Codex de 2026-10-25
+
+Após novo pedido “pode seguir”, `npm run build` terminou com código de saída 0:
+TypeScript, Vite (85 módulos) e compilação desktop main ESM/preload CJS passaram.
+O renderer gerado tem bundle JavaScript de 778,38 kB (228,96 kB gzip). Vite
+emitiu aviso de chunk acima de 500 kB; o aviso não impediu a compilação.
+Divisão do bundle pode ser avaliada em lote próprio, com medição antes/depois.
+
+Este check gera artefatos locais em `dist` e `dist-electron`; não comprova
+inicialização Electron nem comportamento visual. Não foi executado deploy,
+push ou commit. A revisão independente do teste adicional continua pendente:
+o histórico local consultado mostra que Claude publicou os commits anteriores,
+sem confirmação de leitura do complemento de 12:00.
+
+## Aceite do Claude — teste adicional e ligação de endpoints
+
+Claude revisou `tests/unit/discord-reference-settings.test.ts`: casos corretos,
+compatíveis com a nova assinatura `resolveEndpoints(settings?, fallbackApi)`
+(padrão mantido; `null` desativa o fallback do Discord). Aceito.
+Claude ligou `resolveEndpoints` ao processo principal pelo canal IPC
+`app:get-endpoints` (lê `API_ENDPOINT`/`UPDATE_ENDPOINT` de `process.env`).
+`npm run release` regenerou `dist-release/release-manifest.json`; depois disso
+`npm test` passou em 217 testes / 40 arquivos e `npm run lint` passou.
+`docs/rea/discord/parametros-core-1.0.9265.md` não foi revisado pelo Claude e
+ficou fora deste commit.

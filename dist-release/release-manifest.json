@@ -27,13 +27,13 @@
   "files": [
     {
       "path": "dist-electron/main/index.js",
-      "sha256": "f6038d78f7fc5bddc9b98358da027f4f8a3dc6ccbf8293ef08e0fe34f0bd3335",
-      "size": 9522
+      "sha256": "0db0974c591e63ddadba88ff0b1aa0e16038917066ae7664424d277c6f96d4fe",
+      "size": 10469
     },
     {
       "path": "dist-electron/preload/index.cjs",
-      "sha256": "df0ce563825c0dc48d80f4b5aa9d32f63cce7b76099fdf237ff9e3d39981a139",
-      "size": 1542
+      "sha256": "aa7fc31035fb814362fd5ed5e9b8589fccf1a8e7b24b75dae083bd54883c0ad5",
+      "size": 1686
     },
     {
       "path": "dist/assets/index-BbGIDEV9.js",
@@ -51,5 +51,5 @@
       "size": 722
     }
   ],
-  "createdAt": "2026-10-15T06:00:18.290Z"
+  "createdAt": "2026-10-25T15:04:59.098Z"
 }

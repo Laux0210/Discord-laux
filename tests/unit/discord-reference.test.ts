@@ -11,6 +11,12 @@ describe('discord-reference', () => {
     expect(resolveEndpoints(settings)).toEqual({ api: 'http://localhost/api', update: 'http://localhost/api' });
   });
 
+  it('sem fallback nao aponta para o Discord', () => {
+    expect(resolveEndpoints({ get: () => undefined }, null)).toEqual({ api: undefined, update: undefined });
+    const settings = { get: (k: string) => (k === 'UPDATE_ENDPOINT' ? 'https://up.example' : undefined) };
+    expect(resolveEndpoints(settings, null)).toEqual({ api: undefined, update: 'https://up.example' });
+  });
+
   it('lista os 17 modulos nativos', () => {
     expect(DISCORD_REFERENCE_NATIVE_MODULES).toHaveLength(17);
   });

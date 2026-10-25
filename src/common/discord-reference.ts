@@ -67,12 +67,23 @@ export const DISCORD_REFERENCE_NATIVE_MODULES = [
 
 type SettingsReader = { get(key: string): unknown };
 
-/** Mesmo padrao do host: valor de settings com fallback para o padrao. */
-export function resolveEndpoints(settings?: SettingsReader) {
+export interface ResolvedEndpoints {
+  api: string | undefined;
+  update: string | undefined;
+}
+
+/**
+ * Mesmo padrao do host: valor de settings com fallback para o padrao.
+ * O app proprio passa fallbackApi null para nunca apontar ao servidor do Discord.
+ */
+export function resolveEndpoints(
+  settings?: SettingsReader,
+  fallbackApi: string | null = DISCORD_REFERENCE_ENDPOINTS.api
+): ResolvedEndpoints {
   const read = (key: string) => {
     const value = settings?.get(key);
     return typeof value === 'string' && value ? value : undefined;
   };
-  const api = read('API_ENDPOINT') ?? DISCORD_REFERENCE_ENDPOINTS.api;
+  const api = read('API_ENDPOINT') ?? fallbackApi ?? undefined;
   return { api, update: read('UPDATE_ENDPOINT') ?? api };
 }

@@ -3,6 +3,7 @@ import { mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { createMainWindow, rendererURL } from './window';
 import { isTrustedIpcSender } from './ipc-security';
+import { resolveEndpoints } from '../common/discord-reference';
 import { IPC_CHANNELS, validateIpcPayload, type DesktopSourceOptions, type OpenExternalUrlPayload } from '../common/ipc-channels';
 
 const smoke = process.argv.includes('--desktop-smoke');
@@ -26,6 +27,12 @@ function setupIpcHandlers(): void {
     requireLocalRenderer(event);
     if (!validateIpcPayload(IPC_CHANNELS.GET_APP_VERSION, payload)) throw new Error('Payload de versão inválido');
     return app.getVersion();
+  });
+
+  ipcMain.handle(IPC_CHANNELS.GET_ENDPOINTS, (event, payload?: unknown) => {
+    requireLocalRenderer(event);
+    if (!validateIpcPayload(IPC_CHANNELS.GET_ENDPOINTS, payload)) throw new Error('Payload de endpoints inválido');
+    return resolveEndpoints({ get: (key) => process.env[key] }, null);
   });
 
   ipcMain.handle(IPC_CHANNELS.GET_DESKTOP_SOURCES, (event, opts?: DesktopSourceOptions) => {
