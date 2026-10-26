@@ -36,6 +36,11 @@ jobs:
 
       - name: Build web application
         run: npm run build
+        env:
+          # Variáveis do repositório (Settings > Secrets and variables > Actions > Variables).
+          # Só a chave publicável; nunca a service_role. Vazias, o app usa o modo local.
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
 
       - name: Prepare static files for GitHub Pages
         run: |
