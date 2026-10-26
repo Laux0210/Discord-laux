@@ -1,11 +1,19 @@
 import electron from 'electron';
-import { spawn } from 'node:child_process';
+import { execFileSync, spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const env = { ...process.env };
 delete env.ELECTRON_RUN_AS_NODE;
 delete env.VITE_DEV_SERVER_URL;
+
+// O smoke valida o shell local (isolamento, CSP, IPC); sem Supabase, nada depende de rede nem de login.
+// Variáveis do processo têm prioridade sobre os arquivos .env do Vite.
+execFileSync(process.execPath, [fileURLToPath(new URL('../node_modules/vite/bin/vite.js', import.meta.url)), 'build'], {
+  cwd: root,
+  env: { ...env, VITE_SUPABASE_URL: '', VITE_SUPABASE_ANON_KEY: '' },
+  stdio: 'ignore',
+});
 const child = spawn(electron, [root, '--desktop-smoke'], { cwd: root, env, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
 let stdout = '';
 let stderr = '';
