@@ -21,7 +21,7 @@ import type {
 import { ALL_PERMISSIONS } from '../../../common/permissions';
 import type { AuthService, ChatService, DeleteMessageParams, SendMessageParams } from './types';
 import { MockMediaService } from './mock-media';
-import { DesktopCallController } from './desktop-call-controller';
+import { SupabaseCallController } from './supabase-voice';
 import { InMemoryPresenceService } from './presence-service';
 
 export const SINGLE_GUILD_ID = '00000000-0000-0000-0000-000000000001';
@@ -32,6 +32,19 @@ export interface SupabaseConfig {
   anonKey: string;
   fetcher?: typeof fetch;
 }
+
+/** Textos para os `error_code` do Supabase Auth (GoTrue) mais comuns no login e cadastro. */
+const AUTH_ERROR_MESSAGES: Record<string, string> = {
+  email_not_confirmed: 'Confirme seu e-mail pelo link que enviamos e depois entre.',
+  invalid_credentials: 'E-mail ou senha incorretos.',
+  user_already_exists: 'Já existe uma conta com este e-mail. Entre em vez de cadastrar.',
+  email_exists: 'Já existe uma conta com este e-mail. Entre em vez de cadastrar.',
+  weak_password: 'Senha fraca. Use pelo menos 6 caracteres.',
+  over_email_send_rate_limit: 'Muitos e-mails enviados. Aguarde alguns minutos e tente de novo.',
+  over_request_rate_limit: 'Muitas tentativas. Aguarde um pouco e tente de novo.',
+  email_address_invalid: 'E-mail inválido.',
+  signup_disabled: 'Novos cadastros estão desativados.',
+};
 
 export class SupabaseApiError extends Error {
   constructor(readonly status: number, message: string) {
@@ -161,9 +174,13 @@ export class SupabaseRestClient {
         message?: string;
         error_description?: string;
         error?: string;
+        error_code?: string;
+        msg?: string;
       };
       const msg =
+        (errObj.error_code && AUTH_ERROR_MESSAGES[errObj.error_code]) ||
         errObj.message ||
+        errObj.msg ||
         errObj.error_description ||
         errObj.error ||
         `Erro HTTP ${response.status} no Supabase.`;
@@ -912,7 +929,7 @@ export async function createSupabaseAppServices(config: SupabaseConfig) {
     guildService: createSupabaseGuildService(client),
     friendshipService: createSupabaseFriendshipService(client),
     mediaService: new MockMediaService(),
-    callController: new DesktopCallController(),
+    callController: new SupabaseCallController(client, () => authService.getCurrentUser()),
     presenceService: new InMemoryPresenceService(),
     userDirectory: async (): Promise<User[]> => {
       const rows = await client.rest<ProfileRow[]>(

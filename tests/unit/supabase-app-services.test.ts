@@ -284,3 +284,15 @@ describe('supabase-app-services (adaptador renderer -> Supabase REST/Auth/RPC)',
     );
   });
 });
+
+describe('mensagens de erro do Supabase Auth', () => {
+  it('traduz error_code do GoTrue em texto claro', async () => {
+    const fetcher = vi.fn(async () => new Response(
+      JSON.stringify({ code: 400, error_code: 'email_not_confirmed', msg: 'Email not confirmed' }),
+      { status: 400, headers: { 'Content-Type': 'application/json' } },
+    )) as unknown as typeof fetch;
+    const client = new SupabaseRestClient('https://x.supabase.co', 'anon', fetcher);
+    await expect(client.auth('POST', '/token?grant_type=password', { email: 'a@b.c', password: 'x' }))
+      .rejects.toThrow('Confirme seu e-mail');
+  });
+});

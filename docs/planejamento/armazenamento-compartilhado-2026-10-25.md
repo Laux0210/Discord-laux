@@ -210,3 +210,12 @@ Verificação do Claude nesta árvore: `tsc` ok; `vitest` 54/54, 303/303; `npm r
 `npm run release` sem segredos. Antes do commit: rodar `npm run build` e `npm run release`,
 porque o smoke deixa o `dist` sem Supabase. Não incluir `.codex/config.toml` nem os
 `src/renderer/.env.*.local` (já ignorados).
+
+## Claude: voz real no Supabase (2026-10-26)
+
+- Migração `20261026000008_voice_signaling.sql` aplicada e commitada: `voice_states` + `voice_signals`, RLS com CONNECT.
+- Novo `src/renderer/src/services/supabase-voice.ts` (`SupabaseCallController`, malha WebRTC só de áudio,
+  sinalização por polling de 1 s, heartbeat de 5 s, estado velho após 20 s) e `tests/unit/supabase-voice.test.ts`.
+- `supabase-app-services.ts` (Antigravity): `callController` trocado de `DesktopCallController` para `SupabaseCallController`;
+  mensagens de erro do Auth traduzidas por `error_code`. Sem commit: depende do arquivo não rastreado; entra no lote.
+- Fora do escopo: compartilhar tela e expulsar da chamada retornam `false`. Sem TURN: redes com NAT restrito podem falhar.
