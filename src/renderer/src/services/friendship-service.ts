@@ -8,6 +8,15 @@ import type {
   PaginationParams,
   SendDmParams
 } from '../../../common/text-types';
+import { readSnapshot, type StorageAdapter } from './storage-service';
+
+const FRIENDSHIP_STORAGE_KEY = 'discord_laux_v1_friendship_state';
+interface FriendshipSnapshot {
+  friendships: [string, Friendship][];
+  blocks: string[];
+  dmChannels: [string, DmChannel][];
+  dmMessages: DmMessage[];
+}
 
 export const RETENTION_PERIOD_MS = 10 * 24 * 60 * 60 * 1000; // 10 dias
 
@@ -25,6 +34,40 @@ export class InMemoryFriendshipService implements FriendshipService {
   private dmChannels = new Map<string, DmChannel>(); // dmChannelId -> DmChannel
   private dmMessages: (DmMessage & { nonce?: string })[] = [];
   private dmListeners = new Map<string, Set<{ requesterId: string; callback: () => void }>>();
+
+  private committed: FriendshipSnapshot;
+
+  constructor(private storage?: StorageAdapter) {
+    const stored = readSnapshot<FriendshipSnapshot>(storage, FRIENDSHIP_STORAGE_KEY);
+    if (stored) {
+      try { this.restore(stored); }
+      catch { throw new Error('ARMAZENAMENTO_INVALIDO: amizades; dados preservados para recuperação'); }
+    }
+    this.committed = this.snapshot();
+  }
+
+  private snapshot(): FriendshipSnapshot {
+    return JSON.parse(JSON.stringify({
+      friendships: [...this.friendships], blocks: [...this.blocks],
+      dmChannels: [...this.dmChannels],
+      dmMessages: this.dmMessages.filter(message => message.createdAt > Date.now() - RETENTION_PERIOD_MS)
+    }));
+  }
+
+  private restore(value: FriendshipSnapshot): void {
+    const snapshot: FriendshipSnapshot = JSON.parse(JSON.stringify(value));
+    this.friendships = new Map(snapshot.friendships);
+    this.blocks = new Set(snapshot.blocks);
+    this.dmChannels = new Map(snapshot.dmChannels);
+    this.dmMessages = snapshot.dmMessages.filter(message => message.createdAt > Date.now() - RETENTION_PERIOD_MS);
+  }
+
+  private persist(): void {
+    const next = this.snapshot();
+    try { this.storage?.setItem(FRIENDSHIP_STORAGE_KEY, JSON.stringify({ version: 1, data: next })); }
+    catch (error) { this.restore(this.committed); throw error; }
+    this.committed = next;
+  }
 
   private hasBlock(userA: string, userB: string): boolean {
     return this.blocks.has(`${userA}:${userB}`) || this.blocks.has(`${userB}:${userA}`);
@@ -100,6 +143,9 @@ export class InMemoryFriendshipService implements FriendshipService {
   }
 
   async sendFriendRequest(requesterId: string, targetUserId: string): Promise<Friendship> {
+    if (!requesterId || !targetUserId || requesterId.includes(':') || targetUserId.includes(':')) {
+      throw new Error('IDENTIDADE_INVALIDA');
+    }
     if (requesterId === targetUserId) {
       throw new Error('AUTO_AMIZADE_INVALIDA: não é possível adicionar a si mesmo');
     }
@@ -115,6 +161,7 @@ export class InMemoryFriendshipService implements FriendshipService {
       // Se já houver um pedido pendente feito pelo outro usuário, aceita direto!
       if (existing.status === 'pending' && existing.userId === targetUserId) {
         existing.status = 'accepted';
+        this.persist();
         return { ...existing };
       }
       return { ...existing };
@@ -128,6 +175,7 @@ export class InMemoryFriendshipService implements FriendshipService {
     };
 
     this.friendships.set(key, friendship);
+    this.persist();
     return { ...friendship };
   }
 
@@ -139,26 +187,34 @@ export class InMemoryFriendshipService implements FriendshipService {
       throw new Error('PEDIDO_AMIZADE_NAO_ENCONTRADO');
     }
 
+    if (existing.status === 'pending' && existing.friendId !== userId) {
+      throw new Error('APENAS_DESTINATARIO: somente quem recebeu pode aceitar o pedido');
+    }
+    if (this.hasBlock(userId, friendId)) throw new Error('BLOQUEIO_ATIVO');
+
     existing.status = 'accepted';
+    this.persist();
     return { ...existing };
   }
 
   async removeFriendship(userA: string, userB: string): Promise<boolean> {
     const key = sortPair(userA, userB).join(':');
     const removed = this.friendships.delete(key);
+    this.persist();
     if (removed) this.invalidatePairDms(userA, userB);
     return removed;
   }
 
-  async getFriends(userId: string): Promise<{ friendId: string; status: FriendshipStatus }[]> {
-    const result: { friendId: string; status: FriendshipStatus }[] = [];
-    for (const [key, friendship] of this.friendships.entries()) {
-      const [u1, u2] = key.split(':');
-      if (u1 === userId) {
-        result.push({ friendId: u2, status: friendship.status });
-      } else if (u2 === userId) {
-        result.push({ friendId: u1, status: friendship.status });
-      }
+  async getFriends(userId: string, includeDirection = false): Promise<{ friendId: string; status: FriendshipStatus; direction?: 'incoming' | 'outgoing' }[]> {
+    const result: { friendId: string; status: FriendshipStatus; direction?: 'incoming' | 'outgoing' }[] = [];
+    for (const friendship of this.friendships.values()) {
+      if (friendship.userId !== userId && friendship.friendId !== userId) continue;
+      const outgoing = friendship.userId === userId;
+      result.push({
+        friendId: outgoing ? friendship.friendId : friendship.userId,
+        status: friendship.status,
+        ...(includeDirection && friendship.status === 'pending' ? { direction: outgoing ? 'outgoing' as const : 'incoming' as const } : {})
+      });
     }
     return result;
   }
@@ -177,12 +233,15 @@ export class InMemoryFriendshipService implements FriendshipService {
     this.blocks.add(`${blockerId}:${blockedId}`);
     // O bloqueio e a remoção ficam visíveis juntos antes de qualquer callback ou yield.
     this.friendships.delete(sortPair(blockerId, blockedId).join(':'));
+    this.persist();
     this.invalidatePairDms(blockerId, blockedId);
     return block;
   }
 
   async unblockUser(blockerId: string, blockedId: string): Promise<boolean> {
-    return this.blocks.delete(`${blockerId}:${blockedId}`);
+    const removed = this.blocks.delete(`${blockerId}:${blockedId}`);
+    this.persist();
+    return removed;
   }
 
   async isBlocked(userA: string, userB: string): Promise<boolean> {
@@ -210,6 +269,7 @@ export class InMemoryFriendshipService implements FriendshipService {
     };
 
     this.dmChannels.set(newDm.id, newDm);
+    this.persist();
     return copyDmChannel(newDm);
   }
 
@@ -267,6 +327,7 @@ export class InMemoryFriendshipService implements FriendshipService {
     };
 
     this.dmMessages.push(message);
+    this.persist();
     this.emitDmUpdated(params.dmChannelId);
     return { ...message };
   }

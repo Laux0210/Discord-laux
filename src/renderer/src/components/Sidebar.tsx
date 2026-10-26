@@ -39,11 +39,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
         gap: '8px'
       }}
     >
-      <div
+      <button
+        type="button"
+        aria-label="Abrir amigos e mensagens diretas"
         data-testid="btn-dm-home"
         title="Mensagens Diretas"
         onClick={onSelectDmHome}
         style={{
+          border: 0,
+          font: 'inherit',
           width: '48px',
           height: '48px',
           borderRadius: '24px',
@@ -57,11 +61,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
         }}
       >
         DM
-      </div>
+      </button>
       <div style={{ width: '32px', height: '2px', backgroundColor: '#35363c', margin: '4px 0' }} />
 
       {displayGuilds.map((g) => {
-        const isSelected = selectedGuildId ? g.id === selectedGuildId : true;
+        const isSelected = g.id === selectedGuildId;
         const initials = g.name
           .split(' ')
           .map((n) => n[0])
@@ -70,12 +74,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
           .toUpperCase();
 
         return (
-          <div
+          <button
+            type="button"
+            aria-label={`Abrir servidor ${g.name}`}
+            aria-pressed={isSelected}
             key={g.id}
             data-testid={`guild-item-${g.id}`}
             title={g.name}
             onClick={() => onSelectGuild?.(g.id)}
             style={{
+              font: 'inherit',
               width: '48px',
               height: '48px',
               borderRadius: isSelected ? '16px' : '24px',
@@ -91,11 +99,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
             }}
           >
             {initials || 'CD'}
-          </div>
+          </button>
         );
       })}
 
-      <div
+      {onOpenCreateGuild && <button
+        type="button"
+        aria-label="Adicionar ou entrar em comunidade"
         data-testid="btn-add-guild"
         title="Adicionar ou entrar em comunidade"
         onClick={onOpenCreateGuild}
@@ -109,12 +119,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
           alignItems: 'center',
           justifyContent: 'center',
           fontSize: '22px',
+          border: 0,
+          fontFamily: 'inherit',
           cursor: 'pointer',
           marginTop: '4px'
         }}
       >
         +
-      </div>
+      </button>}
     </aside>
   );
 };

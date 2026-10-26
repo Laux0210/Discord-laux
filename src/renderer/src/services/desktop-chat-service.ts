@@ -13,20 +13,50 @@ interface ExtendedMessage extends Message {
   nonce?: string;
 }
 
-import { storageService } from './storage-service';
+import { readSnapshot, storageService, type StorageAdapter } from './storage-service';
+
+const CHAT_STORAGE_KEY = 'discord_laux_v1_chat_state';
 
 export class DesktopChatService implements TextChatService {
   private messages: ExtendedMessage[] = [];
   private listeners: Map<string, Set<(msg: Message) => void>> = new Map();
 
-  constructor(initialMessages?: ExtendedMessage[]) {
+  constructor(initialMessages?: ExtendedMessage[], private storage?: StorageAdapter) {
     if (initialMessages) {
       this.messages = [...initialMessages];
+    } else if (storage) {
+      const snapshot = readSnapshot<ExtendedMessage[]>(storage, CHAT_STORAGE_KEY);
+      if (snapshot) {
+        if (!Array.isArray(snapshot) || snapshot.some(message => !message || typeof message.channelId !== 'string' || typeof message.content !== 'string' || typeof message.createdAt !== 'number')) {
+          throw new Error('ARMAZENAMENTO_INVALIDO: mensagens; dados preservados para recuperação');
+        }
+        this.messages = snapshot.filter(message => message.createdAt >= Date.now() - RETENTION_PERIOD_MS);
+      } else {
+        // Preserva IDs legados: não mistura canais antigos sem um mapeamento confiável.
+        const raw = storage.getItem('discord_laux_v1_channel_messages');
+        if (raw) {
+          try {
+            const legacy = JSON.parse(raw);
+            const messages = Object.values(legacy).flat() as ExtendedMessage[];
+            if (messages.some(message => !message || typeof message.channelId !== 'string' || typeof message.content !== 'string' || typeof message.createdAt !== 'number')) throw new Error();
+            this.messages = messages;
+          } catch { throw new Error('ARMAZENAMENTO_INVALIDO: histórico legado preservado para recuperação'); }
+        }
+      }
     } else {
       const allStored = storageService.getAllChannelMessages();
       for (const channelId in allStored) {
         this.messages.push(...allStored[channelId]);
       }
+    }
+  }
+
+  private persistMessages(messages: ExtendedMessage[]): void {
+    if (this.storage) {
+      this.storage.setItem(CHAT_STORAGE_KEY, JSON.stringify({
+        version: 1,
+        data: messages.filter(message => message.createdAt >= Date.now() - RETENTION_PERIOD_MS)
+      }));
     }
   }
 
@@ -46,10 +76,10 @@ export class DesktopChatService implements TextChatService {
           m.channelId === params.channelId &&
           m.authorId === params.authorId &&
           m.nonce === params.nonce &&
-          !m.isDeleted
+          !m.isDeleted && m.createdAt >= Date.now() - RETENTION_PERIOD_MS
       );
       if (existing) {
-        return existing;
+        return { ...existing };
       }
     }
 
@@ -63,27 +93,29 @@ export class DesktopChatService implements TextChatService {
       nonce: params.nonce
     };
 
+    this.persistMessages([...this.messages, message]);
+    if (!this.storage) storageService.saveChannelMessage(params.channelId, message);
     this.messages.push(message);
-    storageService.saveChannelMessage(params.channelId, message);
 
     const channelListeners = this.listeners.get(params.channelId);
     if (channelListeners) {
       for (const listener of channelListeners) {
-        listener(message);
+        try { listener({ ...message }); } catch { /* Consumidor não desfaz envio persistido. */ }
       }
     }
 
-    return message;
+    return { ...message };
   }
 
   public receiveRemoteMessage(message: ExtendedMessage): void {
     const existing = this.messages.find(
-      (m) => m.id === message.id || (message.nonce && m.nonce === message.nonce)
+      (m) => m.id === message.id || (message.nonce && m.nonce === message.nonce && m.channelId === message.channelId && m.authorId === message.authorId)
     );
     if (existing) return;
 
-    this.messages.push(message);
-    storageService.saveChannelMessage(message.channelId, message);
+    this.persistMessages([...this.messages, message]);
+    if (!this.storage) storageService.saveChannelMessage(message.channelId, message);
+    this.messages.push({ ...message });
 
     const channelListeners = this.listeners.get(message.channelId);
     if (channelListeners) {
@@ -117,7 +149,7 @@ export class DesktopChatService implements TextChatService {
       filtered = filtered.slice(filtered.length - limit);
     }
 
-    return filtered;
+    return filtered.map(message => ({ ...message }));
   }
 
   async deleteMessage(params: DeleteMessageParams): Promise<boolean> {
@@ -133,8 +165,10 @@ export class DesktopChatService implements TextChatService {
       return false;
     }
 
-    msg.isDeleted = true;
-    storageService.saveAllChannelMessages(msg.channelId, this.messages.filter((m) => m.channelId === msg.channelId));
+    const next = this.messages.map(message => message.id === msg.id ? { ...message, isDeleted: true } : message);
+    this.persistMessages(next);
+    if (!this.storage) storageService.saveAllChannelMessages(msg.channelId, next.filter((m) => m.channelId === msg.channelId));
+    this.messages = next;
     return true;
   }
 

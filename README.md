@@ -1,5 +1,78 @@
 # Discord Web & Desktop (Laux)
 
+## Armazenamento e servidor compartilhado — 25/10/2026
+
+O modo compartilhado local mantém contas, conversas, amizades, canais e cargos
+no disco do computador que executa o servidor. Todas as contas cadastradas
+entram na mesma comunidade. A primeira conta administra o servidor; as demais
+recebem somente as permissões de membro. Atualizar a página mantém a sessão e
+o histórico. A criação de canais de texto/voz e a administração dos cargos
+ficam em **Configurações do servidor** para quem tem permissão.
+
+Pré-requisitos: Node.js 22 ou superior (verificado com 26.9.0), npm e dependências
+instaladas com `npm ci`. Não é necessário configurar Supabase para este modo.
+
+```powershell
+cd "C:\Users\jv883\Documents\Codex\Discord"
+npm ci
+npm run shared
+```
+
+Abra `http://127.0.0.1:8787` e cadastre a primeira conta com senha de no mínimo
+8 caracteres. Para testar outra conta, use outro perfil do navegador ou uma
+janela privada. Dados e sessões ficam em `.local-data/shared-state.json`,
+ignorada pelo Git. Senhas usam hash scrypt; o arquivo não contém senhas nem
+tokens de sessão em texto puro. Ctrl+C encerra o servidor e libera seu lock.
+
+Para editar a interface com atualização automática:
+
+```powershell
+npm run dev:shared
+```
+
+Esse comando inicia a API em `127.0.0.1:8787` e o Vite em
+`http://localhost:5173`, usando a mesma pasta de dados. Não execute os dois
+comandos simultaneamente com a mesma pasta. `SHARED_PORT`, `SHARED_HOST` e
+`SHARED_DATA_DIR` configuram a execução do servidor; o proxy de desenvolvimento
+usa a porta padrão 8787. Para manter uma pasta separada de testes:
+
+```powershell
+$env:SHARED_DATA_DIR = '.local-data/meu-teste'
+npm run shared
+```
+
+O padrão aceita somente conexões locais. Outros aparelhos precisam alcançar o
+mesmo backend; abrir uma cópia do site estático não compartilha o banco. A
+exposição em rede, HTTPS e implantação pública não foram feitas nesta entrega.
+GitHub Pages continua sendo hospedagem estática e não executa este backend.
+
+O modo `npm run dev`/Electron continua com armazenamento no próprio perfil
+local. Históricos antigos com IDs aleatórios são recuperados em canais
+`historico-anterior-*`, sem juntar conversas distintas nem enviá-las ao servidor.
+Contas e históricos locais não são importados automaticamente no backend.
+
+O histórico disponível é de 10 dias. No backend, textos expirados são removidos
+do arquivo ativo na abertura, antes das transações e a cada hora enquanto está
+ativo. Isso não apaga cópias externas nem comprova apagamento seguro do disco.
+Se um encerramento inesperado deixar `shared-state.lock`, confirme que o processo
+anterior encerrou antes de remover apenas esse lock; preserve `shared-state.json`.
+Arquivo corrompido gera erro e é preservado, sem reiniciar silenciosamente o banco.
+
+Os canais de voz podem ser criados e persistidos. **Áudio/tela entre aparelhos
+ainda não estão conectados ao backend compartilhado**; a interface informa esse
+limite e bloqueia a simulação/captura nesse modo. Google OAuth também não está
+configurado nele. Mensagens compartilhadas usam a API autenticada, sem broker
+MQTT público. Não houve publicação ou contratação de serviço.
+
+Checks: `npm test`, `npm run lint`, `npm run build`. Como o teste de release
+confere hashes de arquivos gerados, após um novo build gere o manifesto local
+com `node scripts/build-release.mjs` antes da suíte completa. Não execute o
+build em paralelo com a auditoria desse manifesto.
+
+Plano e responsabilidades: [armazenamento compartilhado](docs/planejamento/armazenamento-compartilhado-2026-10-25.md).
+As migrações Supabase realizadas em paralelo pelo Claude são um caminho separado;
+o modo local acima não as aplica nem exige suas credenciais.
+
 [![Acessar App Online](https://img.shields.io/badge/🚀%20ABRIR%20O%20APP%20ONLINE-CLIQUE%20AQUI-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://laux0210.github.io/Discord-laux/)
 [![Deploy to GitHub Pages](https://github.com/Laux0210/Discord-laux/actions/workflows/deploy.yml/badge.svg)](https://github.com/Laux0210/Discord-laux/actions/workflows/deploy.yml)
 [![Open in GitHub Codespaces](https://img.shields.io/badge/Codespaces-Abrir%20no%20Navegador-blue?style=for-the-badge&logo=github)](https://github.com/codespaces/new?hide_repo_select=true&ref=main&repo=Laux0210%2FDiscord-laux)

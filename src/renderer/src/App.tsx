@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import type { Channel, Guild, Message, User } from '../../common/types';
 import type { AuthService as LegacyAuthService, ChatService, MediaService } from './services/types';
 import type { AuthService as ModernAuthService } from '../../common/auth-types';
@@ -19,6 +19,8 @@ import { soundEffects } from './services/sound-effects';
 import { voiceMediaService } from './services/voice-media-service';
 import { realtimeNetworkService } from './services/realtime-network-service';
 import { storageService } from './services/storage-service';
+import { ServerSettingsModal } from './components/ServerSettingsModal';
+import { hasPermission, PermissionFlags } from '../../common/permissions';
 
 
 
@@ -32,6 +34,8 @@ export interface AppProps {
   presenceService?: PresenceService;
   initialSelectedChannelId?: string;
   initialIsInVoiceCall?: boolean;
+  userDirectory?: () => Promise<User[]>;
+  sharedBackend?: boolean;
 }
 
 const DEFAULT_CHANNELS: Channel[] = [
@@ -66,7 +70,9 @@ export const App: React.FC<AppProps> = ({
   friendshipService,
   presenceService,
   initialSelectedChannelId,
-  initialIsInVoiceCall
+  initialIsInVoiceCall,
+  userDirectory,
+  sharedBackend = false
 }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(authService.getCurrentUser());
   const [activeView, setActiveView] = useState<'guild' | 'dm'>('guild');
@@ -84,6 +90,7 @@ export const App: React.FC<AppProps> = ({
   );
   const [messages, setMessages] = useState<Message[]>([]);
   const [friends, setFriends] = useState<FriendEntry[]>([]);
+  const [publicUsers, setPublicUsers] = useState<User[]>([]);
   const [isMuted, setIsMuted] = useState(false);
   const [isDeafened, setIsDeafened] = useState(false);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
@@ -92,6 +99,14 @@ export const App: React.FC<AppProps> = ({
   const [screenStream, setScreenStream] = useState<MediaStream | null>(null);
   const [authError, setAuthError] = useState<string | null>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isServerSettingsOpen, setIsServerSettingsOpen] = useState(false);
+  const [dataError, setDataError] = useState<string | null>(null);
+  const [memberPermissions, setMemberPermissions] = useState(0n);
+  const [guildIdentity, setGuildIdentity] = useState<string | null>(null);
+  const currentIdentity = useRef(currentUser?.id);
+  currentIdentity.current = currentUser?.id;
+  const directory = useCallback(async () => userDirectory ? userDirectory() : storageService.listKnownUsers(), [userDirectory]);
+
 
 
 
@@ -141,7 +156,7 @@ export const App: React.FC<AppProps> = ({
 
   // Inicializa sincronização em tempo real multi-aparelho (MQTT WSS + PeerJS WebRTC)
   useEffect(() => {
-    if (currentUser && chatService && callController && presenceService) {
+    if (!sharedBackend && currentUser && chatService && callController && presenceService) {
       realtimeNetworkService.init(
         currentUser,
         chatService as any,
@@ -149,7 +164,7 @@ export const App: React.FC<AppProps> = ({
         presenceService as any
       );
     }
-  }, [currentUser?.id, chatService, callController, presenceService]);
+  }, [currentUser?.id, chatService, callController, presenceService, sharedBackend]);
 
   // Escuta streams de tela remota vindas de outros aparelhos
   useEffect(() => {
@@ -171,7 +186,7 @@ export const App: React.FC<AppProps> = ({
       voiceMediaService
         .startMicrophone((speaking) => {
           setIsSpeaking(speaking);
-          realtimeNetworkService.broadcastSpeaking(callState.channelId || selectedChannelId, currentUser.id, speaking);
+          if (!sharedBackend) realtimeNetworkService.broadcastSpeaking(callState.channelId || selectedChannelId, currentUser.id, speaking);
           if (callController?.setSpeaking) {
             callController.setSpeaking(currentUser.id, speaking);
           } else {
@@ -204,61 +219,109 @@ export const App: React.FC<AppProps> = ({
     }
   }, [authService]);
 
-  // Carrega comunidades do usuário autenticado
+  // Respostas de sessões anteriores não podem restaurar dados após trocar de conta.
   useEffect(() => {
+    setSelectedDm(null);
+    setIsServerSettingsOpen(false);
+    setGuilds([]); setSelectedGuildId(null); setFriends([]); setPublicUsers([]); setMessages([]);
+    setGuildIdentity(null);
+    if (guildService) { setChannels([]); setSelectedChannelId(''); }
+    setMemberPermissions(0n); setDataError(null);
     if (!currentUser || !guildService) return;
+    let active = true;
+    void (async () => {
+      await guildService.ensureCommonGuild?.(currentUser.id);
+      const next = await guildService.getUserGuilds(currentUser.id);
+      if (!active) return;
+      setGuilds(next); setGuildIdentity(currentUser.id);
+      setSelectedGuildId(next[0]?.id ?? null);
+    })().catch(error => { if (active) setDataError(error instanceof Error ? error.message : 'Erro ao carregar servidor.'); });
+    return () => { active = false; };
+  }, [currentUser?.id, guildService]);
 
-    guildService.getUserGuilds(currentUser.id).then((userGuilds) => {
-      setGuilds(userGuilds);
-      if (userGuilds.length > 0 && !selectedGuildId) {
-        setSelectedGuildId(userGuilds[0].id);
-      }
-    });
-  }, [currentUser, guildService, selectedGuildId]);
-
-  // Carrega lista de amigos se friendshipService estiver disponível
-  useEffect(() => {
+  const refreshFriends = useCallback(async () => {
     if (!currentUser || !friendshipService) return;
+    const identity = currentUser.id;
+    const [list, people] = await Promise.all([friendshipService.getFriends(identity, true), directory()]);
+    if (currentIdentity.current !== identity) return;
+    setPublicUsers(people);
+    setFriends(list.map(item => ({
+      friendId: item.friendId,
+      displayName: people.find(person => person.id === item.friendId)?.displayName ?? item.friendId,
+      status: item.status,
+      direction: item.direction,
+    })));
+  }, [currentUser?.id, friendshipService, directory]);
 
-    friendshipService.getFriends(currentUser.id).then((list) => {
-      const entries: FriendEntry[] = list.map((item) => ({
-        friendId: item.friendId,
-        displayName: item.friendId === 'user-2' ? 'Amigo Dois' : item.friendId === 'user-3' ? 'Amigo Três' : item.friendId,
-        status: item.status
-      }));
-      setFriends(entries);
-    });
-  }, [currentUser, friendshipService]);
-
-  // Carrega canais da comunidade selecionada
   useEffect(() => {
-    if (!currentUser || !guildService || !selectedGuildId) return;
-
-    guildService.getGuildChannels(selectedGuildId, currentUser.id).then((guildChannels) => {
-      setChannels(guildChannels);
-      if (guildChannels.length > 0) {
-        setSelectedChannelId(guildChannels[0].id);
-      }
-    });
-  }, [currentUser, guildService, selectedGuildId]);
-
-  // Carrega mensagens do canal ativo
-  useEffect(() => {
-    if (!selectedChannelId) return;
-    chatService.getMessages(selectedChannelId).then(setMessages);
-
-    const unsubscribe = chatService.onNewMessage(selectedChannelId, (newMsg) => {
-      setMessages((prev) => [...prev, newMsg]);
-    });
-
-    return () => {
-      unsubscribe();
+    let active = true, pending = false;
+    const refresh = async () => {
+      if (pending || !active) return;
+      pending = true;
+      try { await refreshFriends(); }
+      catch (error) { if (active) setDataError(error instanceof Error ? error.message : 'Erro ao carregar amigos.'); }
+      finally { pending = false; }
     };
-  }, [chatService, selectedChannelId]);
+    void refresh();
+    const timer = sharedBackend ? window.setInterval(() => void refresh(), 2000) : undefined;
+    return () => { active = false; if (timer !== undefined) window.clearInterval(timer); };
+  }, [refreshFriends, sharedBackend]);
+
+  const refreshChannels = useCallback(async (selectId?: string) => {
+    if (!currentUser || !guildService || !selectedGuildId) return;
+    const identity = currentUser.id;
+    const [next, allowed] = await Promise.all([
+      guildService.getGuildChannels(selectedGuildId, identity),
+      guildService.getMemberPermissions?.(selectedGuildId, identity) ?? Promise.resolve(0n),
+    ]);
+    if (currentIdentity.current !== identity) return;
+    setChannels(next); setMemberPermissions(allowed);
+    setSelectedChannelId(current => selectId && next.some(channel => channel.id === selectId) ? selectId : next.some(channel => channel.id === current) ? current : next[0]?.id ?? '');
+  }, [currentUser?.id, guildService, selectedGuildId]);
+
+  useEffect(() => {
+    let active = true, pending = false;
+    const refresh = async () => {
+      if (!active || pending) return;
+      pending = true;
+      try { await refreshChannels(); }
+      catch (error) { if (active) setDataError(error instanceof Error ? error.message : 'Erro ao carregar canais.'); }
+      finally { pending = false; }
+    };
+    void refresh();
+    const timer = sharedBackend ? window.setInterval(() => void refresh(), 2000) : undefined;
+    return () => { active = false; if (timer !== undefined) window.clearInterval(timer); };
+  }, [refreshChannels, sharedBackend]);
+
+  // Evita mensagens de um canal anterior e deduplica polling/eco de envio.
+  useEffect(() => {
+    if (!selectedChannelId || !currentUser || (guildService && guildIdentity !== currentUser.id)) return;
+    let active = true;
+    setMessages([]);
+    if (chatService.onMessagesUpdated) {
+      const unsubscribe = chatService.onMessagesUpdated(selectedChannelId, snapshot => {
+        if (active) setMessages(snapshot);
+      });
+      return () => { active = false; unsubscribe(); };
+    }
+    void chatService.getMessages(selectedChannelId).then(list => {
+      if (active) setMessages(previous => {
+        const merged = new Map(list.map(message => [message.id, message]));
+        for (const message of previous) merged.set(message.id, message);
+        return [...merged.values()].sort((a, b) => a.createdAt - b.createdAt);
+      });
+    })
+      .catch(error => { if (active) setDataError(error instanceof Error ? error.message : 'Erro ao carregar mensagens.'); });
+    const unsubscribe = chatService.onNewMessage(selectedChannelId, newMsg => {
+      if (active) setMessages(previous => previous.some(message => message.id === newMsg.id) ? previous : [...previous, newMsg]);
+    });
+    return () => { active = false; unsubscribe(); };
+  }, [chatService, selectedChannelId, currentUser?.id, guildService, guildIdentity]);
 
   const handleLoginGoogle = async () => {
     try {
       setAuthError(null);
+      if (sharedBackend) throw new Error('Use e-mail e senha no servidor compartilhado. Google ainda não está configurado.');
       if ('initiateLogin' in authService) {
         const { authUrl } = authService.initiateLogin('google');
         if (typeof window !== 'undefined' && window.electronAPI?.openExternalUrl) {
@@ -309,6 +372,7 @@ export const App: React.FC<AppProps> = ({
 
   const handleLoginMock = async (username: string) => {
     try {
+      if (sharedBackend) throw new Error('Contas de demonstração não acessam o servidor compartilhado. Use e-mail e senha.');
       setAuthError(null);
       const user = 'initiateLogin' in authService
         ? await authService.login({ provider: 'mock', mockUsername: username })
@@ -335,7 +399,7 @@ export const App: React.FC<AppProps> = ({
       authorName: currentUser.displayName,
       content
     });
-    realtimeNetworkService.broadcastChatMessage(selectedChannelId, msg);
+    if (!sharedBackend) realtimeNetworkService.broadcastChatMessage(selectedChannelId, msg);
   };
 
   const handleDeleteMessage = async (messageId: string) => {
@@ -398,13 +462,14 @@ export const App: React.FC<AppProps> = ({
   };
 
   const handleToggleScreenShare = async () => {
+    if (sharedBackend) { setDataError('Compartilhamento de tela ainda não está conectado ao servidor compartilhado.'); return; }
     if (!currentUser) return;
     const currentChan = callState.channelId || selectedChannelId || 'chan-voice-main';
     if (isScreenSharing) {
       soundEffects.playScreenShareStop();
       voiceMediaService.stopScreenShare();
       setScreenStream(null);
-      realtimeNetworkService.broadcastScreenShareStop(currentChan, currentUser.id);
+      if (!sharedBackend) realtimeNetworkService.broadcastScreenShareStop(currentChan, currentUser.id);
       if (callController) {
         await callController.stopScreenShare(currentUser.id);
       } else {
@@ -420,7 +485,7 @@ export const App: React.FC<AppProps> = ({
       if (!isInVoiceCall) {
         setSelectedChannelId(targetChannelId);
         soundEffects.playVoiceConnect();
-        realtimeNetworkService.joinVoiceChannel(targetChannelId, targetGuildId, currentUser);
+        if (!sharedBackend) realtimeNetworkService.joinVoiceChannel(targetChannelId, targetGuildId, currentUser);
         if (callController) {
           await callController.joinCall(
             targetChannelId,
@@ -441,7 +506,7 @@ export const App: React.FC<AppProps> = ({
         .then((stream) => {
           if (stream) {
             setScreenStream(stream);
-            realtimeNetworkService.broadcastScreenShareStart(targetChannelId, currentUser.id, stream);
+            if (!sharedBackend) realtimeNetworkService.broadcastScreenShareStart(targetChannelId, currentUser.id, stream);
           }
         })
         .catch((err) => {
@@ -465,6 +530,7 @@ export const App: React.FC<AppProps> = ({
   };
 
   const handleSimulateFriendJoin = async () => {
+    if (sharedBackend) return;
     if (!callController) return;
     const targetChannelId = callState.channelId || selectedChannelId || channels.find((c) => c.type === 'voice')?.id || 'chan-voice-main';
     const targetGuildId = callState.guildId || selectedGuildId || 'guild-1';
@@ -497,7 +563,7 @@ export const App: React.FC<AppProps> = ({
     voiceMediaService.stopScreenShare();
     setScreenStream(null);
     setIsSpeaking(false);
-    realtimeNetworkService.leaveVoiceChannel(callState.channelId || selectedChannelId, currentUser.id);
+    if (!sharedBackend) realtimeNetworkService.leaveVoiceChannel(callState.channelId || selectedChannelId, currentUser.id);
     if (callController) {
       await callController.leaveCall(currentUser.id);
     } else {
@@ -508,30 +574,21 @@ export const App: React.FC<AppProps> = ({
   };
 
 
-  const handleSendFriendRequest = async (targetUserId: string) => {
+  const handleSendFriendRequest = async (query: string) => {
     if (!currentUser || !friendshipService) return;
-    await friendshipService.sendFriendRequest(currentUser.id, targetUserId);
-    const updated = await friendshipService.getFriends(currentUser.id);
-    setFriends(
-      updated.map((i) => ({
-        friendId: i.friendId,
-        displayName: i.friendId,
-        status: i.status
-      }))
-    );
+    const identity = currentUser.id;
+    const people = await directory();
+    if (currentIdentity.current !== identity) return;
+    const target = people.find(person => person.id === query.trim() || person.username.toLowerCase() === query.trim().toLowerCase());
+    if (!target) throw new Error('Usuário não encontrado. Informe o ID ou nome de usuário de uma conta cadastrada.');
+    await friendshipService.sendFriendRequest(identity, target.id);
+    await refreshFriends();
   };
 
   const handleAcceptFriendRequest = async (friendId: string) => {
     if (!currentUser || !friendshipService) return;
     await friendshipService.acceptFriendRequest(currentUser.id, friendId);
-    const updated = await friendshipService.getFriends(currentUser.id);
-    setFriends(
-      updated.map((i) => ({
-        friendId: i.friendId,
-        displayName: i.friendId,
-        status: i.status
-      }))
-    );
+    await refreshFriends();
   };
 
   // Se não estiver logado, exibe a tela de login
@@ -542,6 +599,9 @@ export const App: React.FC<AppProps> = ({
         onLoginCredentials={handleLoginCredentials}
         onLoginMock={handleLoginMock}
         errorMessage={authError}
+        allowGoogle={!sharedBackend}
+        allowMock={!sharedBackend}
+        minPasswordLength={sharedBackend ? 8 : 6}
       />
     );
   }
@@ -642,7 +702,7 @@ export const App: React.FC<AppProps> = ({
                 Mensagens Diretas
               </div>
 
-              {friends.map((friend) => {
+              {friends.filter(friend => friend.status === 'accepted').map((friend) => {
                 const isSelected = selectedDm?.friendId === friend.friendId;
                 const presence = presenceService ? presenceService.getPresence(friend.friendId) : 'online';
                 return (
@@ -746,7 +806,10 @@ export const App: React.FC<AppProps> = ({
             />
           ) : (
             <FriendsArea
+              key={currentUser.id}
               friends={friends}
+              users={publicUsers}
+              showDemoActivity={!sharedBackend}
               currentUserId={currentUser.id}
               onSendFriendRequest={handleSendFriendRequest}
               onAcceptFriendRequest={handleAcceptFriendRequest}
@@ -786,8 +849,11 @@ export const App: React.FC<AppProps> = ({
                 color: '#f2f3f5'
               }}
             >
-              {currentGuildName}
+              <span style={{ flex: 1 }}>{currentGuildName}</span>
+              {guildService && selectedGuildId && (hasPermission(memberPermissions, PermissionFlags.MANAGE_CHANNELS) || hasPermission(memberPermissions, PermissionFlags.MANAGE_ROLES)) && <button aria-label="Configurações do servidor" data-testid="server-settings-open" onClick={() => setIsServerSettingsOpen(true)} style={{ background: 'transparent', border: 0, color: 'white', cursor: 'pointer', fontSize: 18 }}>⚙</button>}
             </header>
+            {dataError && <p role="alert" style={{ color: '#ffb3ba', padding: 8 }}>{dataError}</p>}
+            {sharedBackend && <p style={{ fontSize: 12, padding: 8 }}>Servidor compartilhado · histórico salvo no servidor. Áudio entre aparelhos ainda não está conectado neste modo.</p>}
 
             <ChannelList
               channels={channels}
@@ -798,10 +864,11 @@ export const App: React.FC<AppProps> = ({
                 setSelectedChannelId(id);
                 const targetChannel = channels.find((channel) => channel.id === id);
                 if (targetChannel?.type === 'voice' && currentUser) {
+                  if (sharedBackend) { setDataError('Canal de voz selecionado. O transporte de áudio entre aparelhos ainda não está conectado neste modo.'); return; }
                   if (!isInVoiceCall || callState.channelId !== id) {
                     soundEffects.playVoiceConnect();
                   }
-                  realtimeNetworkService.joinVoiceChannel(id, selectedGuildId || 'guild-1', currentUser);
+                  if (!sharedBackend) realtimeNetworkService.joinVoiceChannel(id, selectedGuildId || 'guild-1', currentUser);
                   if (callController) {
                     callController
                       .joinCall(
@@ -856,12 +923,13 @@ export const App: React.FC<AppProps> = ({
               currentUserId={currentUser?.id}
               onDisconnect={handleDisconnectVoice}
               onToggleScreenShare={handleToggleScreenShare}
-              onSimulateFriendJoin={handleSimulateFriendJoin}
+              onSimulateFriendJoin={sharedBackend ? undefined : handleSimulateFriendJoin}
               isScreenSharing={isScreenSharing}
               screenStream={screenStream}
             />
           ) : (
             <ChatArea
+              key={`${currentUser.id}:${currentChannel.id}`}
               channel={currentChannel}
               messages={messages}
               currentUserId={currentUser?.id}
@@ -872,6 +940,7 @@ export const App: React.FC<AppProps> = ({
         </>
       )}
 
+      {isServerSettingsOpen && selectedGuildId && guildService && <ServerSettingsModal key={`${currentUser.id}:${selectedGuildId}`} guildId={selectedGuildId} user={currentUser} service={guildService} onClose={() => setIsServerSettingsOpen(false)} onChannelsChanged={refreshChannels} userDirectory={directory} />}
       {/* Modal de Configurações de Usuário (Estilo Discord) */}
       <UserSettingsModal
         isOpen={isSettingsOpen}

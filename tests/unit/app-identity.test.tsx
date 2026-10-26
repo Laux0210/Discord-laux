@@ -63,7 +63,7 @@ describe('App Identity & Guild UI Integration', () => {
     expect(html).toContain('Amigo Um (Dono)');
     expect(html).toContain('btn-logout');
 
-    // Sidebar deve conter as comunidades ou botão de adicionar
-    expect(html).toContain('data-testid="btn-add-guild"');
+    // Servidor único: não oferece controle de criar comunidade sem ação configurada.
+    expect(html).not.toContain('data-testid="btn-add-guild"');
   });
 });

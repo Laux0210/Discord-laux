@@ -48,6 +48,9 @@ export interface AssignRoleParams {
 }
 
 export interface GuildService {
+  ensureCommonGuild?(userId: string, ownerId?: string): Promise<Guild>;
+  getGuildRoles?(guildId: string): Promise<Role[]>;
+  getMemberPermissions?(guildId: string, userId: string, channelId?: string): Promise<bigint>;
   createGuild(params: CreateGuildParams): Promise<Guild>;
   getGuild(guildId: string): Promise<Guild | null>;
   getUserGuilds(userId: string): Promise<Guild[]>;

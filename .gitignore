@@ -35,3 +35,6 @@ __pycache__/
 .codex/logs/
 .codex/backups/
 .vite/
+
+# Banco local, sessões e runtime do servidor compartilhado
+.local-data/

@@ -149,7 +149,7 @@ export function DirectMessageArea({ service, user, friendId, friendName, onBack 
         <h2 style={{ fontSize: '16px', flex: 1 }}>Conversa com {friendName}</h2>
         <button type="button" disabled={isSending || view.phase === 'loading'} onClick={() => { void runtimeRef.current?.open(); }}>Atualizar</button>
       </header>
-      <p style={{ padding: '8px 16px', color: '#949ba4', fontSize: '12px' }}>Ambiente local fictício. Mensagens em memória, disponíveis por até 10 dias.</p>
+      <p style={{ padding: '8px 16px', color: '#949ba4', fontSize: '12px' }}>Conversa individual entre amigos. Histórico disponível por até 10 dias.</p>
       {view.error && <p role="alert" style={{ padding: '12px 16px', color: '#f23f43' }}>Não foi possível concluir a operação: {view.error}</p>}
       <div aria-live="polite" style={{ flex: 1, overflowY: 'auto', padding: '16px', userSelect: 'text' }}>
         {view.phase === 'loading' && <p role="status">Carregando conversa…</p>}

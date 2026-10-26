@@ -78,7 +78,7 @@ export interface FriendshipService {
   sendFriendRequest(requesterId: string, targetUserId: string): Promise<Friendship>;
   acceptFriendRequest(userId: string, friendId: string): Promise<Friendship>;
   removeFriendship(userA: string, userB: string): Promise<boolean>;
-  getFriends(userId: string): Promise<{ friendId: string; status: FriendshipStatus }[]>;
+  getFriends(userId: string, includeDirection?: boolean): Promise<{ friendId: string; status: FriendshipStatus; direction?: 'incoming' | 'outgoing' }[]>;
   blockUser(blockerId: string, blockedId: string): Promise<Block>;
   unblockUser(blockerId: string, blockedId: string): Promise<boolean>;
   isBlocked(userA: string, userB: string): Promise<boolean>;

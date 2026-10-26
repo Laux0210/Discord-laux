@@ -10,13 +10,19 @@ export interface LoginModalProps {
   ) => void | Promise<void>;
   onLoginMock: (username: string) => void | Promise<void>;
   errorMessage?: string | null;
+  allowGoogle?: boolean;
+  allowMock?: boolean;
+  minPasswordLength?: number;
 }
 
 export const LoginModal: React.FC<LoginModalProps> = ({
   onLoginGoogle,
   onLoginCredentials,
   onLoginMock,
-  errorMessage
+  errorMessage,
+  allowGoogle = true,
+  allowMock = true,
+  minPasswordLength = 6
 }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -35,8 +41,8 @@ export const LoginModal: React.FC<LoginModalProps> = ({
       return;
     }
 
-    if (!password || password.length < 6) {
-      setFormError('A senha deve conter no mínimo 6 caracteres.');
+    if (!password || password.length < minPasswordLength) {
+      setFormError(`A senha deve conter no mínimo ${minPasswordLength} caracteres.`);
       return;
     }
 
@@ -211,6 +217,8 @@ export const LoginModal: React.FC<LoginModalProps> = ({
               id="login-password"
               data-testid="input-password"
               type="password"
+              minLength={minPasswordLength}
+              maxLength={128}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Sua senha secreta"
@@ -276,7 +284,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
           </div>
         </form>
 
-        <div style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '8px', margin: '4px 0' }}>
+        {allowGoogle && <><div style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '8px', margin: '4px 0' }}>
           <div style={{ flex: 1, height: '1px', backgroundColor: '#3f4147' }} />
           <span style={{ fontSize: '11px', color: '#949ba4', textTransform: 'uppercase', fontWeight: 'bold' }}>
             ou
@@ -326,9 +334,11 @@ export const LoginModal: React.FC<LoginModalProps> = ({
             />
           </svg>
           <span>Entrar com Google</span>
-        </button>
+        </button></>}
 
+        {!allowGoogle && !allowMock && <p style={{ color: '#b5bac1', fontSize: 13 }}>Entre ou cadastre-se com e-mail e senha para acessar o servidor compartilhado.</p>}
         {/* Separador e Contas de Teste Offline R$0 */}
+        {allowMock && <>
         <div style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
           <div style={{ flex: 1, height: '1px', backgroundColor: '#3f4147' }} />
           <span style={{ fontSize: '11px', color: '#949ba4', textTransform: 'uppercase' }}>
@@ -392,7 +402,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
           >
             Entrar como Amigo Três
           </button>
-        </div>
+        </div></>}
       </div>
     </div>
   );

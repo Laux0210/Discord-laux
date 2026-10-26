@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import type { Message, Channel } from '../../../common/types';
 
 export interface ChatAreaProps {
   channel: Channel;
   messages: Message[];
   currentUserId?: string;
-  onSendMessage: (content: string) => void;
+  onSendMessage: (content: string) => void | Promise<void>;
   onDeleteMessage?: (messageId: string) => void;
 }
 
@@ -17,21 +17,33 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
   onDeleteMessage
 }) => {
   const [inputText, setInputText] = useState('');
+  const [isSending, setIsSending] = useState(false);
+  const [sendError, setSendError] = useState<string | null>(null);
+  const pending = useRef(false);
+  const context = useRef(0);
+  useEffect(() => {
+    context.current++;
+    setInputText(''); setSendError(null); setIsSending(false); pending.current = false;
+    return () => { context.current++; };
+  }, [channel.id, currentUserId]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inputText.trim()) return;
-    onSendMessage(inputText.trim());
-    setInputText('');
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      if (!inputText.trim()) return;
-      onSendMessage(inputText.trim());
-      setInputText('');
+  const send = async () => {
+    const draft = inputText.trim();
+    if (!draft || pending.current) return;
+    const generation = context.current;
+    pending.current = true; setIsSending(true); setSendError(null);
+    try {
+      await onSendMessage(draft);
+      if (context.current === generation) setInputText('');
+    } catch (error) {
+      if (context.current === generation) setSendError(error instanceof Error ? error.message : 'Não foi possível enviar. Tente novamente.');
+    } finally {
+      if (context.current === generation) { pending.current = false; setIsSending(false); }
     }
+  };
+  const handleSubmit = (event: React.FormEvent) => { event.preventDefault(); void send(); };
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); void send(); }
   };
 
   return (
@@ -147,10 +159,15 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
 
       {/* Caixa de Entrada de Texto com envio ao pressionar Enter */}
       <footer style={{ padding: '0 16px 20px 16px' }}>
+        {sendError && <p role="alert" style={{ color: '#ffb3ba' }}>{sendError}</p>}
+        {isSending && <p role="status">Salvando mensagem…</p>}
         <form onSubmit={handleSubmit}>
           <input
             type="text"
             value={inputText}
+            aria-label={`Mensagem em ${channel.name}`}
+            disabled={isSending}
+            maxLength={2000}
             onChange={(e) => setInputText(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={`Conversar em #${channel.name}`}

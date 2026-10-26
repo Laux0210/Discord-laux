@@ -5,7 +5,7 @@ import { DesktopCallController } from './desktop-call-controller';
 import { InMemoryGuildService } from './guild-service';
 import { InMemoryFriendshipService } from './friendship-service';
 import { InMemoryPresenceService } from './presence-service';
-import { storageService } from './storage-service';
+import { browserStorageAdapter, StorageService, storageService, type StorageAdapter } from './storage-service';
 
 export interface LocalAppServices {
   authService: MockAuthService;
@@ -17,14 +17,16 @@ export interface LocalAppServices {
   presenceService: InMemoryPresenceService;
 }
 
-/** Ambiente fictício e efêmero; cada montagem recebe instâncias independentes. */
-export async function createLocalAppServices(): Promise<LocalAppServices> {
+/** Dados locais persistem no navegador; sem DOM mantém fixtures isoladas para testes. */
+export async function createLocalAppServices(options?: { storage?: StorageAdapter }): Promise<LocalAppServices> {
+  const storage = options?.storage ?? (typeof window !== 'undefined' ? browserStorageAdapter : undefined);
+  const freshCommunity = !storage?.getItem('discord_laux_v1_guild_state');
   const authService = new MockAuthService();
-  const chatService = new DesktopChatService();
+  const chatService = new DesktopChatService(storage ? undefined : [], storage);
   const mediaService = new MockMediaService();
   const callController = new DesktopCallController();
-  const guildService = new InMemoryGuildService();
-  const friendshipService = new InMemoryFriendshipService();
+  const guildService = new InMemoryGuildService(storage);
+  const friendshipService = new InMemoryFriendshipService(storage);
   const presenceService = new InMemoryPresenceService();
 
   let user = storageService.getCurrentUser();
@@ -35,20 +37,26 @@ export async function createLocalAppServices(): Promise<LocalAppServices> {
   }
 
   if (!user) throw new Error('Não foi possível iniciar a sessão local fictícia');
-  const guild = await guildService.createGuild({ name: 'Comunidade dos Amigos', ownerId: user.id });
-  guildService.addMemberDirect(guild.id, 'user-2');
-  guildService.addMemberDirect(guild.id, 'user-3');
+  const guild = await guildService.ensureCommonGuild(user.id);
+  if (freshCommunity) {
+    guildService.addMemberDirect(guild.id, 'user-2');
+    guildService.addMemberDirect(guild.id, 'user-3');
+  }
+  if (storage) {
+    const legacyMessages = new StorageService(storage).getAllChannelMessages();
+    guildService.recoverLegacyTextChannels(Object.keys(legacyMessages).filter(id => legacyMessages[id].length > 0), guild.ownerId);
+  }
   const [general] = await guildService.getGuildChannels(guild.id, user.id);
-  await guildService.createChannel({ guildId: guild.id, actorId: user.id, name: 'avisos', type: 'text' });
-  await guildService.createChannel({ guildId: guild.id, actorId: user.id, name: 'Voz Principal', type: 'voice' });
 
-  await friendshipService.sendFriendRequest(user.id, 'user-2');
-  await friendshipService.acceptFriendRequest('user-2', user.id);
-  await friendshipService.sendFriendRequest('user-3', user.id);
+  if (freshCommunity && user.id === 'user-1') {
+    await friendshipService.sendFriendRequest('user-1', 'user-2');
+    await friendshipService.acceptFriendRequest('user-2', 'user-1');
+    await friendshipService.sendFriendRequest('user-3', 'user-1');
+  }
   presenceService.setPresence('user-2', 'online');
 
   const existingMessages = await chatService.getMessages(general.id);
-  if (existingMessages.length === 0) {
+  if (freshCommunity && general && existingMessages.length === 0) {
     await chatService.sendMessage({
       channelId: general.id,
       authorId: 'user-2',

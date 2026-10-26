@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
+import type { User } from '../../../common/types';
 import type { FriendshipStatus, PresenceService } from '../../../common/text-types';
 
 export interface FriendEntry {
@@ -6,13 +7,16 @@ export interface FriendEntry {
   displayName: string;
   status: FriendshipStatus;
   activity?: string;
+  direction?: 'incoming' | 'outgoing';
 }
 
 export interface FriendsAreaProps {
   friends: FriendEntry[];
+  users?: User[];
+  showDemoActivity?: boolean;
   currentUserId: string;
   onSendFriendRequest: (targetUserId: string) => void | Promise<void>;
-  onAcceptFriendRequest: (friendId: string) => void;
+  onAcceptFriendRequest: (friendId: string) => void | Promise<void>;
   onOpenDm: (friendId: string) => void;
   presenceService?: PresenceService;
 }
@@ -72,6 +76,9 @@ const DEFAULT_ACTIVE_NOW = [
 
 export const FriendsArea: React.FC<FriendsAreaProps> = ({
   friends,
+  users = [],
+  showDemoActivity = true,
+  currentUserId,
   onSendFriendRequest,
   onAcceptFriendRequest,
   onOpenDm,
@@ -82,6 +89,10 @@ export const FriendsArea: React.FC<FriendsAreaProps> = ({
   const [targetIdInput, setTargetIdInput] = useState('');
   const [feedback, setFeedback] = useState<string | null>(null);
   const [hasRequestError, setHasRequestError] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [acceptingId, setAcceptingId] = useState<string | null>(null);
+  const requestPending = useRef(false);
+  const [requestedIds, setRequestedIds] = useState<string[]>([]);
 
   const acceptedFriends = friends.filter((f) => f.status === 'accepted');
   const pendingFriends = friends.filter((f) => f.status === 'pending');
@@ -96,20 +107,27 @@ export const FriendsArea: React.FC<FriendsAreaProps> = ({
     return matchesSearch;
   });
 
-  const handleAddSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!targetIdInput.trim()) return;
-    setFeedback(null);
-    setHasRequestError(false);
+  const sendRequest = async (target: string) => {
+    if (!target.trim() || requestPending.current) return;
+    requestPending.current = true;
+    setIsSubmitting(true); setFeedback(null); setHasRequestError(false);
     try {
-      await onSendFriendRequest(targetIdInput.trim());
+      await onSendFriendRequest(target.trim());
+      setRequestedIds(previous => [...previous, target.trim()]);
       setFeedback('Pedido de amizade enviado com sucesso!');
       setTargetIdInput('');
-    } catch (err: any) {
+    } catch (error) {
       setHasRequestError(true);
-      setFeedback(err?.message || 'Erro ao enviar pedido');
-    }
+      setFeedback(error instanceof Error ? error.message : 'Erro ao enviar pedido');
+    } finally { requestPending.current = false; setIsSubmitting(false); }
   };
+  const handleAddSubmit = (event: React.FormEvent) => {
+    event.preventDefault(); void sendRequest(targetIdInput);
+  };
+  const me = users.find(user => user.id === currentUserId);
+  const query = targetIdInput.trim().toLowerCase();
+  const suggestions = users.filter(user => user.id !== currentUserId &&
+    (!query || [user.id, user.username, user.displayName].some(value => value.toLowerCase().includes(query))));
 
   return (
     <div
@@ -132,6 +150,7 @@ export const FriendsArea: React.FC<FriendsAreaProps> = ({
           alignItems: 'center',
           padding: '0 16px',
           gap: '12px',
+          overflowX: 'auto',
           backgroundColor: '#313338',
           flexShrink: 0
         }}
@@ -291,7 +310,7 @@ export const FriendsArea: React.FC<FriendsAreaProps> = ({
                   letterSpacing: '0.5px'
                 }}
               >
-                Online — {filteredFriends.length}
+                {activeTab === 'available' ? 'Disponíveis' : 'Amigos'} — {filteredFriends.length}
               </div>
 
               {filteredFriends.length === 0 ? (
@@ -302,7 +321,7 @@ export const FriendsArea: React.FC<FriendsAreaProps> = ({
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                   {filteredFriends.map((f) => {
                     const presence = presenceService ? presenceService.getPresence(f.friendId) : 'online';
-                    const activity = f.activity || (f.friendId === 'user-2' ? '🎮 ROBLOX' : 'Disponível');
+                    const activity = showDemoActivity ? f.activity || (f.friendId === 'user-2' ? '🎮 ROBLOX' : 'Disponível') : 'Presença não sincronizada';
 
                     return (
                       <div
@@ -423,6 +442,7 @@ export const FriendsArea: React.FC<FriendsAreaProps> = ({
                 Pedidos Pendentes — {pendingFriends.length}
               </div>
 
+              {feedback && <p role={hasRequestError ? 'alert' : 'status'}>{feedback}</p>}
               {pendingFriends.length === 0 ? (
                 <div style={{ color: '#949ba4', textAlign: 'center', marginTop: '40px' }}>
                   Nenhum pedido pendente no momento.
@@ -443,9 +463,16 @@ export const FriendsArea: React.FC<FriendsAreaProps> = ({
                       }}
                     >
                       <span style={{ fontWeight: 'bold', color: '#f2f3f5' }}>{f.displayName}</span>
-                      <button
+                      <span>{f.direction === 'outgoing' ? 'Enviado · aguardando resposta' : 'Recebido'}</span>
+                      {f.direction !== 'outgoing' && <button
                         data-testid={`btn-accept-${f.friendId}`}
-                        onClick={() => onAcceptFriendRequest(f.friendId)}
+                        disabled={acceptingId !== null}
+                        onClick={() => {
+                          setAcceptingId(f.friendId); setFeedback(null);
+                          void Promise.resolve().then(() => onAcceptFriendRequest(f.friendId))
+                            .catch(error => { setHasRequestError(true); setFeedback(error instanceof Error ? error.message : 'Erro ao aceitar pedido.'); })
+                            .finally(() => setAcceptingId(null));
+                        }}
                         style={{
                           backgroundColor: '#23a55a',
                           color: '#ffffff',
@@ -457,8 +484,8 @@ export const FriendsArea: React.FC<FriendsAreaProps> = ({
                           cursor: 'pointer'
                         }}
                       >
-                        Aceitar
-                      </button>
+                        {acceptingId === f.friendId ? 'Aceitando…' : 'Aceitar'}
+                      </button>}
                     </div>
                   ))}
                 </div>
@@ -481,7 +508,9 @@ export const FriendsArea: React.FC<FriendsAreaProps> = ({
                   type="text"
                   value={targetIdInput}
                   onChange={(e) => setTargetIdInput(e.target.value)}
-                  placeholder="Insira o ID do usuário (ex: user-2)"
+                  placeholder="ID ou nome de usuário"
+                  aria-label="ID ou nome do amigo"
+                  disabled={isSubmitting}
                   style={{
                     flex: 1,
                     padding: '10px 12px',
@@ -496,6 +525,7 @@ export const FriendsArea: React.FC<FriendsAreaProps> = ({
                 <button
                   data-testid="btn-submit-friend-request"
                   type="submit"
+                  disabled={isSubmitting || !targetIdInput.trim()}
                   style={{
                     backgroundColor: '#5865f2',
                     color: '#ffffff',
@@ -507,9 +537,22 @@ export const FriendsArea: React.FC<FriendsAreaProps> = ({
                     cursor: 'pointer'
                   }}
                 >
-                  Enviar Pedido
+                  {isSubmitting ? 'Enviando…' : 'Enviar Pedido'}
                 </button>
               </form>
+              <p style={{ color: '#b5bac1', fontSize: 13 }}>Seu usuário: <strong>{me?.username ?? currentUserId}</strong> · ID: <code>{currentUserId}</code></p>
+              <h4>Usuários cadastrados</h4>
+              {suggestions.length === 0 ? <p style={{ color: '#b5bac1', fontSize: 13 }}>Nenhum outro usuário encontrado. Peça que seu amigo crie uma conta neste servidor.</p> : <ul aria-label="Usuários cadastrados" style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 8 }}>
+                {suggestions.slice(0, 30).map(person => {
+                  const existing = friends.find(friend => friend.friendId === person.id);
+                  const requested = requestedIds.includes(person.id);
+                  return <li key={person.id} style={{ display: 'flex', alignItems: 'center', gap: 12, justifyContent: 'space-between', padding: 10, borderRadius: 4, background: '#2b2d31' }}>
+                    <span style={{ minWidth: 0, overflowWrap: 'anywhere' }}><strong>{person.displayName}</strong><br /><small style={{ color: '#b5bac1' }}>@{person.username} · {person.id}</small></span>
+                    <button type="button" aria-label={`Adicionar ${person.displayName}`} disabled={isSubmitting || !!existing || requested} onClick={() => void sendRequest(person.id)} style={{ flexShrink: 0, background: '#5865f2', color: '#fff', border: 0, padding: '8px 12px', borderRadius: 4, cursor: 'pointer' }}>{existing?.status === 'accepted' ? 'Amigos' : existing || requested ? 'Pendente' : 'Adicionar'}</button>
+                  </li>;
+                })}
+              </ul>}
+              {suggestions.length > 30 && <p>Mostrando os primeiros 30 usuários. Digite um nome para filtrar.</p>}
               {feedback && (
                 <div role={hasRequestError ? 'alert' : 'status'} style={{ marginTop: '12px', fontSize: '13px', color: hasRequestError ? '#f23f43' : '#23a55a' }}>
                   {feedback}
@@ -521,7 +564,7 @@ export const FriendsArea: React.FC<FriendsAreaProps> = ({
           {/* Aba Bloqueados */}
           {activeTab === 'blocked' && (
             <div style={{ color: '#949ba4', textAlign: 'center', marginTop: '60px', fontSize: '14px' }}>
-              Você não tem nenhum usuário bloqueado.
+              A lista de usuários bloqueados ainda não está disponível nesta tela.
             </div>
           )}
         </div>
@@ -542,7 +585,8 @@ export const FriendsArea: React.FC<FriendsAreaProps> = ({
           </h3>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {DEFAULT_ACTIVE_NOW.map((item, idx) => (
+            {!showDemoActivity && <p style={{ color: '#b5bac1', fontSize: 13 }}>Nenhuma atividade compartilhada disponível. A presença entre aparelhos ainda não está sincronizada.</p>}
+            {showDemoActivity && DEFAULT_ACTIVE_NOW.map((item, idx) => (
               <div
                 key={idx}
                 style={{

@@ -50,6 +50,11 @@ export const ChannelList: React.FC<ChannelListProps> = ({
           return (
             <div
               key={channel.id}
+              role="button"
+              tabIndex={0}
+              aria-label={`Abrir canal de texto ${channel.name}`}
+              aria-current={isSelected ? 'page' : undefined}
+              onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onSelectChannel(channel.id); } }}
               onClick={() => onSelectChannel(channel.id)}
               style={{
                 display: 'flex',
@@ -93,6 +98,11 @@ export const ChannelList: React.FC<ChannelListProps> = ({
           return (
             <div key={channel.id} style={{ marginBottom: '4px' }}>
               <div
+                role="button"
+                tabIndex={0}
+                aria-label={`Abrir canal de voz ${channel.name}`}
+                aria-current={isSelected ? 'page' : undefined}
+                onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onSelectChannel(channel.id); } }}
                 onClick={() => onSelectChannel(channel.id)}
                 style={{
                   display: 'flex',

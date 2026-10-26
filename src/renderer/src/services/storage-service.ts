@@ -1,5 +1,25 @@
 import type { User, Message } from '../../../common/types';
 
+/** Adapter síncrono: erros de gravação devem ser propagados ao chamador. */
+export interface StorageAdapter {
+  getItem(key: string): string | null;
+  setItem(key: string, value: string): void;
+  removeItem?(key: string): void;
+}
+
+export function readSnapshot<T>(storage: StorageAdapter | undefined, key: string): T | null {
+  const raw = storage?.getItem(key);
+  if (raw === null || raw === undefined) return null;
+  try {
+    const snapshot = JSON.parse(raw);
+    if (!snapshot || typeof snapshot !== 'object' || Array.isArray(snapshot) || snapshot.version !== 1 ||
+      !Object.prototype.hasOwnProperty.call(snapshot, 'data') || snapshot.data === null || typeof snapshot.data !== 'object') throw new Error();
+    return snapshot.data as T;
+  } catch {
+    throw new Error(`ARMAZENAMENTO_INVALIDO: ${key}; dados preservados para recuperação`);
+  }
+}
+
 interface ExtendedMessage extends Message {
   nonce?: string;
 }
@@ -28,6 +48,8 @@ export class StorageService {
 
   private accountMemory: Record<string, StoredAccount> = {};
 
+  constructor(private adapter?: StorageAdapter) {}
+
   private isLocalStorageAvailable(): boolean {
     try {
       if (typeof window === 'undefined' || !window.localStorage) {
@@ -42,31 +64,25 @@ export class StorageService {
     }
   }
 
-  private getItem(key: string): string | null {
-    if (this.isLocalStorageAvailable()) {
-      return window.localStorage.getItem(key);
+  public getItem(key: string): string | null {
+    if (this.adapter) return this.adapter.getItem(key);
+    if (typeof window !== 'undefined') {
+      try { return window.localStorage?.getItem(key) ?? null; }
+      catch { return null; }
     }
     return null;
   }
 
-  private setItem(key: string, value: string): void {
-    if (this.isLocalStorageAvailable()) {
-      try {
-        window.localStorage.setItem(key, value);
-      } catch (e) {
-        console.warn('Falha ao escrever em localStorage:', e);
-      }
+  public setItem(key: string, value: string): void {
+    if (this.adapter) { this.adapter.setItem(key, value); return; }
+    if (typeof window !== 'undefined') {
+      window.localStorage?.setItem(key, value);
     }
   }
 
-  private removeItem(key: string): void {
-    if (this.isLocalStorageAvailable()) {
-      try {
-        window.localStorage.removeItem(key);
-      } catch (e) {
-        console.warn('Falha ao remover de localStorage:', e);
-      }
-    }
+  public removeItem(key: string): void {
+    if (this.adapter) { this.adapter.removeItem?.(key); return; }
+    if (typeof window !== 'undefined') window.localStorage?.removeItem(key);
     this.memoryCache.delete(key);
   }
 
@@ -110,8 +126,25 @@ export class StorageService {
     const accounts = { ...this.getAccounts() };
     const normalized = account.email.trim().toLowerCase();
     accounts[normalized] = account;
-    this.accountMemory[normalized] = account;
     this.setItem(STORAGE_KEYS.ACCOUNTS, JSON.stringify(accounts));
+    this.accountMemory[normalized] = account;
+  }
+
+  /** Perfis públicos; nunca inclui senha ou e-mail de outra conta. */
+  public listKnownUsers(): User[] {
+    const users: User[] = [
+      { id: 'user-1', username: 'amigo-1', displayName: 'Amigo Um (Dono)' },
+      { id: 'user-2', username: 'amigo-2', displayName: 'Amigo Dois' },
+      { id: 'user-3', username: 'amigo-3', displayName: 'Amigo Três' }
+    ];
+    for (const account of Object.values(this.getAccounts())) {
+      if (account && typeof account.id === 'string' && typeof account.username === 'string') {
+        if (!users.some(user => user.id === account.id)) {
+          users.push({ id: account.id, username: account.username, displayName: account.displayName });
+        }
+      }
+    }
+    return users;
   }
 
   // --- Mensagens de Canais ---
@@ -119,9 +152,16 @@ export class StorageService {
     const raw = this.getItem(STORAGE_KEYS.CHANNEL_MESSAGES);
     if (!raw) return {};
     try {
-      return JSON.parse(raw);
+      const messages: unknown = JSON.parse(raw);
+      if (!messages || typeof messages !== 'object' || Array.isArray(messages)) throw new Error();
+      for (const [channelId, list] of Object.entries(messages)) {
+        if (!Array.isArray(list) || list.some(message => !message || typeof message.id !== 'string' ||
+          message.channelId !== channelId || typeof message.content !== 'string' || typeof message.authorId !== 'string' ||
+          typeof message.authorName !== 'string' || typeof message.createdAt !== 'number' || !Number.isFinite(message.createdAt))) throw new Error();
+      }
+      return messages as Record<string, ExtendedMessage[]>;
     } catch {
-      return {};
+      throw new Error('ARMAZENAMENTO_INVALIDO: histórico legado preservado para recuperação');
     }
   }
 
@@ -208,3 +248,17 @@ export class StorageService {
 }
 
 export const storageService = new StorageService();
+
+/** O banco persistente não pode confundir falha de leitura com banco vazio. */
+function requireBrowserStorage(): Storage {
+  if (typeof window === 'undefined' || !window.localStorage) {
+    throw new Error('ARMAZENAMENTO_INDISPONIVEL: permita armazenamento local neste navegador');
+  }
+  return window.localStorage;
+}
+
+export const browserStorageAdapter: StorageAdapter = {
+  getItem: key => requireBrowserStorage().getItem(key),
+  setItem: (key, value) => requireBrowserStorage().setItem(key, value),
+  removeItem: key => requireBrowserStorage().removeItem(key)
+};

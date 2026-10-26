@@ -26,6 +26,8 @@ export interface ChatService {
   getMessages(channelId: string): Promise<Message[]>;
   deleteMessage(params: DeleteMessageParams): Promise<boolean>;
   onNewMessage(channelId: string, callback: (msg: Message) => void): () => void;
+  /** Snapshot autoritativo: inclui exclusões e revogação de acesso. */
+  onMessagesUpdated?(channelId: string, callback: (messages: Message[]) => void): () => void;
 }
 
 export interface MediaService {

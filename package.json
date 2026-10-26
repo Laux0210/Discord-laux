@@ -6,6 +6,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:shared": "node scripts/dev-shared.mjs",
+    "shared": "npm run build:web && node scripts/start-shared-server.mjs",
     "build": "tsc && vite build && node scripts/build-desktop.mjs",
     "build:web": "tsc && vite build",
     "desktop": "npm run build && node scripts/start-desktop.mjs",
