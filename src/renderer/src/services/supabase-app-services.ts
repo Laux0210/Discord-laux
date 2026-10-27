@@ -17,6 +17,8 @@ import type {
   FriendshipStatus,
   PaginationParams,
   SendDmParams,
+  GuildMemberPresence,
+  MemberDirectory,
 } from '../../../common/text-types';
 import { ALL_PERMISSIONS } from '../../../common/permissions';
 import type { AuthService, ChatService, DeleteMessageParams, SendMessageParams } from './types';
@@ -910,6 +912,44 @@ function createSupabaseFriendshipService(client: SupabaseRestClient): Friendship
   };
 }
 
+/** Online = heartbeat em profiles.last_seen_at há menos deste tempo. */
+export const ONLINE_WINDOW_MS = 70_000;
+
+export function createSupabaseMemberDirectory(client: SupabaseRestClient, currentUser: () => User | null): MemberDirectory {
+  return {
+    heartbeat: async () => {
+      const me = currentUser();
+      if (!me) return;
+      await client.rest('PATCH', `/profiles?id=eq.${encodeURIComponent(me.id)}`, {
+        last_seen_at: new Date().toISOString(),
+      }, false);
+    },
+    listMembers: async (guildId: string): Promise<GuildMemberPresence[]> => {
+      const members = await client.rest<{ user_id: string; nickname?: string | null }[]>(
+        'GET',
+        `/guild_members?guild_id=eq.${encodeURIComponent(guildId)}&select=user_id,nickname`,
+      );
+      if (!members?.length) return [];
+      const profiles = await client.rest<(ProfileRow & { last_seen_at?: string | null })[]>(
+        'GET',
+        `/profiles?id=in.(${members.map((m) => m.user_id).join(',')})&select=id,username,display_name,avatar_url,last_seen_at`,
+      );
+      const byId = new Map((profiles ?? []).map((p) => [p.id, p]));
+      const now = Date.now();
+      return members.map((m) => {
+        const p = byId.get(m.user_id);
+        const seen = p?.last_seen_at ? Date.parse(p.last_seen_at) : 0;
+        return {
+          userId: m.user_id,
+          displayName: m.nickname || p?.display_name || p?.username || 'Usuário',
+          ...(p?.avatar_url ? { avatarUrl: p.avatar_url } : {}),
+          online: now - seen < ONLINE_WINDOW_MS,
+        };
+      });
+    },
+  };
+}
+
 export async function createSupabaseAppServices(config: SupabaseConfig) {
   const validated = resolveSupabaseConfig({
     VITE_SUPABASE_URL: config.url,
@@ -931,6 +971,7 @@ export async function createSupabaseAppServices(config: SupabaseConfig) {
     mediaService: new MockMediaService(),
     callController: new SupabaseCallController(client, () => authService.getCurrentUser()),
     presenceService: new InMemoryPresenceService(),
+    memberDirectory: createSupabaseMemberDirectory(client, () => authService.getCurrentUser()),
     userDirectory: async (): Promise<User[]> => {
       const rows = await client.rest<ProfileRow[]>(
         'GET',

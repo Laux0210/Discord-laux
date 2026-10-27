@@ -26,6 +26,7 @@ export interface CallController {
   getAudioDevices(): Promise<AudioDevice[]>;
   setAudioDevice(kind: 'audioinput' | 'audiooutput', deviceId: string): Promise<void>;
   setSpeaking?(userId: string, isSpeaking: boolean): Promise<void>;
+  getScreenStream?(userId: string): MediaStream | null;
   triggerEmergencyBudgetCutoff(): Promise<void>;
   onCallStateUpdated(callback: (state: CallState) => void): () => void;
 

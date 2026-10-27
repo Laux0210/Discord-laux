@@ -206,7 +206,7 @@ export const VoiceRoomArea: React.FC<VoiceRoomAreaProps> = ({
             </div>
 
             {/* Vídeo Real da Transmissão ou Simulação de Fallback */}
-            {screenStream && activeStreamer.userId === currentUserId ? (
+            {screenStream ? (
               <div
                 style={{
                   flex: 1,

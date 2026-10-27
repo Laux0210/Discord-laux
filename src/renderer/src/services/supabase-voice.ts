@@ -20,6 +20,7 @@ interface VoiceStateRow {
   display_name: string;
   is_muted: boolean;
   is_deafened: boolean;
+  is_screen_sharing?: boolean;
   joined_at: string;
   updated_at: string;
 }
@@ -43,12 +44,15 @@ export function isFresh(updatedAt: string, now = Date.now()): boolean {
 export class SupabaseCallController implements CallController {
   private channelId: string | null = null;
   private guildId: string | null = null;
+  private activeUserId: string | null = null;
   private startedAt: number | null = null;
   private participants: VoiceParticipant[] = [];
   private listeners = new Set<(state: CallState) => void>();
   private peers = new Map<string, RTCPeerConnection>();
   private audios = new Map<string, HTMLAudioElement>();
   private local: MediaStream | null = null;
+  private screen: MediaStream | null = null;
+  private remoteScreens = new Map<string, MediaStream>();
   private muted = false;
   private deafened = false;
   private inputDeviceId = 'default';
@@ -63,7 +67,7 @@ export class SupabaseCallController implements CallController {
       channelId: this.channelId,
       guildId: this.guildId,
       participants: this.participants,
-      activeScreenShareUserId: null,
+      activeScreenShareUserId: this.participants.find(p => p.isScreenSharing)?.userId ?? null,
       startedAt: this.startedAt,
     };
   }
@@ -86,7 +90,7 @@ export class SupabaseCallController implements CallController {
 
   async joinCall(channelId: string, guildId: string, _userId: string, displayName: string): Promise<boolean> {
     if (this.channelId === channelId) return true;
-    if (this.channelId) await this.leaveCall(this.me());
+    if (this.channelId) await this.leaveCall(this.currentUser()?.id ?? this.activeUserId ?? '');
     if (!navigator.mediaDevices?.getUserMedia) throw new Error('Microfone indisponível neste navegador.');
     this.local = await navigator.mediaDevices.getUserMedia({
       audio: this.inputDeviceId === 'default' ? true : { deviceId: { exact: this.inputDeviceId } },
@@ -100,6 +104,7 @@ export class SupabaseCallController implements CallController {
     }, false).catch(error => { this.stopLocal(); throw error; });
     this.channelId = channelId;
     this.guildId = guildId;
+    this.activeUserId = me;
     this.startedAt = Date.now();
     this.timers.push(setInterval(() => { void this.poll(); }, POLL_MS));
     this.timers.push(setInterval(() => { void this.heartbeat(); }, HEARTBEAT_MS));
@@ -107,19 +112,22 @@ export class SupabaseCallController implements CallController {
     return true;
   }
 
-  async leaveCall(_userId: string): Promise<void> {
+  async leaveCall(userId: string): Promise<void> {
     const channelId = this.channelId;
     for (const timer of this.timers) clearInterval(timer);
     this.timers = [];
-    if (channelId) {
-      const me = this.me();
+    const activeUser = this.currentUser();
+    const me = activeUser?.id ?? this.activeUserId ?? (userId || null);
+    if (channelId && activeUser && me) {
       await Promise.allSettled([...this.peers.keys()].map(to => this.signal(to, 'bye', {})));
       await this.client.rest('DELETE', `/voice_states?user_id=eq.${me}`, undefined, false).catch(() => {});
     }
     for (const id of [...this.peers.keys()]) this.closePeer(id);
+    this.stopScreen();
     this.stopLocal();
     this.channelId = null;
     this.guildId = null;
+    this.activeUserId = null;
     this.startedAt = null;
     this.participants = [];
     this.emit();
@@ -134,6 +142,7 @@ export class SupabaseCallController implements CallController {
     if (!this.channelId) return;
     await this.client.rest('PATCH', `/voice_states?user_id=eq.${this.me()}`, {
       updated_at: new Date().toISOString(), is_muted: this.muted, is_deafened: this.deafened,
+      is_screen_sharing: this.screen !== null,
     }, false).catch(() => {});
   }
 
@@ -147,12 +156,15 @@ export class SupabaseCallController implements CallController {
       const present = (rows ?? []).filter(r => r.user_id === me || isFresh(r.updated_at));
       this.participants = present.map(r => ({
         userId: r.user_id, displayName: r.display_name, isMuted: r.is_muted,
-        isDeafened: r.is_deafened, isScreenSharing: false, joinedAt: Date.parse(r.joined_at),
+        isDeafened: r.is_deafened, isScreenSharing: r.user_id === me ? this.screen !== null : !!r.is_screen_sharing,
+        joinedAt: Date.parse(r.joined_at),
       }));
       const others = new Set(present.map(r => r.user_id).filter(id => id !== me));
       for (const id of [...this.peers.keys()]) if (!others.has(id)) this.closePeer(id);
       for (const id of others) {
-        if (!this.peers.has(id) && shouldInitiate(me, id)) await this.startOffer(id);
+        if (!this.peers.has(id) && shouldInitiate(me, id)) {
+          await this.startOffer(id).catch(error => console.warn('Falha ao iniciar oferta de voz:', error));
+        }
       }
       const signals = await this.client.rest<SignalRow[]>('GET',
         `/voice_signals?to_id=eq.${me}&channel_id=eq.${this.channelId}&select=id,from_id,kind,payload&order=created_at.asc`);
@@ -183,6 +195,12 @@ export class SupabaseCallController implements CallController {
       if (event.candidate) void this.signal(otherId, 'ice', { candidate: event.candidate.toJSON() });
     };
     pc.ontrack = event => {
+      if (event.track.kind === 'video') {
+        // Vídeo da tela: o transceptor existe desde a oferta e só recebe frames quando o outro transmite.
+        this.remoteScreens.set(otherId, event.streams[0] ?? new MediaStream([event.track]));
+        this.emit();
+        return;
+      }
       let audio = this.audios.get(otherId);
       if (!audio) {
         audio = new Audio();
@@ -204,9 +222,17 @@ export class SupabaseCallController implements CallController {
 
   private async startOffer(otherId: string): Promise<void> {
     const pc = this.createPeer(otherId);
-    const offer = await pc.createOffer();
-    await pc.setLocalDescription(offer);
-    await this.signal(otherId, 'offer', { sdp: offer.sdp, type: offer.type });
+    try {
+      // Reserva um canal de vídeo para a tela; trocar a faixa depois dispensa renegociar.
+      pc.addTransceiver('video', { direction: 'sendrecv' });
+      await this.attachScreen(pc);
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+      await this.signal(otherId, 'offer', { sdp: offer.sdp, type: offer.type });
+    } catch (error) {
+      this.closePeer(otherId);
+      throw error;
+    }
   }
 
   private async handleSignal(signal: SignalRow): Promise<void> {
@@ -215,10 +241,19 @@ export class SupabaseCallController implements CallController {
     if (signal.kind === 'offer') {
       this.closePeer(from);
       const pc = this.createPeer(from);
-      await pc.setRemoteDescription({ type: 'offer', sdp: signal.payload.sdp });
-      const answer = await pc.createAnswer();
-      await pc.setLocalDescription(answer);
-      await this.signal(from, 'answer', { sdp: answer.sdp, type: answer.type });
+      try {
+        await pc.setRemoteDescription({ type: 'offer', sdp: signal.payload.sdp });
+        for (const t of pc.getTransceivers()) {
+          if (t.receiver.track.kind === 'video') t.direction = 'sendrecv';
+        }
+        await this.attachScreen(pc);
+        const answer = await pc.createAnswer();
+        await pc.setLocalDescription(answer);
+        await this.signal(from, 'answer', { sdp: answer.sdp, type: answer.type });
+      } catch (error) {
+        this.closePeer(from);
+        throw error;
+      }
       return;
     }
     const pc = this.peers.get(from);
@@ -235,6 +270,26 @@ export class SupabaseCallController implements CallController {
     this.peers.delete(otherId);
     const audio = this.audios.get(otherId);
     if (audio) { audio.srcObject = null; this.audios.delete(otherId); }
+    this.remoteScreens.delete(otherId);
+  }
+
+  private videoSender(pc: RTCPeerConnection): RTCRtpSender | undefined {
+    return pc.getTransceivers().find(t => t.receiver.track.kind === 'video')?.sender;
+  }
+
+  private async attachScreen(pc: RTCPeerConnection): Promise<void> {
+    await this.videoSender(pc)?.replaceTrack(this.screen?.getVideoTracks()[0] ?? null);
+  }
+
+  private stopScreen(): void {
+    for (const track of this.screen?.getTracks() ?? []) track.stop();
+    this.screen = null;
+  }
+
+  /** Tela do usuário: a própria captura, ou o vídeo recebido do par que transmite. */
+  getScreenStream(userId: string): MediaStream | null {
+    if (userId === this.activeUserId) return this.screen;
+    return this.remoteScreens.get(userId) ?? null;
   }
 
   async setMute(_userId: string, isMuted: boolean): Promise<void> {
@@ -252,10 +307,25 @@ export class SupabaseCallController implements CallController {
   }
 
   async startScreenShare(): Promise<boolean> {
-    return false; // Fora do escopo desta fase: só áudio.
+    if (!this.channelId) return false;
+    if (this.screen) return true;
+    if (!navigator.mediaDevices?.getDisplayMedia) throw new Error('Compartilhamento de tela indisponível neste navegador.');
+    this.screen = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+    // "Parar compartilhamento" do próprio navegador encerra a transmissão.
+    this.screen.getVideoTracks()[0]?.addEventListener('ended', () => { void this.stopScreenShare(); });
+    await Promise.allSettled([...this.peers.values()].map(pc => this.attachScreen(pc)));
+    await this.heartbeat();
+    await this.poll();
+    return true;
   }
 
-  async stopScreenShare(): Promise<void> {}
+  async stopScreenShare(): Promise<void> {
+    if (!this.screen) return;
+    this.stopScreen();
+    await Promise.allSettled([...this.peers.values()].map(pc => this.attachScreen(pc)));
+    await this.heartbeat();
+    await this.poll();
+  }
 
   async kickParticipant(): Promise<boolean> {
     return false; // Expulsar exige política de servidor; ainda não implementado.
@@ -281,6 +351,6 @@ export class SupabaseCallController implements CallController {
   async setSpeaking(): Promise<void> {}
 
   async triggerEmergencyBudgetCutoff(): Promise<void> {
-    if (this.channelId) await this.leaveCall(this.me());
+    if (this.channelId) await this.leaveCall(this.currentUser()?.id ?? this.activeUserId ?? '');
   }
 }

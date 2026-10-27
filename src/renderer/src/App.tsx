@@ -3,7 +3,8 @@ import type { Channel, Guild, Message, User } from '../../common/types';
 import type { AuthService as LegacyAuthService, ChatService, MediaService } from './services/types';
 import type { AuthService as ModernAuthService } from '../../common/auth-types';
 import type { GuildService } from '../../common/guild-types';
-import type { FriendshipService, PresenceService } from '../../common/text-types';
+import type { FriendshipService, MemberDirectory, PresenceService } from '../../common/text-types';
+import { MemberList } from './components/MemberList';
 import type { CallController, CallState } from '../../common/media-types';
 import { Sidebar } from './components/Sidebar';
 import { ChannelList } from './components/ChannelList';
@@ -32,6 +33,7 @@ export interface AppProps {
   guildService?: GuildService;
   friendshipService?: FriendshipService;
   presenceService?: PresenceService;
+  memberDirectory?: MemberDirectory;
   initialSelectedChannelId?: string;
   initialIsInVoiceCall?: boolean;
   userDirectory?: () => Promise<User[]>;
@@ -69,6 +71,7 @@ export const App: React.FC<AppProps> = ({
   guildService,
   friendshipService,
   presenceService,
+  memberDirectory,
   initialSelectedChannelId,
   initialIsInVoiceCall,
   userDirectory,
@@ -462,7 +465,23 @@ export const App: React.FC<AppProps> = ({
   };
 
   const handleToggleScreenShare = async () => {
-    if (sharedBackend) { setDataError('Compartilhamento de tela ainda não está conectado ao servidor compartilhado.'); return; }
+    if (sharedBackend) {
+      // Servidor compartilhado: a tela vai pelo WebRTC do SupabaseCallController; o estado volta por onCallStateUpdated.
+      if (!currentUser || !callController) return;
+      try {
+        if (isScreenSharing) {
+          await callController.stopScreenShare(currentUser.id);
+          soundEffects.playScreenShareStop();
+        } else if (!callState.channelId) {
+          setDataError('Entre em um canal de voz antes de compartilhar a tela.');
+        } else if (await callController.startScreenShare(currentUser.id)) {
+          soundEffects.playScreenShareStart();
+        }
+      } catch (err) {
+        setDataError(err instanceof Error ? err.message : 'Não foi possível compartilhar a tela.');
+      }
+      return;
+    }
     if (!currentUser) return;
     const currentChan = callState.channelId || selectedChannelId || 'chan-voice-main';
     if (isScreenSharing) {
@@ -853,7 +872,7 @@ export const App: React.FC<AppProps> = ({
               {guildService && selectedGuildId && (hasPermission(memberPermissions, PermissionFlags.MANAGE_CHANNELS) || hasPermission(memberPermissions, PermissionFlags.MANAGE_ROLES)) && <button aria-label="Configurações do servidor" data-testid="server-settings-open" onClick={() => setIsServerSettingsOpen(true)} style={{ background: 'transparent', border: 0, color: 'white', cursor: 'pointer', fontSize: 18 }}>⚙</button>}
             </header>
             {dataError && <p role="alert" style={{ color: '#ffb3ba', padding: 8 }}>{dataError}</p>}
-            {sharedBackend && <p style={{ fontSize: 12, padding: 8 }}>Servidor compartilhado · histórico salvo no servidor. Áudio entre aparelhos ainda não está conectado neste modo.</p>}
+            {sharedBackend && <p style={{ fontSize: 12, padding: 8 }}>Servidor compartilhado · histórico salvo no servidor.</p>}
 
             <ChannelList
               channels={channels}
@@ -864,7 +883,6 @@ export const App: React.FC<AppProps> = ({
                 setSelectedChannelId(id);
                 const targetChannel = channels.find((channel) => channel.id === id);
                 if (targetChannel?.type === 'voice' && currentUser) {
-                  if (sharedBackend) { setDataError('Canal de voz selecionado. O transporte de áudio entre aparelhos ainda não está conectado neste modo.'); return; }
                   if (!isInVoiceCall || callState.channelId !== id) {
                     soundEffects.playVoiceConnect();
                   }
@@ -925,7 +943,9 @@ export const App: React.FC<AppProps> = ({
               onToggleScreenShare={handleToggleScreenShare}
               onSimulateFriendJoin={sharedBackend ? undefined : handleSimulateFriendJoin}
               isScreenSharing={isScreenSharing}
-              screenStream={screenStream}
+              screenStream={sharedBackend
+                ? (callState.activeScreenShareUserId ? callController?.getScreenStream?.(callState.activeScreenShareUserId) ?? null : null)
+                : screenStream}
             />
           ) : (
             <ChatArea
@@ -937,6 +957,7 @@ export const App: React.FC<AppProps> = ({
               onDeleteMessage={handleDeleteMessage}
             />
           )}
+          {memberDirectory && selectedGuildId && <MemberList guildId={selectedGuildId} directory={memberDirectory} />}
         </>
       )}
 

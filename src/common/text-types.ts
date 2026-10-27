@@ -91,6 +91,19 @@ export interface FriendshipService {
   onDmUpdated?(dmChannelId: string, requesterId: string, callback: () => void): () => void;
 }
 
+export interface GuildMemberPresence {
+  userId: string;
+  displayName: string;
+  avatarUrl?: string;
+  online: boolean;
+}
+
+/** Membros do servidor com status online, para a lista lateral. */
+export interface MemberDirectory {
+  listMembers(guildId: string): Promise<GuildMemberPresence[]>;
+  heartbeat(): Promise<void>;
+}
+
 export interface PresenceService {
   setPresence(userId: string, status: PresenceStatus): void;
   heartbeat(userId: string): void;

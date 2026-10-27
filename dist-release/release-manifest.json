@@ -36,20 +36,20 @@
       "size": 1686
     },
     {
-      "path": "dist/assets/index-CYx8JcEN.js",
-      "sha256": "dec60d918167984001fa84cb7d38bf05064f85c24f5ee58f6cbc87d2a3248350",
-      "size": 830224
-    },
-    {
       "path": "dist/assets/index-IoGesX1R.css",
       "sha256": "7201c2548cf18e46efc0f96d621c85b91265fc419bd8b68442084c5bf2d1e1fa",
       "size": 265
     },
     {
+      "path": "dist/assets/index-LSP0lAsU.js",
+      "sha256": "8e36cfb76b2eb7f7b4430c0a5055f5bffa22af1fc80d7058d39eded1d18591b1",
+      "size": 834919
+    },
+    {
       "path": "dist/index.html",
-      "sha256": "6f9d4ad5b77be750e39cab594115e4d46bfe75bc2b01dab21af22acd1051b2a6",
+      "sha256": "82df89f7b6f800eee973819ce7bf9a9943dc23899fffeb6d8fe1a541075ae6c1",
       "size": 930
     }
   ],
-  "createdAt": "2026-10-27T18:02:08.966Z"
+  "createdAt": "2026-10-27T18:12:52.327Z"
 }
