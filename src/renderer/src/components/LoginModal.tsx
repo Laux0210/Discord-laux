@@ -181,6 +181,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
               id="login-email"
               data-testid="input-email"
               type="email"
+              autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="seuemail@exemplo.com"
@@ -217,6 +218,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
               id="login-password"
               data-testid="input-password"
               type="password"
+              autoComplete={isSignUp ? 'new-password' : 'current-password'}
               minLength={minPasswordLength}
               maxLength={128}
               value={password}
